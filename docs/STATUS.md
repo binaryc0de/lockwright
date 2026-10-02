@@ -80,3 +80,9 @@ Not started.
 - Night Shift geometry checked headless by the room-building subagent: every Interactable is reachable by the player's 3 m eye-height ray from open floor; spawn is clear; doors clear their doorways when open.
 - Known noise: gdUnit4's runner prints "Remote Debugger: Unable to connect to host 127.0.0.1:0" on every run (also on M0 code); harmless.
 - Not verified: anything visual (UI layout, lighting, mouse feel) because nothing here runs windowed (ADR-0003). That is the owner play-test above.
+
+### 2026-10-01, move to the Alienware (RTX 3080 Ti)
+- Repo copied with history to `user@192.168.1.20:~/Work/escapebox` (clean tree, `git fsck` OK). Godot 4.7.2, Blender 5.2.2 LTS, Go 1.27.0 installed in `~/.local` (ADR-0011).
+- `tools/test.sh` on the Alienware: exit 0; gdUnit4 53/53; `packroom -verify night_shift` 11/11 from the pack alone.
+- `room_shots.tscn` rendered 6 viewpoints with `forward_plus on NVIDIA GeForce RTX 3080 Ti Laptop GPU`, no errors, GPU at 49 C. Baseline greybox shots in `docs/screenshots/m1-greybox/`.
+- Owner feedback on the greybox: "the graphics are way way too simple". Agreed next step: a look test (dress one office corner with CC0 PBR materials, Codex hero props, proper lighting) before closing M1, to prove the visual bar early.
