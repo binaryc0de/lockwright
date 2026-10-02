@@ -194,3 +194,10 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - Reduced desk lamp vs Poly Haven source rendered from the same view: identical placement; desk light pool brightness 160.6 vs 160.5.
 - `tools/test.sh` exit 0: gdUnit4 100/100 (84 core/UI + 16 room), assetcheck 24/24, m2 + m3 smoke (real Docker).
 
+### 2026-10-02, cross-machine LAN test (Alienware 192.168.1.20 + Omarchy i5/UHD 620 192.168.1.21, Wi-Fi)
+- Exported builds copied to `~/escapebox-builds/` on Omarchy; only headless processes there (ADR-0003).
+- Server on Omarchy: unreachable from the Alienware (UDP 7790 listening, connection failed). Omarchy runs ufw and NordVPN, whose firewall drops incoming LAN traffic unless LAN discovery is on. Not changed; the owner's call. A LAN host needs that open (M5 runbook).
+- Server on the Alienware, exported client on Omarchy: plays to the win.
+- Two players (Omarchy steps 0-8, Alienware steps 9-end, both wait for the win): first run, Omarchy's client dropped right after joining. Its synchronous room load took 7.0 s (timestamped), longer than ENet's 5 s minimum timeout. Fixed with threaded room loading on clients (ADR-0021 update). After the fix, 3/3 runs passed and both players saw the win.
+- `tools/test.sh` exit 0 (gdUnit4 88 + 20 room, assetcheck 24/24, m2 + m3 smoke) and `tools/export_smoke.sh` PASS after the fix.
+

@@ -13,6 +13,8 @@ var remote_players: RemotePlayers
 var error: String = ""
 
 var _pack_path: String = ""
+var _loading := false
+var _late_welcome: Dictionary = {}
 var _bot: SolutionBot = null
 var _remote := false
 ## Shown while joining, until the server's welcome (players only, not bots).
@@ -69,6 +71,9 @@ func start_remote(args: AppArgs) -> bool:
 
 
 func _on_welcomed(info: Dictionary) -> void:
+	if _loading:
+		_late_welcome = info  # a rejoin while the room loads: use the newest
+		return
 	var snap = JSON.parse_string(str(info["snapshot_json"]))
 	if not snap is Dictionary:
 		push_error("server sent an unreadable snapshot")
@@ -79,7 +84,28 @@ func _on_welcomed(info: Dictionary) -> void:
 		if hud:
 			hud.sync_end_state()
 		return
-	var loader := _load(str(info["room_id"]), _pack_path)
+	# Load on a worker thread: a multi-second freeze here outlasts ENet's
+	# timeouts on slower PCs and drops the link we just joined on.
+	_loading = true
+	var loader := RoomLoader.new()
+	var ok: bool = await loader.load_room_async(str(info["room_id"]), _pack_path, get_tree())
+	_loading = false
+	if not is_inside_tree():
+		return  # left while loading
+	if ok:
+		room = loader.instantiate()
+		if room == null:
+			ok = false
+		else:
+			add_child(room)
+			GraphicsQuality.apply(room, Settings.graphics)
+	if not ok:
+		error = loader.error
+		loader = null
+	if not _late_welcome.is_empty():
+		info = _late_welcome
+		_late_welcome = {}
+		snap = JSON.parse_string(str(info["snapshot_json"]))
 	if loader == null:
 		error = "Joined, but this game cannot load the server's room: %s" % error
 		push_error(error)

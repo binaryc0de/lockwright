@@ -12,26 +12,7 @@ var scene: PackedScene
 ## Loads `room_id`, mounting `pack_path` first when given. On failure returns
 ## false and sets `error`.
 func load_room(room_id: String, pack_path: String = "") -> bool:
-	error = ""
-	if not RoomLoader.valid_id(room_id):
-		error = "invalid room id %s" % room_id
-		return false
-	if pack_path.is_empty() and not FileAccess.file_exists("res://rooms/%s/room.json" % room_id):
-		pack_path = RoomLoader.find_local_pack(room_id)
-	if not pack_path.is_empty():
-		if not FileAccess.file_exists(pack_path):
-			error = "pack not found: %s" % pack_path
-			return false
-		# Never replace_files=true: a pack must not override engine or core files.
-		if not ProjectSettings.load_resource_pack(pack_path, false):
-			error = "could not mount pack %s" % pack_path
-			return false
-	manifest = RoomManifest.load_room(room_id)
-	if manifest == null:
-		error = "room %s has no valid manifest%s" % [room_id, " in pack" if pack_path else ""]
-		return false
-	if not manifest.entry_scene.begins_with("res://rooms/%s/" % room_id):
-		error = "entry scene %s is outside the room" % manifest.entry_scene
+	if not _prepare(room_id, pack_path):
 		return false
 	scene = load(manifest.entry_scene) as PackedScene
 	if scene == null:
@@ -74,6 +55,56 @@ static func find_local_pack(room_id: String, dirs: PackedStringArray = []) -> St
 				best_ver = ver
 				best = d.path_join(f)
 	return best
+
+
+## Like load_room, but loads the entry scene on a worker thread while the
+## main loop keeps running (await it), so a client keeps servicing its
+## network link instead of freezing for seconds on a slow PC.
+func load_room_async(room_id: String, pack_path: String, tree: SceneTree) -> bool:
+	if not _prepare(room_id, pack_path):
+		return false
+	var path := manifest.entry_scene
+	if ResourceLoader.load_threaded_request(path, "PackedScene", true) != OK:
+		return load_room(room_id, "")  # pack already mounted; plain load
+	while true:
+		var st := ResourceLoader.load_threaded_get_status(path)
+		if st == ResourceLoader.THREAD_LOAD_LOADED:
+			break
+		if st != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			error = "cannot load entry scene %s" % path
+			return false
+		await tree.process_frame
+	scene = ResourceLoader.load_threaded_get(path) as PackedScene
+	if scene == null:
+		error = "cannot load entry scene %s" % path
+		return false
+	return true
+
+
+## Validates the id, mounts the pack, reads the manifest.
+func _prepare(room_id: String, pack_path: String = "") -> bool:
+	error = ""
+	if not RoomLoader.valid_id(room_id):
+		error = "invalid room id %s" % room_id
+		return false
+	if pack_path.is_empty() and not FileAccess.file_exists("res://rooms/%s/room.json" % room_id):
+		pack_path = RoomLoader.find_local_pack(room_id)
+	if not pack_path.is_empty():
+		if not FileAccess.file_exists(pack_path):
+			error = "pack not found: %s" % pack_path
+			return false
+		# Never replace_files=true: a pack must not override engine or core files.
+		if not ProjectSettings.load_resource_pack(pack_path, false):
+			error = "could not mount pack %s" % pack_path
+			return false
+	manifest = RoomManifest.load_room(room_id)
+	if manifest == null:
+		error = "room %s has no valid manifest%s" % [room_id, " in pack" if pack_path else ""]
+		return false
+	if not manifest.entry_scene.begins_with("res://rooms/%s/" % room_id):
+		error = "entry scene %s is outside the room" % manifest.entry_scene
+		return false
+	return true
 
 
 static func valid_id(id: String) -> bool:

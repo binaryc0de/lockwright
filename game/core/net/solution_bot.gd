@@ -26,6 +26,9 @@ var _deadline := TIMEOUT_S
 
 
 func _ready() -> void:
+	# The client session starts once the room has loaded (asynchronously),
+	# which can be well after the welcome; a rejoin re-welcomes an existing one.
+	Game.session_started.connect(func() -> void: call_deferred("_begin"))
 	Game.net.welcomed.connect(func(_i: Dictionary) -> void: call_deferred("_begin"))
 	Game.net.rejected.connect(func(reason: String) -> void: _finish(3, "join rejected: %s" % reason))
 	Game.session_finished.connect(func(won: bool) -> void:
