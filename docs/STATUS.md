@@ -59,7 +59,7 @@ Started 2026-10-02 on branch `m2-multiplayer` (design: ADR-0015).
 - [x] Co-inspection notice ("X is examining Y") and join/leave toasts
 - [x] Snapshot export/import to JSON; server restart resumes from the snapshot; clients reconnect automatically (2 s retry, ~6 s dead-server detection)
 - [x] `tools/m2_smoke.sh` (in `tools/test.sh`): server + 3 bots + crash/restore + rejected token + WebSocket
-- [ ] Windowed check: two real clients on this PC see each other's avatars and play together (not yet run; needs a person at the keyboard or a GPU screenshot harness)
+- [x] Owner LAN test, 2026-10-02: tested with another computer on the home network; owner's report: "it worked great". Setup details (which machine hosted, how many clients, whether disconnect/restart were tried) not recorded
 - [ ] Acceptance on real hardware: 3 clients (2 on one PC + 1 remote LAN PC) play Night Shift together; disconnect/rejoin; server restart (owner)
 - [ ] Main menu "Join" form (today joining is command-line only)
 
