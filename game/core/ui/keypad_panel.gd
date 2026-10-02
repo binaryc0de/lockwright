@@ -49,6 +49,7 @@ func _press(key: String) -> void:
 			_entry = ""
 		"ENT":
 			_submit()
+			return  # keep OPEN/ERROR on the display until the next key
 		_:
 			if _entry.length() < maxi(lock.display_length, 1) + 4:
 				_entry += key

@@ -59,7 +59,6 @@ func setup(p_manifest: RoomManifest, room_instance: Node, p_session_id: String, 
 	var now: float = clock.call()
 	if snapshot.is_empty():
 		state = WorldState.new()
-		state.started_at = now
 		state.duration_s = manifest.duration_minutes * 60
 		state.auto_nudge = manifest.auto_nudge_minutes > 0
 		state.vars = generate_vars(manifest.data.get("variables", {}), session_id)
@@ -136,6 +135,16 @@ func handle_intent(player_id: String, path: String, verb: String, payload: Dicti
 	var result: Dictionary = n._server_intent(player_id, verb, payload)
 	_after_change()
 	return result
+
+
+## Starts the countdown and the auto-nudge timer (PLAN.md 9.6: the clock
+## starts after onboarding). Idempotent; a restored session keeps its time.
+func start_clock(player_id: String) -> void:
+	if state.clock_started():
+		return
+	state.started_at = clock.call()
+	_last_progress = state.started_at
+	event_logged.emit("clock_started", {"player": player_id})
 
 
 func request_hint(player_id: String, puzzle_id: String) -> Dictionary:
@@ -341,7 +350,7 @@ func _after_change() -> void:
 ## Advances timers. Called every frame by the node's _process; tests call it
 ## directly with a controlled clock.
 func tick() -> void:
-	if state == null or state.finished:
+	if state == null or state.finished or not state.clock_started():
 		return
 	var now: float = clock.call()
 	if not state.timed_out and state.remaining_s(now) <= 0.0:

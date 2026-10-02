@@ -38,10 +38,12 @@ func test_keypad_panel_submits_through_authority() -> void:
 		panel._press(d)
 	panel._press("ENT")
 	assert_bool(lock.is_unlocked()).is_false()
+	assert_str(panel._display.text).is_equal("ERROR")
 	for d: String in Game.vars()["cabinet_code"]:
 		panel._press(d)
 	panel._press("ENT")
 	assert_bool(lock.is_unlocked()).is_true()
+	assert_str(panel._display.text).is_equal("OPEN")
 
 
 func test_patch_panel_ui_maps_cables() -> void:
@@ -118,3 +120,24 @@ func test_markdown_subset() -> void:
 	assert_str(EBMarkdown.to_bbcode("# T\n- a **b** *c* `d` [x]")).is_equal(
 		"[font_size=28][b]T[/b][/font_size]\n  •  a [b]b[/b] [i]c[/i] [code]d[/code] [lb]x]")
 	assert_str(EBMarkdown.to_bbcode("2 * 3 = 6")).is_equal("2 * 3 = 6")
+
+
+func test_briefing_start_button_starts_the_clock() -> void:
+	assert_bool(Game.world().clock_started()).is_false()
+	hud.open_briefing()
+	hud._modal.close()
+	assert_bool(Game.world().clock_started()).is_true()
+
+
+func test_evidence_board_shows_image_backed_documents() -> void:
+	var note := room.get_node("Note") as Document
+	note.text_md = ""
+	var img := Image.create(8, 8, false, Image.FORMAT_RGB8)
+	note.texture = ImageTexture.create_from_image(img)
+	Game.request(note, "read")
+	var board := EvidenceBoard.new()
+	hud._open(board)
+	board.setup()
+	board._show(0)
+	assert_str(board._detail.get_parsed_text()).contains(note.title)
+	assert_int(board._detail.get_paragraph_count()).is_greater(1)

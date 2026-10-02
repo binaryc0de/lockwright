@@ -21,6 +21,7 @@ var puzzles: Dictionary = {}
 var flags_accepted: Dictionary = {}
 ## Per-session room variables (room.yaml `variables`), resolved at session start.
 var vars: Dictionary = {}
+## 0 until the clock starts (when the first player leaves the briefing).
 var started_at: float = 0.0
 var duration_s: int = 3600
 var finished: bool = false
@@ -55,7 +56,13 @@ func hints_used() -> int:
 	return n
 
 
+func clock_started() -> bool:
+	return started_at > 0.0
+
+
 func remaining_s(now: float) -> float:
+	if not clock_started():
+		return float(duration_s)
 	return maxf(0.0, started_at + duration_s - now)
 
 

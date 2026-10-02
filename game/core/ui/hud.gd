@@ -198,6 +198,7 @@ func open_briefing() -> void:
 	text.text = EBMarkdown.to_bbcode(Game.manifest.briefing("intro_md")) + "\n\n[i]" + HELP + "[/i]"
 	p.body().add_child(text)
 	p.add_close_button("Start")
+	p.closed.connect(Game.start_clock)
 
 
 func show_end(won: bool) -> void:

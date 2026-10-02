@@ -20,6 +20,7 @@ func before_test() -> void:
 	auth.allow_unpositioned = true
 	auth.event_logged.connect(func(k: String, d: Dictionary) -> void: events.append([k, d]))
 	auth.setup(TestRoom.manifest(), room, "session-1")
+	auth.start_clock("p1")
 
 
 func act(path: String, verb: String, payload: Dictionary = {}, player: String = "p1") -> Dictionary:
@@ -204,3 +205,22 @@ func test_players_without_a_position_are_refused_on_a_real_server() -> void:
 	assert_dict(act("Note", "read", {}, "ghost")).contains_key_value("error", "out_of_reach")
 	auth.update_player_position("ghost", Vector3.ZERO)
 	assert_dict(act("Note", "read", {}, "ghost")).contains_key_value("ok", true)
+
+
+func test_clock_waits_for_the_briefing() -> void:
+	var room3: RoomRoot = auto_free(TestRoom.build())
+	add_child(room3)
+	var a: RoomAuthority = auto_free(RoomAuthority.new())
+	a.clock = func() -> float: return now
+	a.setup(TestRoom.manifest(), room3, "fresh")
+	now += 7200
+	a.tick()
+	assert_bool(a.state.timed_out).is_false()
+	assert_float(a.state.remaining_s(now)).is_equal(3600.0)
+	assert_int(a.state.hints_used()).is_equal(0)  # no auto-nudge before the start
+	a.start_clock("p1")
+	a.start_clock("p2")  # idempotent
+	assert_float(a.state.started_at).is_equal(now)
+	now += 3600
+	a.tick()
+	assert_bool(a.state.timed_out).is_true()

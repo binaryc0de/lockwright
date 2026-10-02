@@ -132,6 +132,11 @@ func request(node: EBNode, verb: String, payload: Dictionary = {}) -> Dictionary
 	return result
 
 
+func start_clock() -> void:
+	if authority:
+		authority.start_clock(local_player_id)
+
+
 func request_hint(puzzle_id: String) -> Dictionary:
 	return authority.request_hint(local_player_id, puzzle_id) if authority else {}
 

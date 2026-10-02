@@ -2,7 +2,7 @@
 
 Milestone checklist from PLAN.md Section 11. Check an item only when it was actually run; each milestone ends with a verification note saying what ran, where, and with which command. Untested things are listed as untested.
 
-**Current milestone: M1 (single-player room core).** M0 closed 2026-10-01. M1 code complete; waiting on the owner play-test and the Codex milestone review.
+**Current milestone: M1 (single-player room core).** M0 closed 2026-10-01. M1 code complete and reviewed; waiting on the owner play-test.
 
 ## M0: Repo and specs
 
@@ -39,7 +39,7 @@ Milestone checklist from PLAN.md Section 11. Check an item only when it was actu
 - [x] `tools/packroom` (export, sha256, catalog entry, `-verify` replays room tests from the pack alone)
 - [x] Codex adversarial review of the authority: 4 findings, all fixed with regression tests (ADR-0010)
 - [ ] Owner play-test: walk greybox Night Shift solo to the win screen in a window (not possible headless here, ADR-0003)
-- [ ] Codex milestone review of M1 triaged (running)
+- [x] Codex milestone review of M1 triaged: 3 findings (P2 clock started behind the briefing, P2 image-only documents blank on the evidence board, P3 keypad result overwritten), all fixed with tests; gdUnit4 now 53/53
 
 Deferred to later milestones, noted from the room build: camera move-in for focused views (M4 polish); in-world patch cable visuals (M4); "use UV torch on X" as an explicit intent (the reveal is passive, solution uses `examine`); MaglockGate is an Interactable that is never targetable; `godot --script` tools cannot reference SDK classes because the `Game` autoload is absent in that mode; Planned SDK nodes in ROOM_AUTHORING.md.
 

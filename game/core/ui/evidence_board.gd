@@ -71,7 +71,12 @@ func _show(i: int) -> void:
 	var bb := "[b]%s[/b]\n\n%s" % [doc.title, EBMarkdown.to_bbcode(doc.text_md)]
 	if not doc.back_text_md.is_empty():
 		bb += "\n\n[i](back)[/i]\n" + EBMarkdown.to_bbcode(doc.back_text_md)
-	_detail.text = bb
+	_detail.clear()
+	if doc.texture:
+		# Image-backed clues must stay readable from the board, not just in the room.
+		_detail.add_image(doc.texture, 540)
+		_detail.newline()
+	_detail.append_text(bb)
 
 
 func _add() -> void:
