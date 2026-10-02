@@ -132,6 +132,9 @@ Exact strings that must be legible, font feel (dot-matrix, laser-printed, handwr
 - **Export**: `bpy.ops.export_scene.gltf(export_format='GLB', export_apply=True, export_yup=True, export_animations=True, export_image_format='AUTO')`, selected objects only, no cameras/lights.
 - **Determinism**: same script + same Blender version = byte-identical GLB except timestamps. Use fixed seeds; avoid `bpy.ops` that depend on UI context (use low-level API or `bpy.context.temp_override`).
 - **No `.blend` as source**: `.blend` may be saved to `assets/cache/` for inspection; it is gitignored.
+- **Press / slide directions** (learned in the M0 smoke test): a wall or surface prop faces Godot -Z, so "into the surface" is **+Z** and "out of the surface" is -Z. Requests state motion in Godot axes with the words "into"/"out of" next to the sign.
+- **Collision helpers**: use `<name>-colonly` for an invisible collision-only helper and `-col` only when the visible mesh itself should also get collision. (keypad_4 used `body-col` for a separate helper box; Godot handled it, but new requests use `-colonly`.)
+- **Process hygiene**: `build_assets.sh` serialises Blender runs with `flock`, passes `--factory-startup --threads 4 -noaudio`, and `common/cli.py` exits Blender explicitly after all writes (Blender 5.2.2's own shutdown can stall headless). Do not remove these.
 
 ## 7. Printables (`tools/printables/`)
 
@@ -147,7 +150,7 @@ Fails the build if: triangles or texture sizes exceed the request; a required na
 ## 9. Feedback loop
 
 1. Codex finishes; the report lists deviations.
-2. Claude imports into Godot, wires the SDK node, screenshots in the greybox room.
+2. Claude imports into Godot (after a rebuild, delete the GLB's extracted `<asset>_T_*.png` files and their `.import` sidecars so Godot re-extracts current textures), wires the SDK node, adds or extends a headless gdUnit4 test in `game/tests/assets/`, and screenshots it with `game/tests/scenes/showcase.gd` when windowed rendering is allowed (ADR-0003).
 3. Accept: set request `Status: accepted`, close. Reject: append dated **Revision notes** with the screenshot path and precise, measurable asks ("buttons 2 mm too tall", "screen emissive too dim at 0.3 lux"), then resume the Codex task.
 4. Two rejections in a row on the same point means the request was unclear: Claude rewrites the request section instead of adding a third note.
 

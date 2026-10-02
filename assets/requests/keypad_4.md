@@ -1,6 +1,6 @@
 # keypad_4
 
-**Status:** open
+**Status:** accepted
 **Requested by:** Claude Code, 2026-10-01
 **Used in:** core library / SDK node `KeypadLock` (M0 smoke test; later reused on the Night Shift filing cabinet)
 **Class:** prop
@@ -14,7 +14,7 @@ A small surface-mounted electronic keypad lock of the kind bolted to a filing ca
 - Row layout top to bottom: `1 2 3` / `4 5 6` / `7 8 9` / `CLR 0 ENT`.
 - Display window above the keys: 0.050 W x 0.014 H, recessed 0.001.
 - Status LED: 0.004 diameter dome, top right corner above the display.
-- Pressed key travel: 0.0025 along the key's local -Z (into the plate) in Godot terms; Claude will animate this in-engine, so no animation is required in the GLB.
+- Pressed key travel: 0.0025 m **into the plate**, which is local **+Z** in Godot (keys face -Z). Claude animates this in-engine, so no animation is required in the GLB. (Corrected 2026-10-01; the first version of this request said -Z.)
 
 ## Style references
 - Brushed or bead-blasted dark grey zinc-alloy housing with four visible Torx screws at the corners, modern commercial access-control look (think budget office cabinet locks, 2015-2025 era).
@@ -53,11 +53,13 @@ None. Key press travel is done in Godot.
 Key legends: `0`-`9`, `CLR`, `ENT`. Bold sans-serif (e.g. DejaVu Sans Bold, which ships with Blender, or a stroke font built from geometry; do not depend on system fonts not present in Blender's bundle). Legend height ~6 mm for digits, ~3.5 mm for CLR/ENT. Small engraved model text on the housing below the keys: `KESTREL SECURE KP-4` at ~2 mm height (purely decorative; may be normal-map only).
 
 ## Acceptance
-- [ ] `tools/blender/build_assets.sh keypad_4` rebuilds the GLB headless from the script with no UI
-- [ ] `go run ./tools/assetcheck keypad_4` passes (if assetcheck is not yet available when you finish, say so in the report)
-- [ ] previews show front, iso, detail (detail = close-up legible key legends)
-- [ ] meta.json lists every named part above
-- [ ] in-engine screenshot by Claude attached in Revision notes
+- [x] `tools/blender/build_assets.sh keypad_4` rebuilds the GLB headless from the script with no UI
+- [x] `go run ./tools/assetcheck keypad_4` passes (if assetcheck is not yet available when you finish, say so in the report)
+- [x] previews show front, iso, detail (detail = close-up legible key legends)
+- [x] meta.json lists every named part above
+- [ ] in-engine screenshot by Claude attached in Revision notes (deferred: windowed rendering on the dev box is held back by ADR-0003; structure verified headless instead)
 
 ## Revision notes
 (Claude appends dated feedback here; Codex responds in assets/reports/keypad_4.md)
+
+**2026-10-01, Claude: accepted.** Reviewed `assets/reports/keypad_4.md` and all three previews: legends legible, row order correct, LED/screen separate. Independently rebuilt with `tools/blender/build_assets.sh keypad_4` (79 s, CPU): GLB SHA-256 `cf2aa3f9...b7cc5`, byte-identical to Codex's build. `go run ./tools/assetcheck keypad_4`: PASS (5674 tris, 16 parts). Godot 4.7.2 headless import + `game/tests/assets/test_keypad_4.gd`: 4/4 pass (12 key meshes, screen and LED meshes, keys in front of a back plate at z = 0, StaticBody3D collision). Codex correctly flagged that this request had the press direction backwards; fixed above. No revisions needed.
