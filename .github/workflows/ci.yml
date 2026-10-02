@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+env:
+  GODOT_VERSION: 4.7.2-stable   # ADR-0002
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install Godot ${{ env.GODOT_VERSION }}
+        run: |
+          curl -sSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
+          ln -s "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}_linux.x86_64" /usr/local/bin/godot
+          godot --headless --version
+
+      - name: All checks
+        run: tools/test.sh
+
+      - name: Upload gdUnit4 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gdunit-report
+          path: game/reports/
+          if-no-files-found: ignore
