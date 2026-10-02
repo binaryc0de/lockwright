@@ -40,7 +40,7 @@ Milestone checklist from PLAN.md Section 11. Check an item only when it was actu
 - [x] Codex adversarial review of the authority: 4 findings, all fixed with regression tests (ADR-0010)
 - [x] Look test (owner request after the greybox review): office corner (desk, whiteboard, filing cabinet) dressed with CC0 PBR materials, six Codex hero props, SDFGI lighting, fog and glow (ADR-0012). Before/after in `docs/screenshots/m1-looktest/` (`compare.png`); owner sign-off on the visual bar pending
 - [x] Full office dressing (owner request 2026-10-02): rendered and reviewed; before/after in `docs/screenshots/m1-office/` (`compare.png`); owner sign-off on the look pending
-- [ ] Owner play-test: walk greybox Night Shift solo to the win screen in a window (not possible headless here, ADR-0003)
+- [x] Owner play-test: Night Shift played solo to the win screen in a window, 2026-10-02 (dressed office, greybox cage), on the Alienware. Launched in dev mode (`godot --path game -- --room night_shift`, room loaded from `res://rooms/`); play from the `.pck` is covered by `packroom -verify` (solution replay), not by a human run
 - [x] Codex milestone review of M1 triaged: 3 findings (P2 clock started behind the briefing, P2 image-only documents blank on the evidence board, P3 keypad result overwritten), all fixed with tests; gdUnit4 now 53/53
 
 Deferred to later milestones, noted from the room build: camera move-in for focused views (M4 polish); in-world patch cable visuals (M4); "use UV torch on X" as an explicit intent (the reveal is passive, solution uses `examine`); MaglockGate is an Interactable that is never targetable; `godot --script` tools cannot reference SDK classes because the `Game` autoload is absent in that mode; Planned SDK nodes in ROOM_AUTHORING.md.
@@ -106,3 +106,8 @@ Not started.
 - Next: reboot; `tools/shots/looktest_views.sh docs/screenshots/m1-office/after` plus door/pinboard/clock views; check label sizes on the intercom, clock and keypad screens, the marker layer alignment with the UV box, and the emergency light aim; then commit screenshots and ask the owner for sign-off.
 - After the reboot (kernel 7.0.0-34, HDMI back at 3440x1440): `tools/shots/office_views.sh` rendered 10 viewpoints (the six look-test views plus exit wall, override keypad, intercom/clock, south wall) on `forward_plus on NVIDIA GeForce RTX 3080 Ti Laptop GPU`, no errors. "Before" rendered from a temporary worktree of `ea73a1b` (the greybox). One fix from review: the laptop login screen bloomed to white (emission 0.9 -> 0.3).
 - Seen in review, left for M4: the corridor's green light leaks along the ceiling seam above the exit door (SDFGI/thin-wall leak); the intercom LCD text is only readable close up; the cage partition (east wall) is still greybox; the NVIDIA suspend services on the dev laptop are still disabled.
+
+### 2026-10-02, owner play-test
+- Owner escaped Night Shift solo, windowed on the RTX 3080 Ti with a 3440x1440 HDMI monitor; the game window was the default 1600x900 (letterboxed), clock showed 44:25 left mid-run, around the CTF step.
+- Bug found: pressing Enter on an empty flag field showed "Flag rejected." (and would cost a rate-limited attempt once M3 lands). Fixed in `terminal_panel.gd` with a regression assertion in `test_hud_panels.gd`; gdUnit4 55/55. Commit 4f06bfb.
+- Not captured: total time, hints used, hesitation points (the game does not log solves or hints to disk yet). Owner to add if remembered.
