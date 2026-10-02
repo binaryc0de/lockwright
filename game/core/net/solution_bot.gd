@@ -13,6 +13,8 @@ const TIMEOUT_S := 90.0
 var first_step: int = 0
 var last_step: int = -1          # -1 = through the end
 var wait_for_win: bool = false
+## Value for submit_flag steps ("" = the offline dev flag).
+var flag_value: String = ""
 
 var _queue: Array = []
 var _busy := false
@@ -40,7 +42,24 @@ func _begin() -> void:
 	Game.start_clock()
 
 
+var _printed_cards := {}
+
+
+## Prints each challenge's connection card once (test scripts read it).
+func _print_cards() -> void:
+	var w := Game.world()
+	if w == null:
+		return
+	for id: String in w.challenges:
+		var h: Dictionary = w.challenges[id]
+		var line := "BOT: challenge %s url=%s note=%s" % [id, h.get("url", ""), h.get("note", "")]
+		if _printed_cards.get(id, "") != line:
+			_printed_cards[id] = line
+			print(line)
+
+
 func _process(delta: float) -> void:
+	_print_cards()
 	_deadline -= delta
 	if _deadline <= 0.0:
 		_finish(4, "timed out")
@@ -61,7 +80,7 @@ func _process(delta: float) -> void:
 	var entry: Array = _queue.pop_front()
 	var i: int = entry[0]
 	var step: Dictionary = entry[1]
-	var intent := SolutionPlayer.intent_for(step, Game._nodes, Game.vars())
+	var intent := SolutionPlayer.intent_for(step, Game._nodes, Game.vars(), flag_value if not flag_value.is_empty() else SolutionPlayer.DEV_FLAG)
 	if intent.has("error"):
 		_finish(2, "step %d: %s" % [i, intent["error"]])
 		return

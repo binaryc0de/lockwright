@@ -47,14 +47,20 @@ func start_remote(args: AppArgs) -> bool:
 	Game.net.client = client
 	client.status_changed.connect(_on_status)
 	if not args.bot:
-		_show_overlay("Connecting to %s:%d ..." % [args.connect_host, args.port])
+		_show_overlay("Joining game %s ..." % args.join_code if args.via_platform() else "Connecting to %s:%d ..." % [args.connect_host, args.port])
 	if args.bot:
 		_bot = SolutionBot.new()
 		_bot.first_step = args.bot_first_step
 		_bot.last_step = args.bot_last_step
 		_bot.wait_for_win = args.bot_wait_win
+		_bot.flag_value = args.bot_flag
 		add_child(_bot)
-	var err := client.open(args.connect_host, args.port, args.transport, args.server_token, Game.display_name)
+	var err: Error
+	if args.via_platform():
+		Game.join_code = args.join_code
+		err = client.open_platform(args.join_url, args.join_code, Game.display_name)
+	else:
+		err = client.open(args.connect_host, args.port, args.transport, args.server_token, Game.display_name)
 	if err != OK:
 		error = "Cannot connect to %s:%d (%s)." % [args.connect_host, args.port, error_string(err)]
 	return true
@@ -90,6 +96,8 @@ func _on_welcomed(info: Dictionary) -> void:
 		_spawn_player_and_hud()
 		_place_from_welcome(info)
 		hud.sync_end_state()
+		if not Game.join_code.is_empty():
+			hud.toast("Join code for friends: %s" % Game.join_code)
 
 
 ## Stand where the server says (rejoin keeps your place; the server rejects
@@ -104,7 +112,7 @@ func _place_from_welcome(info: Dictionary) -> void:
 
 
 func _on_rejected(reason: String) -> void:
-	error = "The server refused to let you in (%s)." % ("wrong invite password" if reason == "bad_token" else reason)
+	error = "The server refused to let you in (%s)." % ("wrong invite password or expired join ticket" if reason == "bad_token" else reason)
 	if hud:
 		hud.toast(error)
 	elif _bot == null:
@@ -113,6 +121,14 @@ func _on_rejected(reason: String) -> void:
 
 func _on_status(status: String, detail: String) -> void:
 	print("connection: %s %s" % [status, detail])
+	if status == "rejected" and room == null:
+		# Refused before the room loaded (e.g. a bad join code): back out.
+		error = "Could not join: %s" % detail
+		if _bot:
+			_bot._finish(3, error)
+		else:
+			leave()
+		return
 	if _overlay_label:
 		match status:
 			"connecting":

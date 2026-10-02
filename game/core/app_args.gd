@@ -17,7 +17,7 @@ enum Mode { CLIENT, SERVER }
 
 const VALUE_FLAGS: PackedStringArray = [
 	"session", "room", "pack", "port", "platform", "token", "transport",
-	"connect", "name", "snapshot", "bot-steps",
+	"connect", "name", "snapshot", "bot-steps", "join", "code", "bot-flag",
 ]
 
 var mode: Mode = Mode.CLIENT
@@ -26,17 +26,25 @@ var room_id: String = ""
 var pack_path: String = ""
 var port: int = 7777
 var platform_url: String = "http://127.0.0.1:8080"
+## True when --platform was given: the server reports to the platform (M3)
+## and --token is its server token, not a shared invite.
+var platform_set: bool = false
 var server_token: String = ""
 var transport: String = "enet"
 var smoke_test: bool = false
 ## Client: server to join ("" = play offline).
 var connect_host: String = ""
+## Client via the platform (M3): platform URL and the host's join code.
+var join_url: String = ""
+var join_code: String = ""
 var display_name: String = ""
 var snapshot_path: String = ""
 var bot: bool = false
 var bot_first_step: int = 0
 var bot_last_step: int = -1
 var bot_wait_win: bool = false
+## Flag the bot submits for submit_flag steps (M3 tests; "" = dev flag).
+var bot_flag: String = ""
 ## Server, tests only: accept teleporting positions (bots).
 var trust_positions: bool = false
 var errors: PackedStringArray = []
@@ -89,6 +97,7 @@ func _apply(key: String, value: String) -> void:
 				errors.append("--port must be 1-65535, got %s" % value)
 		"platform":
 			platform_url = value
+			platform_set = true
 		"token":
 			server_token = value
 		"connect":
@@ -103,12 +112,18 @@ func _apply(key: String, value: String) -> void:
 				errors.append("--connect needs a host")
 		"name":
 			display_name = value
+		"join":
+			join_url = AppArgs.platform_http_url(value)
+		"code":
+			join_code = value.strip_edges().to_upper()
 		"snapshot":
 			snapshot_path = value
 		"bot":
 			bot = true
 		"bot-wait-win":
 			bot_wait_win = true
+		"bot-flag":
+			bot_flag = value
 		"trust-positions":
 			trust_positions = true
 		"bot-steps":
@@ -132,12 +147,29 @@ func _validate() -> void:
 		for required: String in ["session", "room"]:
 			if get("%s_id" % required) == "":
 				errors.append("server mode requires --%s" % required)
-	if bot and connect_host.is_empty():
-		errors.append("--bot needs --connect")
+	if bot and connect_host.is_empty() and join_url.is_empty():
+		errors.append("--bot needs --connect or --join")
+	if not join_url.is_empty() and join_code.is_empty():
+		errors.append("--join needs --code")
 
 
 func is_remote_client() -> bool:
-	return mode == Mode.CLIENT and not connect_host.is_empty()
+	return mode == Mode.CLIENT and (not connect_host.is_empty() or not join_url.is_empty())
+
+
+func via_platform() -> bool:
+	return not join_url.is_empty()
+
+
+## "192.168.1.20" -> "http://192.168.1.20:8080"; keeps an explicit scheme/port.
+static func platform_http_url(addr: String) -> String:
+	var a := addr.strip_edges().trim_suffix("/")
+	if not a.begins_with("http://") and not a.begins_with("https://"):
+		a = "http://" + a
+	var hostpart := a.substr(a.find("//") + 2)
+	if not ":" in hostpart:
+		a += ":8080"
+	return a
 
 
 func is_server() -> bool:

@@ -76,6 +76,7 @@ func NewHandler(d *Deps) http.Handler {
 	mux.HandleFunc("POST /api/sessions", a.createSession)
 	mux.HandleFunc("GET /api/sessions/{id}", a.getSession)
 	mux.HandleFunc("POST /api/sessions/{id}/join", a.join)
+	mux.HandleFunc("POST /api/join", a.joinByCode)
 	mux.HandleFunc("POST /internal/sessions/{id}/verify", a.internal(a.verify))
 	mux.HandleFunc("GET /internal/sessions/{id}/snapshot", a.internal(a.getSnapshot))
 	mux.HandleFunc("PUT /internal/sessions/{id}/snapshot", a.internal(a.putSnapshot))
@@ -148,18 +149,42 @@ func (a *app) getSession(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type joinRequest struct {
+	DisplayName string `json:"display_name"`
+	InviteCode  string `json:"invite_code"`
+}
+
+// joinByCode is join for players who only have the code the host read out.
+func (a *app) joinByCode(w http.ResponseWriter, r *http.Request) {
+	var in joinRequest
+	if !readJSON(w, r, &in, maxBody) {
+		return
+	}
+	sess, err := a.d.Store.SessionByInvite(r.Context(), in.InviteCode)
+	if errors.Is(err, store.ErrNotFound) {
+		writeErr(w, http.StatusNotFound, "bad_invite", "No game uses that join code.")
+		return
+	}
+	if err != nil {
+		internalErr(w, err)
+		return
+	}
+	a.admit(w, r, sess, in)
+}
+
 func (a *app) join(w http.ResponseWriter, r *http.Request) {
 	sess, ok := a.session(w, r)
 	if !ok {
 		return
 	}
-	var in struct {
-		DisplayName string `json:"display_name"`
-		InviteCode  string `json:"invite_code"`
-	}
+	var in joinRequest
 	if !readJSON(w, r, &in, maxBody) {
 		return
 	}
+	a.admit(w, r, sess, in)
+}
+
+func (a *app) admit(w http.ResponseWriter, r *http.Request, sess store.Session, in joinRequest) {
 	name := strings.TrimSpace(in.DisplayName)
 	if name == "" || len([]rune(name)) > 24 {
 		writeErr(w, http.StatusBadRequest, "bad_name", "Pick a display name of 1-24 characters.")
@@ -181,7 +206,7 @@ func (a *app) join(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusServiceUnavailable, "server_unavailable", "The game server could not start. Try again in a moment.")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"host": a.d.AdvertiseHost, "port": port, "transport": a.d.Servers.Transport(), "join_token": token})
+	writeJSON(w, http.StatusOK, map[string]any{"session_id": sess.ID, "room_id": sess.RoomID, "host": a.d.AdvertiseHost, "port": port, "transport": a.d.Servers.Transport(), "join_token": token})
 }
 
 // --- internal (game server -> platform) -------------------------------------

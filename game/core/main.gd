@@ -87,23 +87,44 @@ func _run_server(args: AppArgs) -> void:
 	world.name = "ServerWorld"
 	add_child(world)
 	world.add_child(room)
-	var snap_path := args.snapshot_path
-	if snap_path.is_empty():
-		snap_path = "user://snapshots/%s.json" % args.session_id.validate_filename()
-	var store := SnapshotStore.new(ProjectSettings.globalize_path(snap_path))
+	var store: SnapshotStore
+	var verifier: JoinVerifier
+	var flags: FlagValidator = null
+	var platform: PlatformClient = null
+	if args.platform_set:
+		# M3: the platform owns join tokens, snapshots and flags (ADR-0018).
+		platform = PlatformClient.new(args.platform_url, args.session_id, args.server_token)
+		platform.name = "Platform"
+		add_child(platform)
+		store = PlatformSnapshotStore.new(platform)
+		verifier = PlatformJoinVerifier.new(platform)
+		flags = PlatformFlagValidator.new(platform)
+	else:
+		var snap_path := args.snapshot_path
+		if snap_path.is_empty():
+			snap_path = "user://snapshots/%s.json" % args.session_id.validate_filename()
+		store = SnapshotStore.new(ProjectSettings.globalize_path(snap_path))
+		verifier = JoinVerifier.new(args.server_token)
 	var snapshot := store.load_snapshot()
-	Game.start_server_session(loader.manifest, room, args.session_id, snapshot)
-	print("escapebox server: %s snapshot %s" % ["restored" if not snapshot.is_empty() else "fresh", store.path])
+	if snapshot.has("_error"):
+		push_error("cannot start: %s" % snapshot["_error"])
+		get_tree().quit(1)
+		return
+	Game.start_server_session(loader.manifest, room, args.session_id, snapshot, flags)
+	print("escapebox server: %s snapshot %s" % ["restored" if not snapshot.is_empty() else "fresh",
+		args.platform_url if platform else store.path])
 	var server := SessionServer.new()
 	server.name = "SessionServer"
 	server.session_id = args.session_id
 	server.room_id = loader.manifest.id
 	server.room_version = str(loader.manifest.data.get("version", ""))
 	server.trust_positions = args.trust_positions
+	server.platform = platform
+	server.idle_exit_s = 300.0 if platform else 0.0
 	if args.trust_positions:
 		print("escapebox server: WARNING --trust-positions (test mode): reach checks accept teleports")
 	add_child(server)
-	var err := server.start(args.port, args.transport, JoinVerifier.new(args.server_token), store)
+	var err := server.start(args.port, args.transport, verifier, store)
 	if err != OK:
 		push_error("cannot listen on port %d: %s" % [args.port, error_string(err)])
 		get_tree().quit(1)

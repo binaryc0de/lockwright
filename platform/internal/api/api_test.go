@@ -267,3 +267,15 @@ func TestChallengesWithoutDocker(t *testing.T) {
 		t.Fatalf("no docker: %d", resp.StatusCode)
 	}
 }
+
+func TestJoinByCode(t *testing.T) {
+	e := setup(t)
+	sess := e.newSession(t)
+	code, out := e.call(t, "POST", "/api/join", "", map[string]string{"display_name": "Sam", "invite_code": strings.ToLower(sess.InviteCode)})
+	if code != 200 || out["session_id"] != sess.ID || out["room_id"] != "night_shift" || out["join_token"] == "" {
+		t.Fatalf("join by code: %d %v", code, out)
+	}
+	if code, out := e.call(t, "POST", "/api/join", "", map[string]string{"display_name": "Sam", "invite_code": "QQQQQQ"}); code != 404 || out["error"] != "bad_invite" {
+		t.Fatalf("unknown code: %d %v", code, out)
+	}
+}

@@ -42,6 +42,8 @@ const ERROR_TEXT := {
 
 var mode: Mode = Mode.NONE
 var local_player_id: String = "p1"
+## M3: the platform join code friends use to join this game ("" offline).
+var join_code: String = ""
 var display_name: String = "Player"
 var manifest: RoomManifest
 var room: RoomRoot

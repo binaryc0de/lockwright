@@ -294,6 +294,12 @@ func activate(target_path: String) -> void:
 	t._server_activate()
 
 
+## Connection handles from the platform's challenge start (PLAN.md 7.6 step 3).
+func set_challenge_handles(handles: Dictionary) -> void:
+	state.challenges = handles.duplicate(true)
+	event_logged.emit("challenges_ready", {"challenges": handles.keys()})
+
+
 func narrate(text: String) -> void:
 	narrated.emit(text)
 

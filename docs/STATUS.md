@@ -66,7 +66,21 @@ Started 2026-10-02 on branch `m2-multiplayer` (design: ADR-0015).
 - [x] Main menu "Join a game server" form (address, invite password, WebSocket option; remembers the last server) and a "Connecting..." screen with Cancel; a wrong password returns to the menu with the reason
 
 ## M3: Platform service and CTF orchestration
-Starting 2026-10-02. Docker access decided (ADR-0017): docker group on the dev laptop, rootless on the LAN host in M5. Waiting on the owner to run `sudo usermod -aG docker $USER` and log in again.
+Started 2026-10-02 on branch `m3-platform` (design: ADR-0018; Docker access: ADR-0017).
+- [x] SQLite store (`modernc.org/sqlite`): sessions, players, single-use join tokens (60 s), snapshots, events, flag attempts, challenge instances
+- [x] Flags: per-instance HMAC flags, static SHA-256 flags, constant-time checks, 10 wrong/min then doubling cooldown, attempts logged without values
+- [x] Docker Engine client (stdlib, `DOCKER_HOST`) with hardened containers: cap_drop ALL, no-new-privileges, read-only rootfs + tmpfs, pids/mem/CPU limits, internal (no egress) per-session network
+- [x] Orchestrator: image build with content-hash tags, health wait, LAN TCP proxy on 20000-20999, idempotent start, full teardown and start-up cleanup
+- [x] Session manager: one headless game server per session (7777-7799), idle exit, crash restart (max 3 per 10 min)
+- [x] HTTP API: catalog, sessions (create/get/join, join by code), internal verify/snapshot/events/flags/challenges/finished, per-session server tokens
+- [x] Game server in platform mode: platform join verification (async), snapshot load/save, events batched every 2 s, flag checks, challenge handles on the connection card, finish report, idle exit after 5 minutes
+- [x] Client joins with platform address + join code; fresh join ticket on every reconnect; bad code returns to the menu
+- [x] Kestrel Intranet challenge (Go, stdlib, scratch image, uid 65534): login with room credentials, IDOR on `?id=`, flag from `$FLAG`
+- [x] `tools/m3_smoke.sh` (in `tools/test.sh`): platform + spawned game servers + join-code bots + flag + game-server crash/restore + recorded win + bad code
+- [ ] Real Docker run: build the intranet image, attack it with curl, end-to-end with containers (waiting on the owner's `sudo usermod -aG docker $USER` + re-login)
+- [ ] `docker compose up` (platform + challenge images) per PLAN.md M3 acceptance
+- [ ] Main menu "Join code" / "Host a game" on the platform (CLI works today)
+- [ ] Codex review of the branch
 
 ## M4: Night Shift content and polish
 Pulled forward at the owner's request (2026-10-02), on branch `m4-cage-dressing`:
@@ -145,3 +159,10 @@ Not started.
 - Not verified: anything visual or interactive in multiplayer (avatars, HUD toasts, two windows at once), a second physical machine, the 60 fps target with avatars.
 - Join UI (2026-10-02): `tests/ui/test_join_flow.gd` (3 tests: form builds the same args as the CLI, bad input shown, overlay appears and Cancel closes the connection). Windowed captures of the menu and the connecting screen on the Alienware showed a layout bug inherited from M1 (menu drawn off the top-left, background not filling the window; anchors set without offsets); fixed with full-rect CenterContainers. `tools/m2_smoke.sh` now holds 3 clients at once (Carol, Erin, Alice). `tools/test.sh` exit 0, gdUnit4 66/66.
 - Review fixes (2026-10-02): `tools/test.sh` exit 0; gdUnit4 70/70 (4 new regression tests); `tools/m2_smoke.sh` PASS with `--trust-positions` on the test server.
+
+### 2026-10-02, M3 platform (branch m3-platform; Docker not yet accessible to the user)
+- `go test -race ./platform/...`: 7 packages pass (api 6 tests incl. join/verify/token reuse/foreign server token, flags with the 10-wrong cooldown and no echo of values, snapshots/events/challenges/finish, join by code, no-Docker 503; docker client against a fake Engine incl. hardening fields and unix socket; orchestrator with a fake Engine and a real proxied HTTP server incl. rollback, path confinement, rebuild on edit, cleanup; sessions with fake processes incl. idle, crash limit, intentional stop; store; rooms against the real night_shift room.json).
+- Intranet challenge: `go test` 5 tests (health, wrong creds, forged cookie, intended IDOR path, flag only on ticket 1040, escaping).
+- `tools/m3_smoke.sh` PASS without Docker: platform spawned the game server, Alice joined by code (platform-issued player id), server killed with -9 and restarted by the platform from its stored snapshot, Bob joined and won with the flag (computed from the platform secret because no container could run), platform recorded the win, flag value absent from the platform log, a wrong code returned exit 3.
+- `tools/test.sh` exit 0: gdUnit4 70/70, pack replay, m2 and m3 smoke.
+- Not verified: anything involving real containers (image build, internal network reachability from the host, proxy to a container, rootless Docker), Windows clients, a second machine against the platform.

@@ -21,6 +21,16 @@ var store: SnapshotStore
 ## Test-only (--trust-positions): accept teleports so headless bots can stand
 ## at each target. Never set on a server real players use.
 var trust_positions := false
+## M3: the platform this server reports to (null = standalone M2 server).
+var platform: PlatformClient = null
+## Exit (code 0, after a final snapshot) once nobody has been connected for
+## this long; 0 disables (PLAN.md 7.3: 300 s under the platform).
+var idle_exit_s := 0.0
+
+const EVENT_FLUSH_S := 2.0
+var _events: Array = []
+var _events_t := 0.0
+var _idle_t := 0.0
 
 ## peer id -> {id: player id, name: display name}
 var players: Dictionary = {}
@@ -70,6 +80,10 @@ func start(port: int, transport: String, p_verifier: JoinVerifier, p_store: Snap
 	_auth.narrated.connect(func(t: String) -> void: _queue_event(0, "narrated", {"text": t}))
 	_auth.time_up.connect(func() -> void: _queue_event(0, "time_up", {}))
 	_auth.session_finished.connect(func(won: bool) -> void: _queue_event(0, "session_finished", {"won": won}))
+	if platform:
+		_auth.event_logged.connect(_on_event_logged)
+		_auth.session_finished.connect(_report_finished)
+		_start_challenges()
 	print("escapebox server: session %s room %s listening on %s:%d" % [session_id, room_id, transport, port])
 	return OK
 
@@ -88,7 +102,12 @@ func stop() -> void:
 func on_join(peer: int, token: String, display_name: String) -> void:
 	if players.has(peer):
 		return
-	var v := verifier.verify(token)
+	verifier.verify_async(token, func(v: Dictionary) -> void: _complete_join(peer, display_name, v))
+
+
+func _complete_join(peer: int, display_name: String, v: Dictionary) -> void:
+	if players.has(peer) or not peer in multiplayer.get_peers():
+		return  # joined twice, or left while the platform was answering
 	if not v.get("ok", false):
 		_net.rpc_rejected.rpc_id(peer, v.get("reason", "rejected"))
 		print("join rejected for peer %d: %s" % [peer, v.get("reason")])
@@ -97,7 +116,9 @@ func on_join(peer: int, token: String, display_name: String) -> void:
 			if multiplayer.multiplayer_peer and not players.has(peer):
 				multiplayer.multiplayer_peer.disconnect_peer(peer))
 		return
-	var pid := _unique_player_id(display_name)
+	if not str(v.get("display_name", "")).is_empty():
+		display_name = str(v["display_name"])
+	var pid := _unique_player_id(display_name if str(v.get("player_id", "")).is_empty() else str(v["player_id"]))
 	players[peer] = {"id": pid, "name": display_name.strip_edges().left(32)}
 	# The server decides where a (re)joining player stands: where they were
 	# last seen this server lifetime, else the spawn point.
@@ -248,6 +269,64 @@ func _process(delta: float) -> void:
 	if _save_period_t >= SNAPSHOT_PERIOD_S:
 		_save_period_t = 0.0
 		_save_now()
+	if platform:
+		_events_t += delta
+		if _events_t >= EVENT_FLUSH_S:
+			_events_t = 0.0
+			_flush_events()
+	if idle_exit_s > 0.0:
+		_idle_t = _idle_t + delta if players.is_empty() else 0.0
+		if _idle_t >= idle_exit_s:
+			_idle_exit()
+
+
+# --- Platform (M3) ------------------------------------------------------------
+
+func _start_challenges() -> void:
+	platform.request_async(HTTPClient.METHOD_POST, platform.internal_path("challenges/start"), {}, func(code: int, data: Variant) -> void:
+		if code == 200 and data is Dictionary and data.get("handles") is Dictionary:
+			_auth.set_challenge_handles(data["handles"])
+			print("challenges ready: %s" % ", ".join(PackedStringArray(data["handles"].keys())))
+		else:
+			var reason: String = data.get("message", "") if data is Dictionary else ""
+			push_warning("challenge start failed (HTTP %d) %s" % [code, reason])
+			var notes := {}
+			for c: Dictionary in Game.manifest.challenges:
+				notes[c["id"]] = {"note": "This challenge's service is unavailable right now (%s). Tell the host." % (reason if not reason.is_empty() else "no answer from the platform")}
+			_auth.set_challenge_handles(notes), 600.0)
+
+
+func _on_event_logged(kind: String, data: Dictionary) -> void:
+	_events.append({"at": _auth.clock.call(), "kind": kind, "player_id": str(data.get("player", "")), "data": data})
+
+
+func _flush_events() -> void:
+	if _events.is_empty():
+		return
+	var batch := _events
+	_events = []
+	platform.request_async(HTTPClient.METHOD_POST, platform.internal_path("events"), batch, func(code: int, _d: Variant) -> void:
+		if code != 204:
+			_events = batch + _events  # keep them for the next flush
+			push_warning("event upload failed (HTTP %d)" % code))
+
+
+func _report_finished(won: bool) -> void:
+	var s := _auth.state
+	platform.request_async(HTTPClient.METHOD_POST, platform.internal_path("finished"),
+		{"win": won, "elapsed_s": int(maxf(0.0, s.finished_at - s.started_at)), "hints_used": s.hints_used()}, Callable())
+
+
+func _idle_exit() -> void:
+	print("no players for %d s: saving and exiting (idle stop)" % int(idle_exit_s))
+	idle_exit_s = 0.0
+	if platform:
+		_flush_events()
+	if store is PlatformSnapshotStore:
+		(store as PlatformSnapshotStore).save_blocking(_auth.snapshot())
+	elif store:
+		store.save(_auth.snapshot())
+	get_tree().quit(0)
 
 
 func _mark_dirty() -> void:

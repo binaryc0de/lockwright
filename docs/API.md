@@ -14,13 +14,14 @@ Conventions:
 |---|---|---|---|
 | GET | `/healthz` | M0 | Liveness: `{"status":"ok"}` |
 | GET | `/api/version` | M0 | `{"platform":"0.1.0"}`; room packs' `requires.platform` is matched against it |
-| GET | `/api/catalog` | M3 | Room packs: `[{room_id, title, version, duration_minutes, players, pack_url, sha256, size}]` |
+| GET | `/api/catalog` | M3 | Installed rooms: `[{room_id, title, version, duration_minutes, players: [min, max], challenges}]` (pack download fields arrive with `/download` in M5) |
 | POST | `/api/sessions` | M3 | Create a session: `{room_id}` -> `{session_id, invite_code}`. LAN prototype: anyone on the LAN may create. |
 | GET | `/api/sessions/{id}` | M3 | `{session_id, room_id, status: idle|starting|running|finished, players: [display_name], started_at, duration_minutes}` |
-| POST | `/api/sessions/{id}/join` | M3 | `{display_name, invite_code}` -> `{host, port, transport: "enet"|"ws", join_token}`. Starts or restores the game server if it is idle (PLAN.md 7.3, 7.4). `join_token` is single-use, 60 s TTL. |
+| POST | `/api/sessions/{id}/join` | M3 | `{display_name, invite_code}` -> `{session_id, room_id, host, port, transport: "enet"|"ws", join_token}`. Starts or restores the game server if it is idle (PLAN.md 7.3, 7.4). `join_token` is single-use, 60 s TTL; clients fetch a new one for every (re)connect. |
+| POST | `/api/join` | M3 | Same as above with only the join code: `{display_name, invite_code}`. Codes are unique among unfinished sessions; 404 `bad_invite` otherwise. This is what the game client uses. |
 | GET | `/download/version.json` | M5 | `{client_version, files: {linux, windows}}` for the client update check |
-| GET | `/download/{file}` | M3 | Client zips and room packs (`*.pck`), served from the platform data dir |
-| GET | `/api/files/{token}` | M3 | One-time download of a room-provided file (e.g. Night Shift's `shadow.bak`); token minted by the game server |
+| GET | `/download/{file}` | M5 | Client zips and room packs (`*.pck`), served from the platform data dir |
+| GET | `/api/files/{token}` | later | One-time download of a room-provided file (e.g. Night Shift's `shadow.bak`); token minted by the game server. Not built: the USB stick is decorative in the prototype (PLAN.md 10) |
 
 ## Internal (game server -> platform)
 
@@ -31,9 +32,9 @@ Conventions:
 | PUT | `/internal/sessions/{id}/snapshot` | M3 | Store the latest snapshot (PLAN.md 7.3: on every world-state change and every 30 s) |
 | POST | `/internal/sessions/{id}/events` | M3 | Append `[{at, kind, player_id?, data}]` to `session_events` (puzzle solved, hint revealed, item picked up, ...) |
 | POST | `/internal/sessions/{id}/flags` | M3 | `{challenge_id, value, player_id}` -> `{accepted: bool, retry_after_s?: int}`. Constant-time compare against the per-instance HMAC flag or static hash; 10 wrong/min/team then escalating cooldown (429 with `retry_after_s`). Every attempt is logged without the value. |
-| POST | `/internal/sessions/{id}/challenges/start` | M3 | `{challenges: [<ctf.challenges entries from room.json>]}` -> `{handles: {challenge_id: {url?, host, port, terminal_token?}}}`. Creates the per-session network, generates or reuses per-instance flags, starts hardened containers, waits for health checks. Idempotent per session. |
+| POST | `/internal/sessions/{id}/challenges/start` | M3 | Body ignored: the platform reads the session room's challenges from its own `room.json`. -> `{handles: {challenge_id: {url?, host, port}}}`. Builds images if needed, creates the per-session internal network, starts hardened containers with per-instance flags, waits for health checks, opens proxy ports (ADR-0018). Idempotent per session. 503 `docker_unavailable` if Docker is not reachable. |
 | POST | `/internal/sessions/{id}/challenges/stop` | M3 | Tear down the session's containers and network. Flags stay in the store. |
-| POST | `/internal/sessions/{id}/files` | M3 | `{room_file}` -> `{download_url}` one-time link for `/api/files/{token}` |
+| POST | `/internal/sessions/{id}/files` | later | `{room_file}` -> `{download_url}` one-time link for `/api/files/{token}` (with `/api/files`) |
 | POST | `/internal/sessions/{id}/finished` | M3 | `{win: bool, elapsed_s, hints_used}` marks the session finished |
 
 ## Session manager (not HTTP)
@@ -62,3 +63,9 @@ Launch: `godot --headless --path game -- --server --session <id> --room <room_id
 | server -> client | `rpc_roster({player_id: {name, pos, yaw}})` | unreliable ordered, 15 Hz | everyone's position |
 
 Snapshots are written to `--snapshot` (default `user://snapshots/<session>.json`) 0.5 s after a change and every 30 s, and restored at start (M3: posted to the platform instead).
+
+## Running the platform (M3)
+
+`go run ./platform/cmd/platform -data data -rooms game/rooms -game game -godot godot` from the repo root. Flags: `-addr :8080`, `-advertise <LAN IP>` (default: auto-detected), `-game-ports 7777-7799`, `-challenge-ports 20000-20999`, `-transport enet|ws`, `-platform-url` (how game servers reach the platform, default `http://127.0.0.1:<port>`). `-test-trust-positions` is for `tools/m3_smoke.sh` only. The data directory holds `platform.db` and `secret.key` (0600; per-instance flags derive from it). Docker is optional at start-up: without it, challenge start returns 503 and the room's connection card says so.
+
+Players join with the game's main menu (platform address + join code) or `godot --path game -- --join <platform address> --code <CODE> --name <name>`. Create a game with `curl -X POST <platform>/api/sessions -d '{"room_id":"night_shift"}'` (menu button pending).

@@ -13,11 +13,30 @@ var port: int = 7777
 var transport: String = "enet"
 var token: String = ""
 var display_name: String = "Player"
+## M3: when set, every connection attempt first asks the platform for a
+## fresh single-use join token (and the game server's address) with the code.
+var platform_url: String = ""
+var join_code: String = ""
+## Filled from the platform's answer.
+var session_id: String = ""
+var room_id: String = ""
+var _platform: PlatformClient = null
 
 var _joined := false
 var _closing := false
 var _retry_t := -1.0
 var _wired := false
+
+
+## Joins through the platform with the host's join code.
+func open_platform(p_url: String, p_code: String, p_name: String) -> Error:
+	platform_url = p_url
+	join_code = p_code
+	if _platform == null:
+		_platform = PlatformClient.new(p_url)
+		_platform.name = "Platform"
+		add_child(_platform)
+	return open("", 0, "enet", "", p_name)
 
 
 func open(p_host: String, p_port: int, p_transport: String, p_token: String, p_name: String) -> Error:
@@ -59,6 +78,35 @@ func close() -> void:
 
 
 func _connect() -> Error:
+	if not platform_url.is_empty():
+		_fetch_ticket()
+		return OK
+	return _connect_direct()
+
+
+func _fetch_ticket() -> void:
+	status_changed.emit("connecting", platform_url)
+	_platform.request_async(HTTPClient.METHOD_POST, "/api/join", {"invite_code": join_code, "display_name": display_name},
+		func(code: int, data: Variant) -> void:
+			if _closing:
+				return
+			if code == 200 and data is Dictionary:
+				host = str(data["host"])
+				port = int(data["port"])
+				transport = str(data.get("transport", "enet"))
+				token = str(data["join_token"])
+				session_id = str(data.get("session_id", ""))
+				room_id = str(data.get("room_id", ""))
+				_connect_direct()
+			elif code in [400, 403, 404]:
+				_closing = true
+				var msg: String = data.get("message", "join refused") if data is Dictionary else "join refused"
+				status_changed.emit("rejected", msg)
+			else:
+				_schedule_retry("platform not reachable at %s" % platform_url), 10.0)
+
+
+func _connect_direct() -> Error:
 	var err: Error
 	var peer: MultiplayerPeer
 	if transport == "ws":

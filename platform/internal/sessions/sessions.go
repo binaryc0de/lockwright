@@ -36,6 +36,8 @@ type Config struct {
 	Transport   string // "enet" | "ws"
 	// PackFor returns the --pack path for a room ("" = load from the game's rooms/).
 	PackFor func(roomID string) string
+	// ExtraArgs are appended to every game server's arguments (tests only).
+	ExtraArgs []string
 }
 
 // Process is a running game server (os/exec in production, fakes in tests).
@@ -118,6 +120,7 @@ func (m *Manager) startLocked(ctx context.Context, sess store.Session) (int, err
 			args = append(args, "--pack", pack)
 		}
 	}
+	args = append(args, m.cfg.ExtraArgs...)
 	p, err := m.launch(context.WithoutCancel(ctx), append(append([]string{}, m.cfg.Command...), args...))
 	if err != nil {
 		return 0, fmt.Errorf("start game server: %w", err)

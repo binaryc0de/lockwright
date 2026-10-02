@@ -11,6 +11,12 @@ func _init(p_invite_token: String = "") -> void:
 	invite_token = p_invite_token
 
 
+## Asynchronous form used by the server; calls back with the same result as
+## verify(), plus optional player_id/display_name from the platform.
+func verify_async(token: String, on_done: Callable) -> void:
+	on_done.call(verify(token))
+
+
 ## Returns {ok: true} or {ok: false, reason}.
 func verify(token: String) -> Dictionary:
 	if invite_token.is_empty() or token == invite_token:

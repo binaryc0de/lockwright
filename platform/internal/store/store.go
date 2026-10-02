@@ -183,21 +183,56 @@ func (s *Store) migrate(ctx context.Context) error {
 
 // CreateSession makes a new idle session with a fresh id, invite code and server token.
 func (s *Store) CreateSession(ctx context.Context, roomID string) (Session, error) {
+	code, err := s.freeInviteCode(ctx)
+	if err != nil {
+		return Session{}, err
+	}
 	sess := Session{
 		ID:          RandomID(12),
 		RoomID:      roomID,
-		InviteCode:  InviteCode(),
+		InviteCode:  code,
 		ServerToken: RandomHex(32),
 		Status:      StatusIdle,
 		CreatedAt:   s.now().UTC().Truncate(time.Second),
 	}
-	_, err := s.db.ExecContext(ctx,
+	_, err = s.db.ExecContext(ctx,
 		`INSERT INTO sessions (id, room_id, invite_code, server_token, status, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
 		sess.ID, sess.RoomID, sess.InviteCode, sess.ServerToken, sess.Status, sess.CreatedAt.Unix())
 	if err != nil {
 		return Session{}, fmt.Errorf("create session: %w", err)
 	}
 	return sess, nil
+}
+
+// freeInviteCode returns a code no unfinished session uses, so a code alone
+// identifies the game to join.
+func (s *Store) freeInviteCode(ctx context.Context) (string, error) {
+	for i := 0; i < 20; i++ {
+		code := InviteCode()
+		var n int
+		if err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM sessions WHERE invite_code = ? AND status != ?`, code, StatusFinished).Scan(&n); err != nil {
+			return "", err
+		}
+		if n == 0 {
+			return code, nil
+		}
+	}
+	return "", errors.New("could not find a free invite code")
+}
+
+// SessionByInvite returns the newest session with this invite code
+// (case-insensitive), or ErrNotFound.
+func (s *Store) SessionByInvite(ctx context.Context, code string) (Session, error) {
+	var id string
+	err := s.db.QueryRowContext(ctx, `SELECT id FROM sessions WHERE invite_code = ? ORDER BY created_at DESC, rowid DESC LIMIT 1`,
+		strings.ToUpper(strings.TrimSpace(code))).Scan(&id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Session{}, ErrNotFound
+	}
+	if err != nil {
+		return Session{}, err
+	}
+	return s.Session(ctx, id)
 }
 
 // Session returns one session.

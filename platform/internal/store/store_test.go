@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -146,5 +147,18 @@ func TestInviteCodesAvoidAmbiguousCharacters(t *testing.T) {
 				t.Fatalf("ambiguous character %q", c)
 			}
 		}
+	}
+}
+
+func TestSessionByInvite(t *testing.T) {
+	ctx := context.Background()
+	s := open(t)
+	a, _ := s.CreateSession(ctx, "r")
+	got, err := s.SessionByInvite(ctx, " "+strings.ToLower(a.InviteCode)+" ")
+	if err != nil || got.ID != a.ID {
+		t.Fatalf("by invite: %+v %v", got, err)
+	}
+	if _, err := s.SessionByInvite(ctx, "ZZZZZZ"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("unknown code err %v", err)
 	}
 }

@@ -45,3 +45,6 @@ done
 
 step "multiplayer smoke (server + bots + crash/restore + ws, ADR-0015)"
 GODOT="$GODOT" tools/m2_smoke.sh
+
+step "platform smoke (platform + game servers + bots + flag + crash restart, ADR-0018)"
+GODOT="$GODOT" tools/m3_smoke.sh

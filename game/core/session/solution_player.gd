@@ -12,7 +12,7 @@ const DEV_FLAG := "solution-player-dev-flag"
 ## Returns {path, verb, payload} for a step, {} for observation-only steps
 ## (examining something that is not a Document), or {error} if the step names
 ## something the room does not have. `nodes` maps eb_path -> EBNode.
-static func intent_for(step: Dictionary, nodes: Dictionary, vars: Dictionary) -> Dictionary:
+static func intent_for(step: Dictionary, nodes: Dictionary, vars: Dictionary, flag_value: String = DEV_FLAG) -> Dictionary:
 	match step.get("act"):
 		"interact":
 			var payload := {}
@@ -30,7 +30,7 @@ static func intent_for(step: Dictionary, nodes: Dictionary, vars: Dictionary) ->
 			var t := terminal_path(nodes, str(step["challenge"]))
 			if t.is_empty():
 				return {"error": "no Terminal for challenge %s" % step["challenge"]}
-			return {"path": t, "verb": "submit_flag", "payload": {"value": DEV_FLAG}}
+			return {"path": t, "verb": "submit_flag", "payload": {"value": flag_value}}
 		"examine", "use":
 			var target := str(step.get("node", step.get("target", "")))
 			if nodes.get(target) is Document:
