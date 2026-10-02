@@ -52,6 +52,11 @@ bot alice.log Alice --bot-steps 0-8; rc=$?
 
 say "capture the flag"
 CARD=$(grep -o 'BOT: challenge intranet url=[^ ]*' "$WORK/alice.log" | tail -1 | sed 's/.*url=//')
+if [ $DOCKER -eq 1 ] && [ -z "$CARD" ]; then
+	say "waiting for the challenge container (a first run builds the image)"
+	bot watcher.log Watcher --bot-steps 1-0 --bot-wait-card
+	CARD=$(grep -o 'BOT: challenge intranet url=[^ ]*' "$WORK/watcher.log" | tail -1 | sed 's/.*url=//')
+fi
 if [ $DOCKER -eq 1 ] && [ -n "$CARD" ]; then
 	say "attacking $CARD with curl (login + IDOR)"
 	curl -fs -c "$WORK/jar" -b "$WORK/jar" -o /dev/null -X POST --data-urlencode "username=mreyes" --data-urlencode 'password=Kestrel#2019' "${CARD}login" || bad "intranet login failed"
@@ -63,6 +68,22 @@ else
 	FLAG=$(go run ./platform/cmd/flagcalc -secret "$WORK/data/secret.key" -session "$SID" -challenge intranet)
 fi
 [ -n "$FLAG" ] || bad "no flag captured"
+
+if [ $DOCKER -eq 1 ]; then
+	say "check the live container's hardening"
+	CID=$(docker ps -q --filter "label=escapebox.session=$SID" | head -1)
+	if [ -z "$CID" ]; then
+		bad "no running challenge container for session $SID"
+	else
+		docker inspect "$CID" > "$WORK/container.json"
+		jq -e '.[0].HostConfig | (.CapDrop == ["ALL"]) and (.SecurityOpt | index("no-new-privileges:true") != null) and .ReadonlyRootfs and (.Privileged | not) and (.Memory == 268435456) and (.NanoCpus == 500000000) and (.PidsLimit == 128) and ((.PortBindings // {}) | length == 0)' "$WORK/container.json" >/dev/null || bad "container hardening not as specified: $(jq -c '.[0].HostConfig | {CapDrop,SecurityOpt,ReadonlyRootfs,Privileged,Memory,NanoCpus,PidsLimit,PortBindings}' "$WORK/container.json")"
+		[ "$(jq -r '.[0].Config.User' "$WORK/container.json")" = "65534:65534" ] || bad "container does not run as uid 65534"
+		NET=$(jq -r '.[0].HostConfig.NetworkMode' "$WORK/container.json")
+		[ "$(docker network inspect -f '{{.Internal}}' "$NET")" = "true" ] || bad "session network $NET is not internal (egress possible)"
+		jq -r '.[0].Config.Env[]' "$WORK/container.json" | grep -q "^FLAG=" || bad "flag not injected"
+		docker image inspect "$(jq -r '.[0].Config.Image' "$WORK/container.json")" | grep -q "FLAG{" && bad "a flag is baked into the image"
+	fi
+fi
 
 say "kill the game server; the platform restarts it from the snapshot"
 GPID=$(pgrep -f -- "--session $SID" | head -1)
@@ -87,6 +108,13 @@ grep -qF -- "$FLAG" "$WORK/platform.log" && bad "the flag value appears in the p
 say "a wrong join code is refused"
 "$GODOT" --headless --path game -- --join "$URL" --code ZZZZZZ --name Mallory --bot > "$WORK/mallory.log" 2>&1; rc=$?
 [ $rc -eq 3 ] || bad "Mallory exited $rc, want 3"
+
+if [ $DOCKER -eq 1 ]; then
+	say "challenge torn down after the win"
+	for _ in $(seq 1 40); do [ -z "$(docker ps -aq --filter "label=escapebox.session=$SID")" ] && break; sleep 0.25; done
+	[ -z "$(docker ps -aq --filter "label=escapebox.session=$SID")" ] || bad "challenge container still exists after the win"
+	[ -z "$(docker network ls -q --filter "label=escapebox.session=$SID")" ] || bad "session network still exists after the win"
+fi
 
 if [ $FAIL -eq 0 ]; then say "PASS (logs in $WORK)"; else say "FAILED (logs in $WORK)"; fi
 exit $FAIL

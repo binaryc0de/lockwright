@@ -45,6 +45,8 @@ var bot_last_step: int = -1
 var bot_wait_win: bool = false
 ## Flag the bot submits for submit_flag steps (M3 tests; "" = dev flag).
 var bot_flag: String = ""
+## Bot stays until a challenge's connection card shows an address (M3 tests).
+var bot_wait_card: bool = false
 ## Server, tests only: accept teleporting positions (bots).
 var trust_positions: bool = false
 var errors: PackedStringArray = []
@@ -124,6 +126,8 @@ func _apply(key: String, value: String) -> void:
 			bot_wait_win = true
 		"bot-flag":
 			bot_flag = value
+		"bot-wait-card":
+			bot_wait_card = true
 		"trust-positions":
 			trust_positions = true
 		"bot-steps":

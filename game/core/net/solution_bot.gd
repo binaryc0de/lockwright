@@ -15,6 +15,8 @@ var last_step: int = -1          # -1 = through the end
 var wait_for_win: bool = false
 ## Value for submit_flag steps ("" = the offline dev flag).
 var flag_value: String = ""
+## Stay until some challenge's connection card has a URL (its container is up).
+var wait_for_card: bool = false
 
 var _queue: Array = []
 var _busy := false
@@ -58,6 +60,15 @@ func _print_cards() -> void:
 			print(line)
 
 
+func _has_card_url() -> bool:
+	var w := Game.world()
+	if w:
+		for id: String in w.challenges:
+			if not str(w.challenges[id].get("url", "")).is_empty():
+				return true
+	return false
+
+
 func _process(delta: float) -> void:
 	_print_cards()
 	_deadline -= delta
@@ -70,6 +81,8 @@ func _process(delta: float) -> void:
 	if _delay > 0.0:
 		return
 	if _queue.is_empty():
+		if wait_for_card and not _has_card_url():
+			return
 		if wait_for_win:
 			if not (Game.world() and Game.world().won):
 				return

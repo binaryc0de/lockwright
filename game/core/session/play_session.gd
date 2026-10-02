@@ -54,6 +54,7 @@ func start_remote(args: AppArgs) -> bool:
 		_bot.last_step = args.bot_last_step
 		_bot.wait_for_win = args.bot_wait_win
 		_bot.flag_value = args.bot_flag
+		_bot.wait_for_card = args.bot_wait_card
 		add_child(_bot)
 	var err: Error
 	if args.via_platform():

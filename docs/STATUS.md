@@ -2,7 +2,7 @@
 
 Milestone checklist from PLAN.md Section 11. Check an item only when it was actually run; each milestone ends with a verification note saying what ran, where, and with which command. Untested things are listed as untested.
 
-**Current milestone: M3 (platform and CTF).** M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Server cage dressed (pulled forward from M4) and merged. M2 closed 2026-10-02.
+**Current milestone: M4 (Night Shift content and polish).** M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Server cage dressed (pulled forward from M4) and merged. M2 closed 2026-10-02.
 
 ## M0: Repo and specs
 
@@ -77,9 +77,10 @@ Started 2026-10-02 on branch `m3-platform` (design: ADR-0018; Docker access: ADR
 - [x] Client joins with platform address + join code; fresh join ticket on every reconnect; bad code returns to the menu
 - [x] Kestrel Intranet challenge (Go, stdlib, scratch image, uid 65534): login with room credentials, IDOR on `?id=`, flag from `$FLAG`
 - [x] `tools/m3_smoke.sh` (in `tools/test.sh`): platform + spawned game servers + join-code bots + flag + game-server crash/restore + recorded win + bad code
-- [ ] Real Docker run: build the intranet image, attack it with curl, end-to-end with containers (waiting on the owner's `sudo usermod -aG docker $USER` + re-login)
+- [x] Real Docker run (Docker 29.1.3, API 1.52 negotiated): intranet image built (9.1 MB), hardened container on an internal network, LAN proxy port, attacked with curl (login + IDOR), flag submitted in game, win recorded, container and network torn down
 - [~] `docker compose up` moved to M5 (ADR-0019, owner's choice)
 - [x] Main menu: platform address + join code joins through the platform; "Host the selected room on the platform" creates a game and joins it; the join code shows on joining and in the pause menu (`tests/ui/test_join_flow.gd` 5 tests; layout checked in a windowed capture)
+- [x] **M3 closed 2026-10-02**; merged into `main`
 - [x] Codex review of `m3-platform` (`codex review --base main`): 9 findings, all fixed with regression tests: P1 challenges without `resources` ran unlimited (now 0.5 CPU / 256 MB defaults); P2 concurrent joins hit SQLITE_BUSY (single connection); idle exit left containers running (session manager `OnStopped` tears them down); overlapping start/stop per session (per-session lock); Docker 29 rejects API 1.43 (version negotiated from `/_ping`); restarting a finished session flipped it to running (kept finished); a finished world restarted its containers (re-reports the result instead); a lost finish report was never retried (retries until 204); stale join code after leaving (cleared per session)
 
 ## M4: Night Shift content and polish
@@ -167,3 +168,9 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - `tools/test.sh` exit 0: gdUnit4 70/70, pack replay, m2 and m3 smoke.
 - Not verified: anything involving real containers (image build, internal network reachability from the host, proxy to a container, rootless Docker), Windows clients, a second machine against the platform.
 - Review fixes (2026-10-02): `go test -race ./platform/...` 7 packages pass (new: version negotiation, default limits, 16 concurrent joins on a file DB, concurrent start/stop, finished status + teardown hook); gdUnit4 75/75 (new: finished world does not restart challenges, finish report retries, join code per session); `tools/test.sh` exit 0 incl. m2 and m3 smoke.
+
+### 2026-10-02, M3 with real Docker (owner added the dev user to the docker group)
+- `tools/m3_smoke.sh` PASS 3 runs with containers: platform built `escapebox/night_shift-intranet:0.1.0-<hash>` (9.1 MB, scratch, uid 65534) and started it on session network `esc_<id>`; a watcher bot waited for the connection card URL (first run builds the image); the script logged into the intranet with curl as `mreyes` / `Kestrel#2019`, confirmed ticket 1042 has no flag, read the flag from ticket 1040 (IDOR), and Bob submitted it in game to finish the room; `docker inspect` of the live container: CapDrop ALL, no-new-privileges, read-only rootfs, not privileged, 256 MB, 0.5 CPU, pids 128, no published ports, `FLAG` only in the env and not in the image; `docker network inspect`: Internal=true; after the win the container and network were gone.
+- First run exposed a test race (Alice finished before the first image build completed); fixed with `--bot-wait-card`.
+- `tools/test.sh` exit 0 with Docker available (gdUnit4 75/75, pack replay, m2 smoke, m3 smoke with real containers). No `escapebox.managed` containers left afterwards.
+- Not verified: a player's own browser on another LAN machine against the proxy port (the proxy binds 0.0.0.0; only 127.0.0.1 was exercised), rootless Docker (M5), Windows clients.
