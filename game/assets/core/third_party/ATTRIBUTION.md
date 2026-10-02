@@ -12,6 +12,8 @@ Every file under this directory is CC0 1.0 (public domain dedication) and stored
 | `polyhaven/office_notepads/` | Office Notepads, 1k glTF (`a4_stack`, `sticky_stack` used) | https://polyhaven.com/a/office_notepads | CC0 | Night Shift desk décor |
 | `polyhaven/clipboard/` | Clipboard, 1k glTF | https://polyhaven.com/a/clipboard | CC0 | Night Shift filing cabinet décor |
 | `polyhaven/cardboard_box_01/` | Cardboard Box 01, 1k glTF | https://polyhaven.com/a/cardboard_box_01 | CC0 | Night Shift migration boxes |
+| `polyhaven/fire_alarm/` | Fire Alarm (manual call point), 1k glTF | https://polyhaven.com/a/fire_alarm | CC0 | Night Shift, beside the exit door |
+| `polyhaven/security_camera_02/` | Security Camera 02, 1k glTF | https://polyhaven.com/a/security_camera_02 | CC0 | Night Shift office ceiling corner |
 | `polyhaven/stationery_supplies/` | Stationery Supplies, 1k glTF | https://polyhaven.com/a/stationery_supplies | CC0 | not placed yet (M4 desk dressing) |
 
 Known budget exception: `desk_lamp_arm_01` is about 25.7k polygons, over the 20k prop budget (PLAN.md 13.8). Accepted for the M1 look test; a Codex decimation pass is listed for M4.

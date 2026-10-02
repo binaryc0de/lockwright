@@ -1,0 +1,48 @@
+{
+  "asset_id": "sticky_note_username",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": true,
+      "path": "game/rooms/night_shift/assets/docs/sticky_note_username.png",
+      "preview": "assets/previews/printables/sticky_note_username_25.png",
+      "preview_background": "document",
+      "preview_sha256": "4aa90d60cbd3d152187a333c00a3182706794e194025ae6761241111a94f526c",
+      "rgba": true,
+      "sha256": "826b78f3d460dfdce7fc2b204d007ce0bbca9967a37c36b6b9bd39d92c5e866b",
+      "size": [
+        1024,
+        1024
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 17.5,
+          "cap_height_px": 70.0,
+          "id": "login_context",
+          "text": "intranet login",
+          "width_px": 590.8000000000001
+        },
+        {
+          "cap_height_25_px": 28.25,
+          "cap_height_px": 113.0,
+          "id": "username",
+          "text": "user: mreyes",
+          "width_px": 852.0200000000001
+        },
+        {
+          "cap_height_25_px": 10.5,
+          "cap_height_px": 42.0,
+          "id": "password_context",
+          "text": "pw: same as the guest wifi one :)",
+          "width_px": 821.5199999999998
+        }
+      ]
+    }
+  ],
+  "printed_font": "Blender 5.2 bundled Inter.woff2 (OFL-1.1)",
+  "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
+  "request_sha256": "32048fff79ba7d04877dbc8c5defb19d43097c560f0b1be99497db5abfa1d5d1",
+  "seed": 417,
+  "source_sha256": "9ef2bffa26e58a8fe10200153f8d2f4f4d16acd84a310e52398662d30bb0210a"
+}

@@ -34,8 +34,41 @@
 [ext_resource type="Material" path="res://assets/core/materials/mat_screen_laptop.tres" id="46_scr_laptop"]
 [ext_resource type="Material" path="res://assets/core/materials/mat_screen_monitor.tres" id="47_scr_monitor"]
 [ext_resource type="PackedScene" path="res://assets/core/props/desk_3drawer.glb" id="48_desk"]
+[ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/fire_alarm/fire_alarm_1k.gltf" id="37_firealarm"]
+[ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/security_camera_02/security_camera_02_1k.gltf" id="38_camera"]
+[ext_resource type="PackedScene" path="res://assets/core/props/exit_door_maglock.glb" id="50_door"]
+[ext_resource type="PackedScene" path="res://assets/core/props/exit_keypad_6.glb" id="51_kp6"]
+[ext_resource type="PackedScene" path="res://assets/core/props/intercom_panel.glb" id="52_intercom"]
+[ext_resource type="PackedScene" path="res://assets/core/props/wall_clock_countdown.glb" id="53_clock"]
+[ext_resource type="PackedScene" path="res://assets/core/props/pinboard_cork.glb" id="54_pinboard"]
+[ext_resource type="PackedScene" path="res://assets/core/props/certificate_frame.glb" id="55_certframe"]
+[ext_resource type="PackedScene" path="res://assets/core/props/office_trim_kit.glb" id="56_trim"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_screen_lcd.tres" id="57_lcd"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_screen_clock.tres" id="58_clockscr"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_glass.tres" id="59_glass"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_led_red.tres" id="60_ledred"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_fire_certificate.tres" id="61_doc_cert"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_wifi_card_front.tres" id="62_doc_wifi"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_sticky_note.tres" id="63_doc_sticky"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_whiteboard_marker.tres" id="64_doc_wb"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/screen_laptop_login.tres" id="65_scr_login"]
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/fire_inspection_certificate.png" id="66_tex_cert"]
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/wifi_card_front.png" id="67_tex_wifi"]
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/sticky_note_username.png" id="68_tex_sticky"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
 size = Vector3(0.39, 0.34, 0.52)
+
+[sub_resource type="QuadMesh" id="QuadMesh_wifi"]
+material = ExtResource("62_doc_wifi")
+size = Vector2(0.18, 0.12)
+
+[sub_resource type="QuadMesh" id="QuadMesh_sticky"]
+material = ExtResource("63_doc_sticky")
+size = Vector2(0.076, 0.076)
+
+[sub_resource type="QuadMesh" id="QuadMesh_wb"]
+material = ExtResource("64_doc_wb")
+size = Vector2(1.564, 0.964)
 
 [sub_resource type="Environment" id="Environment_vrwxm"]
 background_mode = 1
@@ -1181,6 +1214,7 @@ shape = SubResource("BoxShape3D_y40hg")
 transform = Transform3D(0.99756, 0, 0.06976, 0, 1, 0, -0.06976, 0, 0.99756, -0.115, 0.915, 0.233)
 script = ExtResource("4_7mnw5")
 title = "Sticky note (monitor)"
+texture = ExtResource("68_tex_sticky")
 text_md = "intranet login
 
 user: **mreyes**
@@ -1190,22 +1224,12 @@ display_name = "Sticky note"
 verbs = PackedStringArray("read")
 
 [node name="Paper" type="MeshInstance3D" parent="Office/Desk/StickyNote" unique_id=947431957]
-mesh = SubResource("BoxMesh_eto6l")
+mesh = SubResource("QuadMesh_sticky")
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/StickyNote/Paper" unique_id=2103266819]
 
 [node name="Shape" type="CollisionShape3D" parent="Office/Desk/StickyNote/Paper/Body" unique_id=1076055484]
 shape = SubResource("BoxShape3D_jn5ad")
-
-[node name="Text" type="Label3D" parent="Office/Desk/StickyNote" unique_id=347367048]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.004)
-pixel_size = 0.0014
-double_sided = false
-modulate = Color(0.1, 0.1, 0.3, 1)
-text = "user:
-mreyes"
-font_size = 22
-outline_size = 0
 
 [node name="Laptop" type="Node3D" parent="Office/Desk" unique_id=1186745705]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 0.76, 0.35)
@@ -1228,16 +1252,6 @@ shape = SubResource("BoxShape3D_apddg")
 
 [node name="Screen" type="MeshInstance3D" parent="Office/Desk/Laptop" unique_id=1789977912]
 transform = Transform3D(1, 0, 0, 0, 0.96593, 0.25882, 0, -0.25882, 0.96593, 0, 0.12592, -0.10761)
-
-[node name="ScreenText" type="Label3D" parent="Office/Desk/Laptop/Screen" unique_id=597984028]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.002)
-pixel_size = 0.0015
-double_sided = false
-text = "KESTREL INTRANET
-session expired"
-font_size = 20
-outline_size = 0
-modulate = Color(0.85, 0.92, 1, 1)
 
 [node name="Chair" type="MeshInstance3D" parent="Office" unique_id=325948358]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.225, 1.25)
@@ -1269,30 +1283,16 @@ shape = SubResource("BoxShape3D_2u681")
 [node name="Tray" type="MeshInstance3D" parent="Office/Whiteboard" unique_id=1579540655]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.935, 0.04)
 
-[node name="Marker" type="Label3D" parent="Office/Whiteboard" unique_id=1514679596]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 1.5, 0.024)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.1, 0.15, 0.45, 1)
-text = "MIGRATION - NIGHT 2
-[x] backup core-sw
-[x] move DNS
-[ ] cutover 23:30
-
-Filing cabinet code:
-UV pen (audit rule!)  -->"
-font_size = 30
-outline_size = 0
 
 [node name="UVInk" type="Node3D" parent="Office/Whiteboard" unique_id=453137812]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.3, 0.024)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 1.296, 0.024)
 script = ExtResource("6_bwsy5")
 label = NodePath("Text")
 text = "{{cabinet_code}}"
 
 [node name="Text" type="Label3D" parent="Office/Whiteboard/UVInk" unique_id=1746455957]
 visible = false
-pixel_size = 0.002
+pixel_size = 0.0016
 double_sided = false
 modulate = Color(0.75, 0.45, 1, 1)
 font_size = 96
@@ -1434,26 +1434,17 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 3.1,
 
 [node name="Board" type="MeshInstance3D" parent="Office/Pinboard" unique_id=1199930816]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.01)
-mesh = SubResource("BoxMesh_p3rgj")
 
 [node name="Body" type="StaticBody3D" parent="Office/Pinboard/Board" unique_id=57459547]
 
 [node name="Shape" type="CollisionShape3D" parent="Office/Pinboard/Board/Body" unique_id=1326602128]
 shape = SubResource("BoxShape3D_7ewxv")
 
-[node name="Header" type="Label3D" parent="Office/Pinboard" unique_id=256150880]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.78, 0.022)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.15, 0.08, 0.02, 1)
-text = "IT NOTICES"
-font_size = 28
-outline_size = 0
-
 [node name="WifiCard" type="Node3D" parent="Office/Pinboard" unique_id=1315181289]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.45, 0.024)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.45, 0.0185)
 script = ExtResource("4_7mnw5")
 title = "Guest WiFi"
+texture = ExtResource("67_tex_wifi")
 text_md = "# Guest WiFi
 Network: **KESTREL-GUEST**
 
@@ -1467,27 +1458,18 @@ display_name = "Guest WiFi card"
 verbs = PackedStringArray("read")
 
 [node name="Card" type="MeshInstance3D" parent="Office/Pinboard/WifiCard" unique_id=1150384289]
-mesh = SubResource("BoxMesh_ddy8a")
+mesh = SubResource("QuadMesh_wifi")
 
 [node name="Body" type="StaticBody3D" parent="Office/Pinboard/WifiCard/Card" unique_id=1756484383]
 
 [node name="Shape" type="CollisionShape3D" parent="Office/Pinboard/WifiCard/Card/Body" unique_id=2092002576]
 shape = SubResource("BoxShape3D_5o2un")
 
-[node name="Text" type="Label3D" parent="Office/Pinboard/WifiCard" unique_id=1311807027]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.004)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.1, 0.3, 1)
-text = "GUEST WiFi
-KESTREL-GUEST"
-font_size = 22
-outline_size = 0
-
 [node name="FireCertificate" type="Node3D" parent="Office" unique_id=366191476]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 4.7, 1.45, 4.985)
 script = ExtResource("4_7mnw5")
 title = "Fire safety inspection certificate"
+texture = ExtResource("66_tex_cert")
 text_md = "# Fire safety inspection certificate
 Premises: Kestrel Logistics, regional office, Unit 4 Harbour Road
 
@@ -1500,7 +1482,6 @@ display_name = "Fire inspection certificate"
 verbs = PackedStringArray("read")
 
 [node name="Border" type="MeshInstance3D" parent="Office/FireCertificate" unique_id=1784108623]
-mesh = SubResource("BoxMesh_b1vnm")
 
 [node name="Body" type="StaticBody3D" parent="Office/FireCertificate/Border" unique_id=837915837]
 
@@ -1509,20 +1490,6 @@ shape = SubResource("BoxShape3D_4qv3h")
 
 [node name="Paper" type="MeshInstance3D" parent="Office/FireCertificate" unique_id=794863254]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.007)
-mesh = SubResource("BoxMesh_gtkx8")
-
-[node name="Text" type="Label3D" parent="Office/FireCertificate" unique_id=1633013816]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.011)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.4, 0.05, 0.05, 1)
-text = "FIRE SAFETY
-INSPECTION
-CERTIFICATE
-
-SITE 417"
-font_size = 24
-outline_size = 0
 
 [node name="ExitDoor" type="Node3D" parent="Office" unique_id=9458546]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
@@ -1530,15 +1497,15 @@ script = ExtResource("9_vtr8h")
 is_exit = true
 locked_by = NodePath("Keypad")
 moving_part = NodePath("Hinge")
-open_rotation_deg = Vector3(0, 100, 0)
+open_rotation_deg = Vector3(0, -90, 0)
 display_name = "Exit door"
 verbs = PackedStringArray("open", "close")
 
 [node name="Hinge" type="Node3D" parent="Office/ExitDoor" unique_id=1120518406]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0, 0)
 
 [node name="Leaf" type="MeshInstance3D" parent="Office/ExitDoor/Hinge" unique_id=2114885730]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, 1.04, 0.5)
-mesh = SubResource("BoxMesh_jpsml")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, 1.04, 0.5)
 
 [node name="Body" type="StaticBody3D" parent="Office/ExitDoor/Hinge/Leaf" unique_id=1572677273]
 
@@ -1547,11 +1514,10 @@ shape = SubResource("BoxShape3D_3tl2t")
 
 [node name="PushBar" type="MeshInstance3D" parent="Office/ExitDoor/Hinge/Leaf" unique_id=1278900815]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 0, 0.05)
-mesh = SubResource("BoxMesh_1fb0e")
 
 [node name="Sign" type="Label3D" parent="Office/ExitDoor/Hinge/Leaf" unique_id=1120969366]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.03, 0.35, 0)
-pixel_size = 0.002
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.032, 0.23, 0)
+pixel_size = 0.0016
 double_sided = false
 modulate = Color(0.9, 0.9, 0.9, 1)
 text = "MAGLOCKED
@@ -1565,44 +1531,23 @@ script = ExtResource("8_pl6hf")
 display_length = 6
 code = "417062"
 starts_powered = false
-status_light = NodePath("Led")
+status_light = NodePath("Model/led_status")
 status_label = NodePath("Status")
 display_name = "Door override panel"
 verbs = PackedStringArray("enter_code")
 
 [node name="Pad" type="MeshInstance3D" parent="Office/ExitDoor/Keypad" unique_id=1494681865]
-mesh = SubResource("BoxMesh_cnebj")
 
 [node name="Body" type="StaticBody3D" parent="Office/ExitDoor/Keypad/Pad" unique_id=1334488905]
 
 [node name="Shape" type="CollisionShape3D" parent="Office/ExitDoor/Keypad/Pad/Body" unique_id=401214837]
 shape = SubResource("BoxShape3D_avmwc")
 
-[node name="Led" type="MeshInstance3D" parent="Office/ExitDoor/Keypad" unique_id=2085375292]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.08, 0.02)
-mesh = SubResource("BoxMesh_c6gvp")
-
 [node name="Status" type="Label3D" parent="Office/ExitDoor/Keypad" unique_id=1972372581]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.08, 0.02)
-pixel_size = 0.002
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.057, 0.0005)
+pixel_size = 0.0009
 double_sided = false
 font_size = 18
-outline_size = 0
-
-[node name="OverridePlate" type="Node3D" parent="Office/ExitDoor" unique_id=40023663]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.012, 1.62, 1.4)
-
-[node name="Plate" type="MeshInstance3D" parent="Office/ExitDoor/OverridePlate" unique_id=1919314174]
-mesh = SubResource("BoxMesh_2bs2r")
-
-[node name="Text" type="Label3D" parent="Office/ExitDoor/OverridePlate" unique_id=1536281104]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.004)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "MAGLOCK OVERRIDE:
-SITE + RACK"
-font_size = 26
 outline_size = 0
 
 [node name="Intercom" type="Node3D" parent="Office" unique_id=260427690]
@@ -1612,7 +1557,6 @@ label = NodePath("Display")
 speaker_name = "DALE (SECURITY)"
 
 [node name="Panel" type="MeshInstance3D" parent="Office/Intercom" unique_id=295237723]
-mesh = SubResource("BoxMesh_lb256")
 
 [node name="Body" type="StaticBody3D" parent="Office/Intercom/Panel" unique_id=908109794]
 
@@ -1621,18 +1565,17 @@ shape = SubResource("BoxShape3D_wwoyb")
 
 [node name="Grille" type="MeshInstance3D" parent="Office/Intercom" unique_id=223843072]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0.022)
-mesh = SubResource("BoxMesh_c06tj")
 
 [node name="Display" type="Label3D" parent="Office/Intercom" unique_id=1799777845]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0.01)
-pixel_size = 0.002
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.067, 0.019)
+pixel_size = 0.0004
 double_sided = false
 modulate = Color(0.75, 0.95, 1, 1)
 text = "INTERCOM - SECURITY DESK"
 font_size = 22
 outline_size = 0
 autowrap_mode = 3
-width = 420.0
+width = 430.0
 
 [node name="SessionClock" type="Node3D" parent="Office" unique_id=1623341385]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.015, 2.35, 2.5)
@@ -1640,24 +1583,14 @@ script = ExtResource("11_dlbfh")
 label = NodePath("Display")
 
 [node name="Panel" type="MeshInstance3D" parent="Office/SessionClock" unique_id=819312366]
-mesh = SubResource("BoxMesh_ke2mx")
 
 [node name="Display" type="Label3D" parent="Office/SessionClock" unique_id=1258825275]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.012)
-pixel_size = 0.002
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.012, 0.033)
+pixel_size = 0.0011
 double_sided = false
 modulate = Color(1, 0.2, 0.15, 1)
 text = "60:00"
 font_size = 64
-outline_size = 0
-
-[node name="Caption" type="Label3D" parent="Office/SessionClock" unique_id=1605817336]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13, 0.012)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.9, 0.9, 0.9, 1)
-text = "UPS RUNTIME"
-font_size = 18
 outline_size = 0
 
 [node name="Cage" type="Node3D" parent="." unique_id=762002348]
@@ -1962,7 +1895,7 @@ surface_material_override/0 = ExtResource("47_scr_monitor")
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 
 [node name="screen" parent="Office/Desk/Laptop/Model"]
-surface_material_override/0 = ExtResource("46_scr_laptop")
+surface_material_override/0 = ExtResource("65_scr_login")
 
 [node name="Model" parent="Office/Whiteboard" instance=ExtResource("42_whiteboard")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.45, 0)
@@ -1981,8 +1914,6 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 [node name="ChairModel" parent="Office" instance=ExtResource("45_chair")]
 transform = Transform3D(0.9703, 0, -0.24192, 0, 1, 0, 0.24192, 0, 0.9703, 1.52, 0, 1.32)
 
-[node name="body-col" parent="Office/FilingCabinet/Keypad/Model"]
-visible = false
 
 [node name="Model" parent="Office/Desk" instance=ExtResource("48_desk")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.4005)
@@ -1991,3 +1922,334 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.4005)
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.02)
 remote_path = NodePath("../../../Model/drawer_top")
 update_scale = false
+
+[node name="FireAlarm" parent="Office/Decor" instance=ExtResource("37_firealarm")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 1.4, 1.62)
+
+[node name="SecurityCamera" parent="Office/Decor" instance=ExtResource("38_camera")]
+transform = Transform3D(-0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, -0.86603, 0.3, 2.6, 5)
+
+[node name="Model" parent="Office/ExitDoor" instance=ExtResource("50_door")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, 0)
+
+[node name="maglock_led" parent="Office/ExitDoor/Model"]
+surface_material_override/0 = ExtResource("60_ledred")
+
+[node name="LeafFollow" type="RemoteTransform3D" parent="Office/ExitDoor/Hinge"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.06, 0, 0)
+remote_path = NodePath("../../Model/leaf")
+update_scale = false
+
+[node name="Model" parent="Office/ExitDoor/Keypad" instance=ExtResource("51_kp6")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -0.03)
+
+[node name="Model" parent="Office/Intercom" instance=ExtResource("52_intercom")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -0.02)
+
+[node name="screen" parent="Office/Intercom/Model"]
+surface_material_override/0 = ExtResource("57_lcd")
+
+[node name="Model" parent="Office/SessionClock" instance=ExtResource("53_clock")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -0.015)
+
+[node name="screen" parent="Office/SessionClock/Model"]
+surface_material_override/0 = ExtResource("58_clockscr")
+
+[node name="Model" parent="Office/Pinboard" instance=ExtResource("54_pinboard")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.45, 0)
+
+[node name="Model" parent="Office/FireCertificate" instance=ExtResource("55_certframe")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -0.015)
+
+[node name="picture" parent="Office/FireCertificate/Model"]
+surface_material_override/0 = ExtResource("61_doc_cert")
+
+[node name="glass" parent="Office/FireCertificate/Model"]
+surface_material_override/0 = ExtResource("59_glass")
+
+[node name="MarkerLayer" type="MeshInstance3D" parent="Office/Whiteboard"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.0225)
+cast_shadow = 0
+mesh = SubResource("QuadMesh_wb")
+
+[node name="SkirtNorth" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(-6, 0, 0, 0, 1, 0, 0, 0, -1, 3, 0, 0)
+
+[node name="emergency_light" parent="Office/Decor/SkirtNorth"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/SkirtNorth"]
+visible = false
+
+[node name="outlet_double" parent="Office/Decor/SkirtNorth"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/SkirtNorth"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/SkirtNorth"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/SkirtNorth"]
+visible = false
+
+[node name="SkirtSouth" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 5)
+
+[node name="emergency_light" parent="Office/Decor/SkirtSouth"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/SkirtSouth"]
+visible = false
+
+[node name="outlet_double" parent="Office/Decor/SkirtSouth"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/SkirtSouth"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/SkirtSouth"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/SkirtSouth"]
+visible = false
+
+[node name="SkirtWestA" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1.94, 0, 0, 0, 0, 0.97)
+
+[node name="emergency_light" parent="Office/Decor/SkirtWestA"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/SkirtWestA"]
+visible = false
+
+[node name="outlet_double" parent="Office/Decor/SkirtWestA"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/SkirtWestA"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/SkirtWestA"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/SkirtWestA"]
+visible = false
+
+[node name="SkirtWestB" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1.94, 0, 0, 0, 0, 4.03)
+
+[node name="emergency_light" parent="Office/Decor/SkirtWestB"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/SkirtWestB"]
+visible = false
+
+[node name="outlet_double" parent="Office/Decor/SkirtWestB"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/SkirtWestB"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/SkirtWestB"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/SkirtWestB"]
+visible = false
+
+[node name="OutletNorth" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.3, 0.3, 0)
+
+[node name="emergency_light" parent="Office/Decor/OutletNorth"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/OutletNorth"]
+visible = false
+
+[node name="skirting_1m" parent="Office/Decor/OutletNorth"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/OutletNorth"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/OutletNorth"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/OutletNorth"]
+visible = false
+
+[node name="OutletSouth" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.2, 0.3, 5)
+
+[node name="emergency_light" parent="Office/Decor/OutletSouth"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/OutletSouth"]
+visible = false
+
+[node name="skirting_1m" parent="Office/Decor/OutletSouth"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/OutletSouth"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/OutletSouth"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/OutletSouth"]
+visible = false
+
+[node name="OutletWest" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0.3, 0.6)
+
+[node name="emergency_light" parent="Office/Decor/OutletWest"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/OutletWest"]
+visible = false
+
+[node name="skirting_1m" parent="Office/Decor/OutletWest"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/OutletWest"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/OutletWest"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/OutletWest"]
+visible = false
+
+[node name="LightSwitch" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 1.1, 3.75)
+
+[node name="emergency_light" parent="Office/Decor/LightSwitch"]
+visible = false
+
+[node name="outlet_double" parent="Office/Decor/LightSwitch"]
+visible = false
+
+[node name="skirting_1m" parent="Office/Decor/LightSwitch"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/LightSwitch"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/LightSwitch"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/LightSwitch"]
+visible = false
+
+[node name="CeilingVent" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 4.6, 2.8, 3.6)
+
+[node name="emergency_light" parent="Office/Decor/CeilingVent"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/CeilingVent"]
+visible = false
+
+[node name="outlet_double" parent="Office/Decor/CeilingVent"]
+visible = false
+
+[node name="skirting_1m" parent="Office/Decor/CeilingVent"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/CeilingVent"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/CeilingVent"]
+visible = false
+
+[node name="SmokeDetector" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.9, 2.8, 2.6)
+
+[node name="emergency_light" parent="Office/Decor/SmokeDetector"]
+visible = false
+
+[node name="light_switch" parent="Office/Decor/SmokeDetector"]
+visible = false
+
+[node name="outlet_double" parent="Office/Decor/SmokeDetector"]
+visible = false
+
+[node name="skirting_1m" parent="Office/Decor/SmokeDetector"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/SmokeDetector"]
+visible = false
+
+[node name="EmergencyLight" parent="Office/Decor" instance=ExtResource("56_trim")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 2.42, 0.95)
+
+[node name="light_switch" parent="Office/Decor/EmergencyLight"]
+visible = false
+
+[node name="outlet_double" parent="Office/Decor/EmergencyLight"]
+visible = false
+
+[node name="skirting_1m" parent="Office/Decor/EmergencyLight"]
+visible = false
+
+[node name="smoke_detector" parent="Office/Decor/EmergencyLight"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/EmergencyLight"]
+visible = false
+
+[node name="vent_600" parent="Office/Decor/EmergencyLight"]
+visible = false
+
+[node name="smoke_led" parent="Office/Decor/SmokeDetector"]
+surface_material_override/0 = ExtResource("60_ledred")
+
+[node name="FixtureSouth" parent="Office/Decor" instance=ExtResource("30_fluoro")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 2.8, 4.3)
+
+[node name="mounted_fluorescent_lights_a" parent="Office/Decor/FixtureSouth"]
+visible = false
+
+[node name="mounted_fluorescent_lights_b" parent="Office/Decor/FixtureSouth"]
+visible = false
+
+[node name="mounted_fluorescent_lights_c" parent="Office/Decor/FixtureSouth"]
+visible = false
+
+[node name="mounted_fluorescent_lights_e" parent="Office/Decor/FixtureSouth"]
+visible = false
+
+[node name="mounted_fluorescent_lights_f" parent="Office/Decor/FixtureSouth"]
+visible = false
+
+[node name="mounted_fluorescent_lights_g" parent="Office/Decor/FixtureSouth"]
+visible = false
+
+[node name="mounted_fluorescent_lights_d" parent="Office/Decor/FixtureSouth"]
+surface_material_override/1 = ExtResource("35_tube_on")
+
+[node name="SouthWallSpot" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(-1, 0, 0, 0, 0.46703, 0.88424, 0, 0.88424, -0.46703, 3.9, 2.72, 4.25)
+light_color = Color(0.86, 0.93, 1, 1)
+light_energy = 2.4
+light_size = 0.08
+shadow_enabled = true
+spot_range = 4.0
+spot_angle = 55.0
+
+[node name="EmergencyLampLeft" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(0.49999, 0.43302, -0.75, 0, 0.86602, 0.5, 0.86603, -0.25, 0.433, 0.1, 2.538, 0.845)
+light_color = Color(1, 0.94, 0.82, 1)
+light_energy = 1.6
+light_size = 0.03
+shadow_enabled = true
+spot_range = 6.0
+spot_angle = 32.0
+
+[node name="EmergencyLampRight" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(-0.49999, 0.43302, -0.75, 0, 0.86602, 0.5, 0.86603, 0.25, -0.433, 0.1, 2.538, 1.055)
+light_color = Color(1, 0.94, 0.82, 1)
+light_energy = 1.6
+light_size = 0.03
+shadow_enabled = true
+spot_range = 6.0
+spot_angle = 32.0

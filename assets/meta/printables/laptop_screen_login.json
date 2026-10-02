@@ -1,0 +1,90 @@
+{
+  "asset_id": "laptop_screen_login",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": true,
+      "path": "game/rooms/night_shift/assets/docs/laptop_screen_login.png",
+      "preview": "assets/previews/printables/laptop_screen_login_25.png",
+      "preview_background": "document",
+      "preview_sha256": "cd1513340d377504a3bc5a9cef192e5ca137f1ee4f66a0f0d8ed64e07aae91a7",
+      "rgba": true,
+      "sha256": "84c2593031e9148adf6df6951d38cb19143eb0586fe3d40a86c248436e00eef9",
+      "size": [
+        2048,
+        1283
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 5.75,
+          "cap_height_px": 23.0,
+          "id": "tab_title",
+          "text": "Kestrel Intranet",
+          "width_px": 231.28119924013475
+        },
+        {
+          "cap_height_25_px": 5.5,
+          "cap_height_px": 22.0,
+          "id": "address",
+          "text": "intranet.kestrel.local",
+          "width_px": 288.3476567520881
+        },
+        {
+          "cap_height_25_px": 11.5,
+          "cap_height_px": 46.0,
+          "id": "wordmark",
+          "text": "Kestrel Logistics",
+          "width_px": 487.2603975009699
+        },
+        {
+          "cap_height_25_px": 14.5,
+          "cap_height_px": 58.0,
+          "id": "heading",
+          "text": "Kestrel Intranet",
+          "width_px": 583.230850257731
+        },
+        {
+          "cap_height_25_px": 8.25,
+          "cap_height_px": 33.0,
+          "id": "expiry_notice",
+          "text": "Your session has expired. Please sign in again.",
+          "width_px": 988.1619122752359
+        },
+        {
+          "cap_height_25_px": 8.5,
+          "cap_height_px": 34.0,
+          "id": "username_label",
+          "text": "Username",
+          "width_px": 222.23223179897622
+        },
+        {
+          "cap_height_25_px": 8.5,
+          "cap_height_px": 34.0,
+          "id": "password_label",
+          "text": "Password",
+          "width_px": 212.32885110626995
+        },
+        {
+          "cap_height_25_px": 8.25,
+          "cap_height_px": 33.0,
+          "id": "submit",
+          "text": "Sign in",
+          "width_px": 140.08389263042477
+        },
+        {
+          "cap_height_25_px": 7.75,
+          "cap_height_px": 31.0,
+          "id": "clock",
+          "text": "23:12",
+          "width_px": 117.98725012364274
+        }
+      ]
+    }
+  ],
+  "printed_font": "Blender 5.2 bundled Inter.woff2 (OFL-1.1)",
+  "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
+  "request_sha256": "2fe3ce5a522ac67d5328d6d0286b45ef2f67dcca19783c8d634cd26128b01cd1",
+  "seed": 417,
+  "source_sha256": "9ef2bffa26e58a8fe10200153f8d2f4f4d16acd84a310e52398662d30bb0210a"
+}

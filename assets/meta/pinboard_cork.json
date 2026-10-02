@@ -1,0 +1,218 @@
+{
+  "anchors_godot_m": {
+    "cork_front_z": -0.0165
+  },
+  "animations": [],
+  "asset_id": "pinboard_cork",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural emission colour/RM; tangent normal; ray-traced AO in ORM R",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "board_outer_dimensions_godot_m": [
+    1.2,
+    0.8,
+    0.02
+  ],
+  "bounds_godot_m": {
+    "max": [
+      0.600000024,
+      0.400000006,
+      -0.0
+    ],
+    "min": [
+      -0.600000024,
+      -0.400000006,
+      -0.02935
+    ]
+  },
+  "bounds_m": [
+    1.200000048,
+    0.02935,
+    0.800000012
+  ],
+  "built_at": "2026-10-02T14:42:47+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/pinboard_cork.glb",
+  "glb_sha256": "a3166b2792d56383953f9d5147f7fc47f4e6cad0d0fb07a899c94e210d700755",
+  "header_card_center_godot_xy_m": [
+    0,
+    0.33
+  ],
+  "header_card_dimensions_m": [
+    0.3,
+    0.07,
+    0.00045
+  ],
+  "header_letter_cap_height_m": 0.03,
+  "lettering": "original bold sans stroke rasterizer; IT NOTICES only",
+  "materials": [
+    "M_pinboard_cork_card",
+    "M_pinboard_cork_cork",
+    "M_pinboard_cork_frame",
+    "M_pinboard_cork_pins"
+  ],
+  "origin": "mount_plane_center",
+  "origin_reference": "centre of the back mounting face; Godot Z=0",
+  "parts": [
+    "board",
+    "header_card",
+    "pins"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "pushpin_count": 7,
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "5be7cfc52af52a06fec15fe68a3f3ba7a3527bc873b1b873cf8447daa9e53096",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_pinboard_cork_cork",
+      "name": "T_pinboard_cork_cork_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_pinboard_cork_cork",
+      "name": "T_pinboard_cork_cork_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_pinboard_cork_cork",
+      "name": "T_pinboard_cork_cork_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_pinboard_cork_frame",
+      "name": "T_pinboard_cork_frame_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_pinboard_cork_frame",
+      "name": "T_pinboard_cork_frame_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_pinboard_cork_frame",
+      "name": "T_pinboard_cork_frame_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_pinboard_cork_pins",
+      "name": "T_pinboard_cork_pins_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_pinboard_cork_pins",
+      "name": "T_pinboard_cork_pins_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_pinboard_cork_pins",
+      "name": "T_pinboard_cork_pins_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_pinboard_cork_card",
+      "name": "T_pinboard_cork_card_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_pinboard_cork_card",
+      "name": "T_pinboard_cork_card_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_pinboard_cork_card",
+      "name": "T_pinboard_cork_card_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "triangles": 7068,
+  "wifi_clear_area_godot_m": {
+    "x": [
+      0.1,
+      0.4
+    ],
+    "y": [
+      -0.1,
+      0.1
+    ]
+  }
+}

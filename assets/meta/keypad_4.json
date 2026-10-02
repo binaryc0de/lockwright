@@ -19,19 +19,19 @@
     0.022,
     0.115000002
   ],
-  "built_at": "2026-10-02T00:55:38+00:00",
+  "built_at": "2026-10-02T13:45:22+00:00",
   "collision": {
     "bounds_m": [
       0.075,
       0.022,
       0.115
     ],
-    "part": "body-col",
+    "part": "body-colonly",
     "shape": "box"
   },
   "forward": "Blender +Y -> Godot -Z",
   "glb_path": "game/assets/core/props/keypad_4.glb",
-  "glb_sha256": "cf2aa3f98878c7557333974547f08d19234f1b8b09116bc0a70fb7b4a26b7cc5",
+  "glb_sha256": "5b15b794fd4840c8e3113cfa107ecef17a15a207d65247430a8a32f3ffb80536",
   "key_origins_godot_m": {
     "btn_0": [
       0.0,
@@ -105,7 +105,7 @@
   "origin": "mount_plane_center",
   "parts": [
     "body",
-    "body-col",
+    "body-colonly",
     "btn_0",
     "btn_1",
     "btn_2",
@@ -138,7 +138,7 @@
     "samples": 32,
     "threads": 4
   },
-  "script_sha256": "28b9f32d75c0783693014ed6cf18ac7f4988a034ec296990bfac3017e41a0da9",
+  "script_sha256": "5b08fd04f6514f7261d38e8f3b3482aed0c0e726cf4ce6f7144e6911a19abbb7",
   "textures": [
     {
       "embedded": true,

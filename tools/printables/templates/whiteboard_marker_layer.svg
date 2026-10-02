@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1262" viewBox="0 0 2048 1262">
+  <text x="85" y="167" font-size="59" data-width="1000" data-lettering="stroke" stroke-width="4.1" data-slant="0.06" fill="#244e85"><tspan id="heading">{{0}}</tspan></text>
+  <text x="95" y="329" font-size="59" data-width="1000" data-lettering="stroke" stroke-width="4.2" fill="#244e85"><tspan id="backup">{{1}}</tspan></text>
+  <text x="90" y="469" font-size="59" data-width="1000" data-lettering="stroke" stroke-width="4.0" fill="#244e85"><tspan id="dns">{{2}}</tspan></text>
+  <text x="93" y="612" font-size="59" data-width="1000" data-lettering="stroke" stroke-width="3.8" fill="#244e85"><tspan id="cutover">{{3}}</tspan></text>
+  <text x="85" y="803" font-size="59" data-width="1000" data-lettering="stroke" stroke-width="3.8" fill="#244e85"><tspan id="cabinet_context">{{4}}</tspan></text>
+  <text x="85" y="958" font-size="59" data-width="1040" data-lettering="stroke" data-arrow-ink="#252c32" data-arrow-tip="1120" stroke-width="3.9" fill="#244e85"><tspan id="uv_context">{{5}}</tspan></text>
+  <!-- Border lies outside the specified interior (58%-88%, 52%-80%). -->
+  <polyline points="1182,649 1486,646 1808,650 1812,834 1809,1016 1480,1019 1181,1015 1182,825 1182,649" fill="none" stroke="#252c32" stroke-width="5.4"/>
+  <!-- Faint, text-free network sketch, three boxes and two links only. -->
+  <polyline points="1363,162 1516,166 1514,255 1365,252 1363,162" fill="none" stroke="#244e85" stroke-width="3.4" opacity="0.26"/>
+  <polyline points="1644,163 1804,160 1807,253 1645,257 1644,163" fill="none" stroke="#244e85" stroke-width="3.4" opacity="0.26"/>
+  <polyline points="1508,355 1664,359 1662,452 1507,449 1508,355" fill="none" stroke="#244e85" stroke-width="3.4" opacity="0.26"/>
+  <polyline points="1517,206 1579,208 1644,209" fill="none" stroke="#244e85" stroke-width="3" opacity="0.26"/>
+  <polyline points="1579,210 1583,289 1582,357" fill="none" stroke="#244e85" stroke-width="3" opacity="0.26"/>
+</svg>

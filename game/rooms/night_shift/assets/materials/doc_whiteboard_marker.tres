@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/whiteboard_marker_layer.png" id="1"]
+
+[resource]
+resource_name = "doc_whiteboard_marker"
+albedo_texture = ExtResource("1")
+roughness = 0.35
+transparency = 1
+cull_mode = 0

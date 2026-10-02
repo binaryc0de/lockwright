@@ -1,0 +1,371 @@
+{
+  "anchors_godot_m": {
+    "emergency_lamp_dir_left": [
+      -0.4330126941204071,
+      -0.5,
+      -0.75
+    ],
+    "emergency_lamp_dir_right": [
+      0.4330126941204071,
+      -0.5,
+      -0.75
+    ],
+    "emergency_lamp_left": [
+      -0.10505195707082748,
+      0.11794000118970871,
+      -0.10009000450372696
+    ],
+    "emergency_lamp_right": [
+      0.10505195707082748,
+      0.11794000118970871,
+      -0.10009000450372696
+    ]
+  },
+  "animations": [],
+  "asset_id": "office_trim_kit",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural colour/roughness, tangent normals, AO packed into ORM",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.5,
+      0.297499985,
+      0.0
+    ],
+    "min": [
+      -0.5,
+      -0.297499985,
+      -0.121086568
+    ]
+  },
+  "bounds_m": [
+    1.0,
+    0.121086568,
+    0.594999969
+  ],
+  "built_at": "2026-10-02T14:53:22+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/office_trim_kit.glb",
+  "glb_sha256": "68f980072a7ea6bc101d1182f302656cbc2c800ecfac5f24849c0eaabb4531c6",
+  "lamp_angles_degrees": {
+    "down": 30,
+    "outward": 30
+  },
+  "materials": [
+    "M_office_trim_kit_lamp",
+    "M_office_trim_kit_led",
+    "M_office_trim_kit_metal",
+    "M_office_trim_kit_paint",
+    "M_office_trim_kit_plastic"
+  ],
+  "origin": "mount_plane_center",
+  "part_bounds_godot_m": {
+    "emergency_light": {
+      "max": [
+        0.15000001,
+        0.1542846,
+        -0.0
+      ],
+      "min": [
+        -0.15000001,
+        -0.06,
+        -0.12108657
+      ]
+    },
+    "light_switch": {
+      "max": [
+        0.043,
+        0.043,
+        -0.0
+      ],
+      "min": [
+        -0.043,
+        -0.043,
+        -0.01003743
+      ]
+    },
+    "outlet_double": {
+      "max": [
+        0.073,
+        0.043,
+        -0.0
+      ],
+      "min": [
+        -0.073,
+        -0.043,
+        -0.009945
+      ]
+    },
+    "skirting_1m": {
+      "max": [
+        0.5,
+        0.1,
+        -0.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.015
+      ]
+    },
+    "smoke_detector": {
+      "max": [
+        0.055,
+        0.055,
+        -0.0
+      ],
+      "min": [
+        -0.055,
+        -0.055,
+        -0.045
+      ]
+    },
+    "smoke_led": {
+      "max": [
+        0.02455,
+        -0.01745,
+        -0.0432
+      ],
+      "min": [
+        0.02145,
+        -0.02055,
+        -0.04435
+      ]
+    },
+    "vent_600": {
+      "max": [
+        0.29750001,
+        0.29749998,
+        0.0
+      ],
+      "min": [
+        -0.29750001,
+        -0.29749998,
+        -0.02
+      ]
+    }
+  },
+  "part_origins_godot_m": {
+    "emergency_light": [
+      0,
+      0,
+      0
+    ],
+    "light_switch": [
+      0,
+      0,
+      0
+    ],
+    "outlet_double": [
+      0,
+      0,
+      0
+    ],
+    "skirting_1m": [
+      0,
+      0,
+      0
+    ],
+    "smoke_detector": [
+      0,
+      0,
+      0
+    ],
+    "smoke_led": [
+      0.023,
+      -0.019,
+      -0.0425
+    ],
+    "vent_600": [
+      0,
+      0,
+      0
+    ]
+  },
+  "parts": [
+    "emergency_light",
+    "light_switch",
+    "outlet_double",
+    "skirting_1m",
+    "smoke_detector",
+    "smoke_led",
+    "vent_600"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "e85fe1816724cca0a2c1c8de4c55a8c26376f08cfabaa8b2a901206fafb483e7",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_office_trim_kit_plastic",
+      "name": "T_office_trim_kit_plastic_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_office_trim_kit_plastic",
+      "name": "T_office_trim_kit_plastic_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_office_trim_kit_plastic",
+      "name": "T_office_trim_kit_plastic_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_office_trim_kit_paint",
+      "name": "T_office_trim_kit_paint_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_office_trim_kit_paint",
+      "name": "T_office_trim_kit_paint_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_office_trim_kit_paint",
+      "name": "T_office_trim_kit_paint_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_office_trim_kit_metal",
+      "name": "T_office_trim_kit_metal_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_office_trim_kit_metal",
+      "name": "T_office_trim_kit_metal_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_office_trim_kit_metal",
+      "name": "T_office_trim_kit_metal_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_office_trim_kit_lamp",
+      "name": "T_office_trim_kit_lamp_base_color",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_office_trim_kit_lamp",
+      "name": "T_office_trim_kit_lamp_normal",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_office_trim_kit_lamp",
+      "name": "T_office_trim_kit_lamp_orm",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_office_trim_kit_led",
+      "name": "T_office_trim_kit_led_base_color",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_office_trim_kit_led",
+      "name": "T_office_trim_kit_led_normal",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_office_trim_kit_led",
+      "name": "T_office_trim_kit_led_orm",
+      "size": [
+        512,
+        512
+      ]
+    }
+  ],
+  "triangles": 19680
+}

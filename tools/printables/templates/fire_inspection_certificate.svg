@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="2048" viewBox="0 0 1536 2048">
+  <rect x="0" y="0" width="1536" height="2048" fill="#f2ecd9"/>
+  <rect x="70" y="72" width="1396" height="1902" fill="none" stroke="#873c38" stroke-width="7"/>
+  <rect x="89" y="91" width="1358" height="1864" fill="none" stroke="#a56b5c" stroke-width="2"/>
+  <!-- Original geometric crest: shield, flame, and laurels. -->
+  <polygon points="701,177 768,152 835,177 830,260 806,297 768,320 730,297 706,260" fill="#873c38"/>
+  <polygon points="766,193 784,229 803,217 797,267 766,285 741,266 746,231 757,248" fill="#f2ecd9"/>
+  <polyline points="681,299 651,270 640,234 651,192" fill="none" stroke="#9a6654" stroke-width="5"/>
+  <polyline points="855,299 885,270 896,234 885,192" fill="none" stroke="#9a6654" stroke-width="5"/>
+  <line x1="644" y1="245" x2="625" y2="227" stroke="#9a6654" stroke-width="6"/>
+  <line x1="653" y1="272" x2="627" y2="262" stroke="#9a6654" stroke-width="6"/>
+  <line x1="892" y1="245" x2="911" y2="227" stroke="#9a6654" stroke-width="6"/>
+  <line x1="883" y1="272" x2="909" y2="262" stroke="#9a6654" stroke-width="6"/>
+  <text x="768" y="389" font-size="39" data-width="1210" text-anchor="middle" fill="#713733"><tspan id="authority">Harbour District Fire Safety Service</tspan></text>
+  <line x1="210" y1="433" x2="1326" y2="433" stroke="#a8846e" stroke-width="2"/>
+  <text x="768" y="526" font-size="56" data-width="1280" text-anchor="middle" font-weight="bold" fill="#2e2825"><tspan id="title">{{0}}</tspan></text>
+  <text x="166" y="698" font-size="43" data-width="1204" fill="#34312c"><tspan id="premises">{{1}}</tspan></text>
+  <text x="166" y="776" font-size="43" fill="#34312c"><tspan id="address">{{2}}</tspan></text>
+  <rect x="170" y="886" width="1196" height="280" fill="#e9e1cb"/>
+  <line x1="170" y1="886" x2="1366" y2="886" stroke="#a99478" stroke-width="2"/>
+  <line x1="170" y1="1166" x2="1366" y2="1166" stroke="#a99478" stroke-width="2"/>
+  <text x="768" y="1084" font-size="171" data-width="1090" font-weight="bold" text-anchor="middle" fill="#242421"><tspan id="site_clue">{{3}}</tspan></text>
+  <text x="166" y="1303" font-size="43" data-width="1200" fill="#34312c"><tspan id="inspection">{{4}}</tspan></text>
+  <text x="166" y="1391" font-size="43" data-width="1200" fill="#34312c"><tspan id="next_due">{{5}}</tspan></text>
+  <text x="166" y="1479" font-size="40" data-width="1200" fill="#34312c"><tspan id="inspector">{{6}}</tspan></text>
+  <!-- Pen signature, deliberately a scrawl rather than additional content. -->
+  <polyline points="186,1748 221,1626 222,1724 253,1640 284,1670 236,1691 293,1740 332,1688 317,1734 354,1690 374,1726 397,1695 398,1729 452,1699 474,1716 528,1701" fill="none" stroke="#354359" stroke-width="4"/>
+  <line x1="166" y1="1774" x2="666" y2="1774" stroke="#9d8e75" stroke-width="2"/>
+  <circle cx="1143" cy="1730" r="137" fill="none" stroke="#923b39" stroke-width="6" opacity="0.67"/>
+  <circle cx="1143" cy="1730" r="121" fill="none" stroke="#923b39" stroke-width="2" opacity="0.60"/>
+  <text x="1143" y="1696" font-size="27" text-anchor="middle" fill="#923b39" opacity="0.70"><tspan id="stamp_authority">HDFS</tspan></text>
+  <text x="1143" y="1758" font-size="42" text-anchor="middle" font-weight="bold" fill="#923b39" opacity="0.70"><tspan id="stamp_result">PASS</tspan></text>
+  <text x="1143" y="1806" font-size="23" text-anchor="middle" fill="#923b39" opacity="0.66"><tspan id="stamp_year">2026</tspan></text>
+  <ellipse cx="114" cy="178" rx="12" ry="15" fill="#b9af98"/>
+  <ellipse cx="111" cy="174" rx="9" ry="11" fill="#7c7668"/>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024">
+  <rect x="0" y="0" width="1536" height="1024" fill="#f1efe4"/>
+  <rect x="23" y="23" width="1490" height="978" rx="23" fill="none" stroke="#d4d8d7" stroke-width="6"/>
+  <g data-page="wifi_card_front">
+    <rect x="50" y="50" width="1436" height="272" rx="12" fill="#204e70"/>
+    <!-- WiFi arc strokes, original geometry. -->
+    <polyline points="135,155 164,133 204,123 246,133 275,155" fill="none" stroke="#eef5f8" stroke-width="13"/>
+    <polyline points="160,187 181,174 204,170 229,176 249,188" fill="none" stroke="#eef5f8" stroke-width="13"/>
+    <polyline points="188,218 204,212 221,219" fill="none" stroke="#eef5f8" stroke-width="13"/>
+    <circle cx="204" cy="248" r="9" fill="#eef5f8"/>
+    <text x="340" y="237" font-size="106" data-width="1050" font-weight="bold" fill="#ffffff"><tspan id="title">{{0}}</tspan></text>
+    <text x="130" y="497" font-size="67" data-width="1290" fill="#24394b"><tspan id="network">{{1}}</tspan></text>
+    <text x="130" y="658" font-size="68" data-width="1290" fill="#24394b"><tspan id="password_hint">{{2}}</tspan></text>
+    <line x1="130" y1="759" x2="1406" y2="759" stroke="#a4b7bf" stroke-width="2"/>
+    <text x="130" y="862" font-size="41" data-width="1280" fill="#4b5b64"><tspan id="small_notice">{{3}}</tspan></text>
+  </g>
+  <g data-page="wifi_card_back">
+    <text x="93" y="337" font-size="84" data-width="1340" data-lettering="stroke" data-slant="0.13" stroke-width="4.4" fill="#244c84"><tspan id="password">{{4}}</tspan></text>
+    <text x="108" y="558" font-size="63" data-width="1300" data-lettering="stroke" data-slant="0.12" stroke-width="3.5" fill="#244c84"><tspan id="reuse_note">{{5}}</tspan></text>
+    <text x="112" y="725" font-size="63" data-width="1300" data-lettering="stroke" data-slant="0.12" stroke-width="3.5" fill="#244c84"><tspan id="rotation_note">{{6}}</tspan></text>
+  </g>
+  <!-- The same physical pinhole on both faces. -->
+  <ellipse cx="772" cy="82" rx="10" ry="12" fill="#c3b9a5"/>
+  <ellipse cx="768" cy="78" rx="7" ry="8" fill="#706e64"/>
+  <polyline points="53,893 86,916 117,930" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.38"/>
+  <polyline points="1438,430 1442,463 1445,508" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.32"/>
+</svg>

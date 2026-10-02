@@ -1,0 +1,308 @@
+{
+  "anchors_godot_m": {
+    "plate_centre": [
+      0,
+      0.32,
+      -0.002
+    ],
+    "screen_centre": [
+      0,
+      0.057,
+      -0.027
+    ],
+    "screen_size": [
+      0.085,
+      0.02
+    ]
+  },
+  "animations": [],
+  "asset_id": "exit_keypad_6",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural emission colour/RM, tangent normals, ray AO packed ORM; engraving stamped in baked UV atlas",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.180000007,
+      0.38499999,
+      0.0
+    ],
+    "min": [
+      -0.180000007,
+      -0.090000004,
+      -0.032000002
+    ]
+  },
+  "bounds_m": [
+    0.360000014,
+    0.032000002,
+    0.474999994
+  ],
+  "built_at": "2026-10-02T14:33:07+00:00",
+  "collision": {
+    "bounds_m": [
+      0.12,
+      0.028,
+      0.18
+    ],
+    "part": "body-colonly",
+    "shape": "box"
+  },
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/exit_keypad_6.glb",
+  "glb_sha256": "95e1993874010ae92abc109fbadd9ec75eb7d0cef86d2e273fb989f8f0549eb7",
+  "housing_bounds_godot_m": {
+    "max": [
+      0.06,
+      0.09,
+      0
+    ],
+    "min": [
+      -0.06,
+      -0.09,
+      -0.028
+    ]
+  },
+  "key_origins_godot_m": {
+    "btn_0": [
+      0.0,
+      -0.048999999,
+      -0.028
+    ],
+    "btn_1": [
+      0.028000001,
+      0.017000001,
+      -0.028
+    ],
+    "btn_2": [
+      0.0,
+      0.017000001,
+      -0.028
+    ],
+    "btn_3": [
+      -0.028000001,
+      0.017000001,
+      -0.028
+    ],
+    "btn_4": [
+      0.028000001,
+      -0.005,
+      -0.028
+    ],
+    "btn_5": [
+      0.0,
+      -0.005,
+      -0.028
+    ],
+    "btn_6": [
+      -0.028000001,
+      -0.005,
+      -0.028
+    ],
+    "btn_7": [
+      0.028000001,
+      -0.027000001,
+      -0.028
+    ],
+    "btn_8": [
+      0.0,
+      -0.027000001,
+      -0.028
+    ],
+    "btn_9": [
+      -0.028000001,
+      -0.027000001,
+      -0.028
+    ],
+    "btn_clear": [
+      0.028000001,
+      -0.048999999,
+      -0.028
+    ],
+    "btn_enter": [
+      -0.028000001,
+      -0.048999999,
+      -0.028
+    ]
+  },
+  "key_press_travel_godot_m": [
+    0,
+    0,
+    0.0025
+  ],
+  "legend_font": "original KP-4 sans stroke alphabet, extended for clue, no external fonts",
+  "materials": [
+    "M_exit_keypad_6_body",
+    "M_exit_keypad_6_key",
+    "M_exit_keypad_6_led",
+    "M_exit_keypad_6_plate",
+    "M_exit_keypad_6_screen",
+    "M_exit_keypad_6_screw"
+  ],
+  "origin": "mount_plane_center",
+  "origin_reference": "centre of keypad rear mounting face; plate rear shares z=0",
+  "parts": [
+    "body",
+    "body-colonly",
+    "btn_0",
+    "btn_1",
+    "btn_2",
+    "btn_3",
+    "btn_4",
+    "btn_5",
+    "btn_6",
+    "btn_7",
+    "btn_8",
+    "btn_9",
+    "btn_clear",
+    "btn_enter",
+    "label_plate",
+    "led_status",
+    "screen"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "75de1c19cc760222c4dfc173aa94e03bc3d3d1456c774eda65538d926653ed60",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_keypad_6_body",
+      "name": "T_exit_keypad_6_body_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_keypad_6_body",
+      "name": "T_exit_keypad_6_body_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_keypad_6_body",
+      "name": "T_exit_keypad_6_body_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_keypad_6_key",
+      "name": "T_exit_keypad_6_key_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_keypad_6_key",
+      "name": "T_exit_keypad_6_key_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_keypad_6_key",
+      "name": "T_exit_keypad_6_key_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_keypad_6_plate",
+      "name": "T_exit_keypad_6_plate_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_keypad_6_plate",
+      "name": "T_exit_keypad_6_plate_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_keypad_6_plate",
+      "name": "T_exit_keypad_6_plate_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_keypad_6_screw",
+      "name": "T_exit_keypad_6_screw_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_keypad_6_screw",
+      "name": "T_exit_keypad_6_screw_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_keypad_6_screw",
+      "name": "T_exit_keypad_6_screw_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "triangles": 16050
+}

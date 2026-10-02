@@ -1,0 +1,230 @@
+{
+  "anchors_godot_m": {
+    "leaf_label_centre": [
+      0.5,
+      1.27,
+      0.0045
+    ],
+    "leaf_room_face_z": 0.005,
+    "maglock_led": [
+      0.948,
+      2.068,
+      -0.0708
+    ]
+  },
+  "animations": [],
+  "asset_id": "exit_door_maglock",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural color/RM emission, tangent normal, ray-traced AO packed in ORM",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      1.050000072,
+      2.345000029,
+      0.100000001
+    ],
+    "min": [
+      -0.080000006,
+      0.0,
+      -0.0722
+    ]
+  },
+  "bounds_m": [
+    1.130000077,
+    0.172200002,
+    2.345000029
+  ],
+  "built_at": "2026-10-02T14:51:16+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/exit_door_maglock.glb",
+  "glb_sha256": "84f8948125bf4d852682f4bb23c91d92d8e73ff950ed3f416e8a0d8c62899491",
+  "hinge_jamb_relief_m": 0.078,
+  "label_clear_area_m": [
+    0.4,
+    0.15
+  ],
+  "leaf_slab_godot_m": {
+    "max": [
+      0.99,
+      2.08,
+      0.055
+    ],
+    "min": [
+      0.01,
+      0,
+      0.005
+    ]
+  },
+  "materials": [
+    "M_exit_door_maglock_frame",
+    "M_exit_door_maglock_leaf",
+    "M_exit_door_maglock_led",
+    "M_exit_door_maglock_metal",
+    "M_exit_door_maglock_sticker"
+  ],
+  "origin": "hinge",
+  "origin_reference": "opening hinge edge on wall room-face plane, Godot (0,0,0)",
+  "parts": [
+    "frame",
+    "leaf",
+    "maglock",
+    "maglock_led"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "3d8374ad426960f3bbc835d10604878e21cdb82065d5f63e882e3da5a8cb0f88",
+  "swing_verification": {
+    "degrees": [
+      0,
+      100
+    ],
+    "direction": "into corridor, Godot +Z",
+    "godot_rotation_y_degrees": -100,
+    "solid_samples": 1162914
+  },
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_door_maglock_leaf",
+      "name": "T_exit_door_maglock_leaf_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_door_maglock_leaf",
+      "name": "T_exit_door_maglock_leaf_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_door_maglock_leaf",
+      "name": "T_exit_door_maglock_leaf_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_door_maglock_frame",
+      "name": "T_exit_door_maglock_frame_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_door_maglock_frame",
+      "name": "T_exit_door_maglock_frame_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_door_maglock_frame",
+      "name": "T_exit_door_maglock_frame_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_door_maglock_metal",
+      "name": "T_exit_door_maglock_metal_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_door_maglock_metal",
+      "name": "T_exit_door_maglock_metal_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_door_maglock_metal",
+      "name": "T_exit_door_maglock_metal_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_door_maglock_sticker",
+      "name": "T_exit_door_maglock_sticker_base_color",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_door_maglock_sticker",
+      "name": "T_exit_door_maglock_sticker_normal",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_door_maglock_sticker",
+      "name": "T_exit_door_maglock_sticker_orm",
+      "size": [
+        512,
+        512
+      ]
+    }
+  ],
+  "third_party": [],
+  "triangles": 25870
+}

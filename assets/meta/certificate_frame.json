@@ -1,0 +1,152 @@
+{
+  "anchors_godot_m": {
+    "picture_centre": [
+      0,
+      0,
+      -0.008
+    ]
+  },
+  "animations": [],
+  "asset_id": "certificate_frame",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural base colour/RM, tangent normal; moulding AO packed in ORM R",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.170000002,
+      0.219999999,
+      -0.0
+    ],
+    "min": [
+      -0.170000002,
+      -0.219999999,
+      -0.017999999
+    ]
+  },
+  "bounds_m": [
+    0.340000004,
+    0.017999999,
+    0.439999998
+  ],
+  "built_at": "2026-10-02T14:02:39+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glass": {
+    "alpha_mode": "BLEND",
+    "ior": 1.45,
+    "metallic": 0,
+    "opacity": 0.055,
+    "roughness": 0.2
+  },
+  "glass_centre_godot_m": [
+    0,
+    0,
+    -0.012
+  ],
+  "glass_picture_separation_m": 0.004,
+  "glb_path": "game/assets/core/props/certificate_frame.glb",
+  "glb_sha256": "0588aba40674f02ccfe402678550666b4937143ce88c295cf7a45d79b2326f6f",
+  "materials": [
+    "M_certificate_frame_glass",
+    "M_certificate_frame_moulding",
+    "M_certificate_frame_picture"
+  ],
+  "origin": "mount_plane_center",
+  "origin_reference": "centre of the back mounting face, Godot z=0",
+  "parts": [
+    "glass",
+    "moulding",
+    "picture"
+  ],
+  "picture_size_m": [
+    0.3,
+    0.4
+  ],
+  "picture_uv": "0..1, v up; u increases toward screen-right (-X when viewed from Godot -Z)",
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "b873a627673ae68eaedf1106a740e29c2dde1f3d58c6dae9ff132bb6aa3d2e20",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_certificate_frame_moulding",
+      "name": "T_certificate_frame_moulding_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_certificate_frame_moulding",
+      "name": "T_certificate_frame_moulding_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_certificate_frame_moulding",
+      "name": "T_certificate_frame_moulding_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_certificate_frame_picture",
+      "name": "T_certificate_frame_picture_base_color",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_certificate_frame_picture",
+      "name": "T_certificate_frame_picture_normal",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_certificate_frame_picture",
+      "name": "T_certificate_frame_picture_orm",
+      "size": [
+        512,
+        512
+      ]
+    }
+  ],
+  "triangles": 640
+}

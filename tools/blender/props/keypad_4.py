@@ -290,7 +290,7 @@ def build(out_dir):
                 vertex.co.y += .003
             objects.append(key)
             key_origins[name] = [round(x, 9), round(z, 9), -.016]
-    collision = box('body-col', (.075, .022, .115), None, (0, .011, 0))
+    collision = box('body-colonly', (.075, .022, .115), None, (0, .011, 0))
     # Collision's object origin is the shared mounting plane centre, too.
     for vertex in collision.data.vertices:
         vertex.co.y += .011
@@ -315,14 +315,14 @@ def build(out_dir):
         Path(__file__), textures, origin='mount_plane_center', extra={
             'forward': 'Blender +Y -> Godot -Z',
             'key_origins_godot_m': key_origins,
-            'collision': {'part': 'body-col', 'shape': 'box', 'bounds_m': [.075, .022, .115]},
+            'collision': {'part': 'body-colonly', 'shape': 'box', 'bounds_m': [.075, .022, .115]},
             'render': {'engine': 'CYCLES', 'device': 'CPU', 'samples': 32, 'denoise': True, 'threads': 4},
             'legend_font': 'original_bold_sans_stroke_atlas',
             'glb_path': str(glb_path.relative_to(ROOT)) if glb_path.is_relative_to(ROOT) else str(glb_path),
         })
     if meta['triangles'] > 20000 or len(meta['materials']) > 5:
         raise RuntimeError('Asset exceeds the request budget')
-    expected = {'body', 'body-col', 'screen', 'led_status', 'btn_clear', 'btn_enter', *[f'btn_{i}' for i in range(10)]}
+    expected = {'body', 'body-colonly', 'screen', 'led_status', 'btn_clear', 'btn_enter', *[f'btn_{i}' for i in range(10)]}
     if set(meta['parts']) != expected:
         raise RuntimeError(f'Unexpected exported mesh names: {meta["parts"]}')
     render_previews(ASSET_ID, ROOT / 'assets/previews', objects, views={

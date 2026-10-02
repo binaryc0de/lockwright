@@ -1,0 +1,104 @@
+{
+  "asset_id": "fire_inspection_certificate",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": true,
+      "path": "game/rooms/night_shift/assets/docs/fire_inspection_certificate.png",
+      "preview": "assets/previews/printables/fire_inspection_certificate_25.png",
+      "preview_background": "document",
+      "preview_sha256": "e8f3c7489b61aed0f775bdccae03875c80261688579c2e79d188f8ec833512e8",
+      "rgba": true,
+      "sha256": "b02b8ee2caf8b29351689827aac1e47f8283334d81c846dbe4ceac5a1cd0dfc5",
+      "size": [
+        1536,
+        2048
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 9.75,
+          "cap_height_px": 39.0,
+          "id": "authority",
+          "text": "Harbour District Fire Safety Service",
+          "width_px": 882.9444659319615
+        },
+        {
+          "cap_height_25_px": 14.0,
+          "cap_height_px": 56.0,
+          "id": "title",
+          "text": "FIRE SAFETY INSPECTION CERTIFICATE",
+          "width_px": 1280.0
+        },
+        {
+          "cap_height_25_px": 10.75,
+          "cap_height_px": 43.0,
+          "id": "premises",
+          "text": "Premises: Kestrel Logistics - Regional Office",
+          "width_px": 1204.0
+        },
+        {
+          "cap_height_25_px": 10.75,
+          "cap_height_px": 43.0,
+          "id": "address",
+          "text": "Unit 4, Harbour Road",
+          "width_px": 576.834946303144
+        },
+        {
+          "cap_height_25_px": 42.75,
+          "cap_height_px": 171.0,
+          "id": "site_clue",
+          "text": "SITE 417",
+          "width_px": 1041.6081032297554
+        },
+        {
+          "cap_height_25_px": 10.75,
+          "cap_height_px": 43.0,
+          "id": "inspection",
+          "text": "Inspected: 14 March 2026    Result: PASS",
+          "width_px": 1171.2740205217049
+        },
+        {
+          "cap_height_25_px": 10.75,
+          "cap_height_px": 43.0,
+          "id": "next_due",
+          "text": "Next inspection due: March 2027",
+          "width_px": 923.6054320078654
+        },
+        {
+          "cap_height_25_px": 10.0,
+          "cap_height_px": 40.0,
+          "id": "inspector",
+          "text": "Inspector: R. Okafor    Ref: HDFS/2026/0381",
+          "width_px": 1163.865779946292
+        },
+        {
+          "cap_height_25_px": 6.75,
+          "cap_height_px": 27.0,
+          "id": "stamp_authority",
+          "text": "HDFS",
+          "width_px": 97.52617763473249
+        },
+        {
+          "cap_height_25_px": 10.5,
+          "cap_height_px": 42.0,
+          "id": "stamp_result",
+          "text": "PASS",
+          "width_px": 146.88724521425607
+        },
+        {
+          "cap_height_25_px": 5.75,
+          "cap_height_px": 23.0,
+          "id": "stamp_year",
+          "text": "2026",
+          "width_px": 79.03355805982446
+        }
+      ]
+    }
+  ],
+  "printed_font": "Blender 5.2 bundled Inter.woff2 (OFL-1.1)",
+  "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
+  "request_sha256": "421c77b9f4231bd00810882dd5dbacd24462f89bbe401cfaf8be0e9e6f59a873",
+  "seed": 417,
+  "source_sha256": "9ef2bffa26e58a8fe10200153f8d2f4f4d16acd84a310e52398662d30bb0210a"
+}

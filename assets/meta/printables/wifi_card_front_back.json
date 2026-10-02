@@ -1,0 +1,92 @@
+{
+  "asset_id": "wifi_card_front_back",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": true,
+      "path": "game/rooms/night_shift/assets/docs/wifi_card_front.png",
+      "preview": "assets/previews/printables/wifi_card_front_25.png",
+      "preview_background": "document",
+      "preview_sha256": "6977aebc8f5256b6b65e1c5ccf359300078125401c27c4cfe7b9b5b4fdc873ab",
+      "rgba": true,
+      "sha256": "bb6c7c8838a61e1cdb406ea55034b699c8e4f2db59a8204a3ac716e431309a12",
+      "size": [
+        1536,
+        1024
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 26.5,
+          "cap_height_px": 106.0,
+          "id": "title",
+          "text": "GUEST WiFi",
+          "width_px": 818.5476309514451
+        },
+        {
+          "cap_height_25_px": 16.75,
+          "cap_height_px": 67.0,
+          "id": "network",
+          "text": "Network: KESTREL-GUEST",
+          "width_px": 1180.863755380846
+        },
+        {
+          "cap_height_25_px": 17.0,
+          "cap_height_px": 68.0,
+          "id": "password_hint",
+          "text": "Password: see back",
+          "width_px": 875.1463614707585
+        },
+        {
+          "cap_height_25_px": 10.25,
+          "cap_height_px": 41.0,
+          "id": "small_notice",
+          "text": "Please do not share with visitors.",
+          "width_px": 863.9719300251879
+        }
+      ]
+    },
+    {
+      "color_space": "sRGB",
+      "opaque": true,
+      "path": "game/rooms/night_shift/assets/docs/wifi_card_back.png",
+      "preview": "assets/previews/printables/wifi_card_back_25.png",
+      "preview_background": "document",
+      "preview_sha256": "8019551e8672c96046e7154e5b7b03500e2ed468b94b1bbe55ee2f40e4168dcb",
+      "rgba": true,
+      "sha256": "74381cd5c67f51ed5964754725c7c0e6d2bb53664ff911edcbf2d5099f8a9873",
+      "size": [
+        1536,
+        1024
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 21.0,
+          "cap_height_px": 84.0,
+          "id": "password",
+          "text": "Password: Kestrel#2019",
+          "width_px": 1237.32
+        },
+        {
+          "cap_height_25_px": 15.75,
+          "cap_height_px": 63.0,
+          "id": "reuse_note",
+          "text": "(same as my intranet one -",
+          "width_px": 1026.8999999999996
+        },
+        {
+          "cap_height_25_px": 15.75,
+          "cap_height_px": 63.0,
+          "id": "rotation_note",
+          "text": "IT, rotate this!! - M. Reyes)",
+          "width_px": 1036.3499999999997
+        }
+      ]
+    }
+  ],
+  "printed_font": "Blender 5.2 bundled Inter.woff2 (OFL-1.1)",
+  "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
+  "request_sha256": "309c439d08901e9fda08ae4f85925e9a7f4eec84d29204417ab3a4f0d3e7f284",
+  "seed": 417,
+  "source_sha256": "9ef2bffa26e58a8fe10200153f8d2f4f4d16acd84a310e52398662d30bb0210a"
+}

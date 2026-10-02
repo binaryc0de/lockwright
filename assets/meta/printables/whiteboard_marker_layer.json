@@ -1,0 +1,69 @@
+{
+  "asset_id": "whiteboard_marker_layer",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": false,
+      "path": "game/rooms/night_shift/assets/docs/whiteboard_marker_layer.png",
+      "preview": "assets/previews/printables/whiteboard_marker_layer_25.png",
+      "preview_background": "white enamel for legibility",
+      "preview_sha256": "2d378ca22deb443de1131c2f7c293126359da1b9b2da2798a14c3e408bf495b9",
+      "rgba": true,
+      "sha256": "afb3a90f1f16bd11a9b8e3ac32bf93780d9c5e5ab76a47c94bd1ad561d6f3a76",
+      "size": [
+        2048,
+        1262
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 14.75,
+          "cap_height_px": 59.0,
+          "id": "heading",
+          "text": "MIGRATION - NIGHT 2",
+          "width_px": 781.7499999999998
+        },
+        {
+          "cap_height_25_px": 14.75,
+          "cap_height_px": 59.0,
+          "id": "backup",
+          "text": "[x] backup core-sw",
+          "width_px": 684.9899999999999
+        },
+        {
+          "cap_height_25_px": 14.75,
+          "cap_height_px": 59.0,
+          "id": "dns",
+          "text": "[x] move DNS",
+          "width_px": 456.66
+        },
+        {
+          "cap_height_25_px": 14.75,
+          "cap_height_px": 59.0,
+          "id": "cutover",
+          "text": "[ ] cutover 23:30",
+          "width_px": 592.3599999999999
+        },
+        {
+          "cap_height_25_px": 14.75,
+          "cap_height_px": 59.0,
+          "id": "cabinet_context",
+          "text": "Filing cabinet code:",
+          "width_px": 692.6599999999999
+        },
+        {
+          "cap_height_25_px": 14.75,
+          "cap_height_px": 59.0,
+          "id": "uv_context",
+          "text": "UV pen (audit rule!)  -->",
+          "width_px": 837.2099999999998
+        }
+      ]
+    }
+  ],
+  "printed_font": "Blender 5.2 bundled Inter.woff2 (OFL-1.1)",
+  "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
+  "request_sha256": "d99cd48f566347ed91d585c1118e1fd3b71be8ff1668dec735a826f3d8a50bce",
+  "seed": 417,
+  "source_sha256": "9ef2bffa26e58a8fe10200153f8d2f4f4d16acd84a310e52398662d30bb0210a"
+}

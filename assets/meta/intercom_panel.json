@@ -1,0 +1,153 @@
+{
+  "anchors_godot_m": {
+    "screen_centre": [
+      0,
+      0.067,
+      -0.038
+    ],
+    "screen_size": [
+      0.18,
+      0.1
+    ]
+  },
+  "animations": [],
+  "asset_id": "intercom_panel",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural base color, tangent normal, ORM (R=1, G=roughness, B=metallic)",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.109999999,
+      0.159999996,
+      -0.0
+    ],
+    "min": [
+      -0.109999999,
+      -0.159999996,
+      -0.04256
+    ]
+  },
+  "bounds_m": [
+    0.219999999,
+    0.04256,
+    0.319999993
+  ],
+  "built_at": "2026-10-02T14:34:16+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/intercom_panel.glb",
+  "glb_sha256": "3494cbfac711715fdac2c0662bbac52c13552520c75a731d4b86cc6ca5736adf",
+  "housing_dimensions_godot_m": [
+    0.22,
+    0.32,
+    0.04
+  ],
+  "lettering": "original geometry stroke alphabet: SECURITY and CALL",
+  "materials": [
+    "M_intercom_panel_body",
+    "M_intercom_panel_button",
+    "M_intercom_panel_grille",
+    "M_intercom_panel_led",
+    "M_intercom_panel_screen"
+  ],
+  "origin": "mount_plane_center",
+  "parts": [
+    "body",
+    "btn_call",
+    "led_status",
+    "screen"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "screen_recess_m": 0.002,
+  "screen_uv": "0..1, unmirrored front view; origin at front surface centre",
+  "script_sha256": "5646aca1cf2e5c5958ff9a3db8f0cdff86a792777a69934f23de70fce9bef9a6",
+  "speaker_grille": {
+    "bore_diameter_m": 0.0029,
+    "sheet_thickness_m": 0.0012,
+    "through_holes": 120
+  },
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_intercom_panel_body",
+      "name": "T_intercom_panel_body_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_intercom_panel_body",
+      "name": "T_intercom_panel_body_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_intercom_panel_body",
+      "name": "T_intercom_panel_body_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_intercom_panel_button",
+      "name": "T_intercom_panel_button_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_intercom_panel_button",
+      "name": "T_intercom_panel_button_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_intercom_panel_button",
+      "name": "T_intercom_panel_button_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "triangles": 18988
+}

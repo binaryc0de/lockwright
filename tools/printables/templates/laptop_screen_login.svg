@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1283" viewBox="0 0 2048 1283">
+  <rect x="0" y="0" width="2048" height="1283" fill="#132d47"/>
+  <!-- Minimal browser: single tab, address field, original geometric controls. -->
+  <rect x="0" y="0" width="2048" height="66" fill="#202b37"/>
+  <rect x="40" y="15" width="450" height="54" rx="12" fill="#364553"/>
+  <text x="74" y="51" font-size="23" fill="#e5eaef"><tspan id="tab_title">Kestrel Intranet</tspan></text>
+  <polyline points="451,32 465,46" fill="none" stroke="#bcc6cf" stroke-width="2"/>
+  <polyline points="465,32 451,46" fill="none" stroke="#bcc6cf" stroke-width="2"/>
+  <rect x="0" y="66" width="2048" height="76" fill="#364553"/>
+  <polyline points="53,94 39,106 53,118" fill="none" stroke="#dce2e8" stroke-width="3"/>
+  <polyline points="90,94 104,106 90,118" fill="none" stroke="#81909e" stroke-width="3"/>
+  <rect x="157" y="79" width="1640" height="49" rx="16" fill="#243342"/>
+  <text x="196" y="113" font-size="22" fill="#cbd5dc"><tspan id="address">intranet.kestrel.local</tspan></text>
+  <circle cx="1878" cy="102" r="3" fill="#dbe3ea"/>
+  <circle cx="1892" cy="102" r="3" fill="#dbe3ea"/>
+  <circle cx="1906" cy="102" r="3" fill="#dbe3ea"/>
+  <text x="1024" y="261" font-size="46" data-width="1250" text-anchor="middle" fill="#e8eff4"><tspan id="wordmark">Kestrel Logistics</tspan></text>
+  <!-- Restrained flat web card with CSS-like shadow, not physical paper wear. -->
+  <rect x="411" y="342" width="1234" height="743" rx="18" fill="#0c2032"/>
+  <rect x="405" y="333" width="1234" height="739" rx="16" fill="#ffffff"/>
+  <text x="487" y="461" font-size="58" data-width="1056" font-weight="bold" fill="#18344e"><tspan id="heading">{{0}}</tspan></text>
+  <rect x="485" y="511" width="1074" height="106" rx="7" fill="#fff0d8" stroke="#dfad64" stroke-width="2"/>
+  <text x="516" y="574" font-size="33" data-width="1010" fill="#7f451c"><tspan id="expiry_notice">{{1}}</tspan></text>
+  <text x="487" y="678" font-size="34" fill="#334c60"><tspan id="username_label">{{2}}</tspan></text>
+  <rect x="485" y="703" width="1074" height="84" rx="6" fill="#f9fbfc" stroke="#97a9b7" stroke-width="2"/>
+  <text x="487" y="849" font-size="34" fill="#334c60"><tspan id="password_label">{{3}}</tspan></text>
+  <rect x="485" y="874" width="1074" height="84" rx="6" fill="#f9fbfc" stroke="#97a9b7" stroke-width="2"/>
+  <rect x="1232" y="985" width="327" height="66" rx="6" fill="#245c87"/>
+  <text x="1395" y="1030" font-size="33" text-anchor="middle" fill="#ffffff"><tspan id="submit">{{4}}</tspan></text>
+  <rect x="0" y="1223" width="2048" height="60" fill="#17232f"/>
+  <rect x="29" y="1240" width="14" height="14" fill="#aab6c0"/>
+  <rect x="48" y="1240" width="14" height="14" fill="#aab6c0"/>
+  <rect x="29" y="1259" width="14" height="14" fill="#aab6c0"/>
+  <rect x="48" y="1259" width="14" height="14" fill="#aab6c0"/>
+  <circle cx="128" cy="1254" r="13" fill="none" stroke="#aab6c0" stroke-width="3"/>
+  <text x="1967" y="1265" font-size="31" text-anchor="middle" fill="#e1e8ed"><tspan id="clock">{{5}}</tspan></text>
+</svg>

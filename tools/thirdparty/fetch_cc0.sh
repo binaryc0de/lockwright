@@ -60,3 +60,5 @@ polyhaven_model office_notepads 1k
 polyhaven_model stationery_supplies 1k
 polyhaven_model clipboard 1k
 polyhaven_model cardboard_box_01 1k
+polyhaven_model fire_alarm 1k
+polyhaven_model security_camera_02 1k

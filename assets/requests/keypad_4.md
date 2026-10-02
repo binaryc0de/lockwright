@@ -36,7 +36,7 @@ A small surface-mounted electronic keypad lock of the kind bolted to a filing ca
 | `btn_enter` | ENT key | yes |
 | `screen` | display window; separate material `M_keypad_4_screen` | yes (Claude puts a Label3D in front of it) |
 | `led_status` | status LED dome; separate material `M_keypad_4_led` (emissive, neutral white base so Godot can tint it red/green at runtime) | yes |
-| `body-col` | collision box covering the whole keypad | no (helper, imports as collision) |
+| `body-colonly` | collision box covering the whole keypad (renamed from `body-col` 2026-10-02) | no (helper, imports as collision only) |
 
 ## Transforms
 - This is a **wall/surface-mount prop**: origin at the centre of the back mounting face (the face that touches the cabinet).

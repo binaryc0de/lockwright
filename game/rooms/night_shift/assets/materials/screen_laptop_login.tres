@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/laptop_screen_login.png" id="1"]
+
+[resource]
+resource_name = "screen_laptop_login"
+albedo_texture = ExtResource("1")
+roughness = 0.12
+emission_enabled = true
+emission_energy_multiplier = 0.9
+emission_texture = ExtResource("1")

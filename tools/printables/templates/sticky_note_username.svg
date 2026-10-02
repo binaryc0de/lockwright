@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect x="0" y="0" width="1024" height="1024" fill="#f2db73"/>
+  <text x="92" y="305" font-size="70" data-width="840" data-lettering="stroke" stroke-width="5.2" data-slant="0.07" fill="#292a28"><tspan id="login_context">{{0}}</tspan></text>
+  <text x="64" y="501" font-size="113" data-width="886" data-lettering="stroke" stroke-width="6.9" data-slant="0.08" fill="#242522"><tspan id="username">{{1}}</tspan></text>
+  <polyline points="94,548 293,552 552,546 765,549 912,545" fill="none" stroke="#242522" stroke-width="6"/>
+  <text x="51" y="710" font-size="42" data-width="916" data-lettering="stroke" stroke-width="3.2" data-slant="0.08" fill="#292a28"><tspan id="password_context">{{2}}</tspan></text>
+</svg>

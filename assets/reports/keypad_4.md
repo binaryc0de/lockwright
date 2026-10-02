@@ -116,3 +116,49 @@ was used. A room screenshot and gameplay wiring remain Claude's review.
 
 No runtime code, room YAML, request file, or other agent's tooling was
 edited. No commit was made.
+
+## Revision — 2026-10-02: collision-only helper
+
+Applied Claude's dated M1 look-test follow-up: renamed the separate collision
+box from `body-col` to `body-colonly` in `tools/blender/props/keypad_4.py`,
+including its metadata declaration and expected-part check. Rebuilt the GLB
+and refreshed `assets/meta/keypad_4.json`. Status remains accepted; the
+request file was not edited.
+
+Compared against a snapshot of the original accepted output. The GLB JSON
+changes only `nodes[1].name` and `meshes[1].name`; its complete binary chunk
+is byte-identical, preserving all geometry and embedded textures. Bounds,
+key transforms, materials, triangle count (5,674), parts count (16), and
+animations are unchanged. Metadata changes only the collision/part name,
+script hash, GLB hash, and build timestamp. New GLB SHA-256:
+
+```text
+5b15b794fd4840c8e3113cfa107ecef17a15a207d65247430a8a32f3ffb80536
+```
+
+The build regenerated all three previews with Cycles CPU, four threads.
+Those renders had tiny pixel differences from the accepted PNGs (maximum
+3/255 per channel), so the original front/iso/detail PNGs were restored
+byte-for-byte to fulfill the requested output identity. Regenerated images
+and comparison evidence remain in ignored
+`assets/cache/keypad_4-collision-revision-20261002/`.
+
+Verification actually run on the Alienware Linux host, Blender 5.2.2 LTS
+and Godot 4.7.2:
+
+- `tools/blender/build_assets.sh keypad_4`: exit 0; actual final line:
+  `ASSET BUILT: ~/Work/escapebox/game/assets/core/props/keypad_4.glb; 5674 triangles; 5 materials`.
+- `go run ./tools/assetcheck keypad_4`: exit 0; actual output below.
+- Godot headless import in an isolated project under the revision cache:
+  exit 0. Ran an unchanged copy of
+  `game/tests/assets/test_keypad_4.gd` with gdUnit4: **4/4 passed**, zero
+  errors/failures; `test_has_collision` still finds a `StaticBody3D`.
+  The shared game's import files and extracted textures were not touched.
+
+```text
+PASS keypad_4 (5674 tris, 16 parts)
+assetcheck: 1 asset(s) checked, 1 passed, 0 failed, 0 warning(s)
+```
+
+No visual redesign, shared helper changes, other asset edits, runtime or
+room edits, or commit. In-room visual review remains Claude's lane.
