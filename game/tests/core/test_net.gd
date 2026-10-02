@@ -368,3 +368,31 @@ func test_ambient_loop_is_seamless_length() -> void:
 	for i in range(0, w.data.size() - 2, 2):
 		biggest = maxi(biggest, absi(w.data.decode_s16(i + 2) - w.data.decode_s16(i)))
 	assert_int(absi(w.data.decode_s16(0) - w.data.decode_s16(w.data.size() - 2))).is_less_equal(biggest)
+
+
+func test_patch_panel_moves_plugs_to_their_ports() -> void:
+	var panel := auto_free(PatchPanel.new()) as PatchPanel
+	var m := Node3D.new()
+	m.name = "Model"
+	panel.add_child(m)
+	for id in ["a", "b"]:
+		var hang := Node3D.new()
+		hang.name = "cable_" + id
+		m.add_child(hang)
+		var plug := Node3D.new()
+		plug.name = "plug_" + id
+		plug.position = Vector3(-0.21, 0.008, -0.103)
+		m.add_child(plug)
+	panel.model = NodePath("Model")
+	panel.cable_ids = PackedStringArray(["A", "B"])
+	panel._apply_state({"state": "idle", "connections": {"A": 3}})
+	var pa := m.get_node("plug_a") as Node3D
+	assert_bool(pa.visible).is_true()
+	assert_bool((m.get_node("cable_a") as Node3D).visible).is_false()
+	assert_vector(pa.position).is_equal_approx(Vector3(-0.09, 0.008, -0.103), Vector3.ONE * 1e-5)
+	assert_bool((m.get_node("plug_b") as Node3D).visible).is_false()
+	assert_bool((m.get_node("cable_b") as Node3D).visible).is_true()
+	# Re-patching moves from the parked port, not from the last port.
+	panel._apply_state({"state": "idle", "connections": {"A": 1, "B": 8}})
+	assert_vector(pa.position).is_equal_approx(Vector3(-0.21, 0.008, -0.103), Vector3.ONE * 1e-5)
+	assert_float((m.get_node("plug_b") as Node3D).position.x).is_equal_approx(0.21, 1e-5)

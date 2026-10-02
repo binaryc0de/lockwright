@@ -145,3 +145,21 @@ func test_evidence_board_shows_image_backed_documents() -> void:
 	board._show(0)
 	assert_str(board._detail.get_parsed_text()).contains(note.title)
 	assert_int(board._detail.get_paragraph_count()).is_greater(1)
+
+
+func test_focused_view_moves_the_camera_in_and_back() -> void:
+	var lock := room.get_node("Cabinet/Keypad") as KeypadLock
+	var at := lock.global_position
+	player.global_position = at + Vector3(0, -FirstPersonPlayer.EYE_HEIGHT, 2.0)
+	player.set_physics_process(false)  # no floor in the test room: don't fall
+	var home := player.camera.transform
+	hud.open_keypad(lock)
+	await await_millis(int(FirstPersonPlayer.FOCUS_TIME * 1000) + 150)
+	assert_bool(player.is_focused()).is_true()
+	var shapes := lock.find_children("*", "CollisionShape3D", true, false)
+	var aim: Vector3 = (shapes[0] as Node3D).global_position if not shapes.is_empty() else at
+	assert_float(player.camera.global_position.distance_to(aim)).is_equal_approx(FirstPersonPlayer.FOCUS_DISTANCE, 0.02)
+	hud._modal.close()
+	await await_millis(int(FirstPersonPlayer.FOCUS_TIME * 1000) + 150)
+	assert_bool(player.is_focused()).is_false()
+	assert_vector(player.camera.transform.origin).is_equal_approx(home.origin, Vector3.ONE * 1e-3)

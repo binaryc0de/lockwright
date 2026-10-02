@@ -11,6 +11,9 @@ const ACCEL := 12.0
 const EYE_HEIGHT := 1.6
 ## Distance between footstep sounds.
 const STRIDE_M := 0.6
+## Focused views: how close the camera comes, and how fast.
+const FOCUS_DISTANCE := 0.55
+const FOCUS_TIME := 0.25
 const REACH := 3.0
 const RADIUS := 0.3
 const HEIGHT := 1.75
@@ -25,6 +28,7 @@ var input_enabled: bool = true
 var _pitch: float = 0.0
 var _report_timer: float = 0.0
 var _stride := 0.0
+var _focus_tween: Tween
 
 
 func _ready() -> void:
@@ -57,6 +61,37 @@ func place_at(t: Transform3D) -> void:
 	rotation.y = t.basis.get_euler().y
 	_pitch = 0.0
 	camera.rotation.x = 0.0
+
+
+## Focused views (PLAN.md 6.5): move the camera in along the current line of
+## sight until it is FOCUS_DISTANCE from `point`, looking at it. The path is the
+## player's own view ray, so the camera never passes through walls.
+func focus_on(point: Vector3) -> void:
+	var eye := global_position + Vector3.UP * EYE_HEIGHT
+	var to := point - eye
+	if to.length() <= FOCUS_DISTANCE + 0.05:
+		return
+	var dir := to.normalized()
+	var goal := Transform3D(Basis.looking_at(dir, Vector3.UP if absf(dir.y) < 0.99 else Vector3.BACK), point - dir * FOCUS_DISTANCE)
+	_tween_camera(global_transform.affine_inverse() * goal)
+
+
+func unfocus() -> void:
+	_tween_camera(Transform3D(Basis.from_euler(Vector3(_pitch, 0, 0)), Vector3.UP * EYE_HEIGHT))
+
+
+func is_focused() -> bool:
+	return not camera.transform.origin.is_equal_approx(Vector3.UP * EYE_HEIGHT)
+
+
+func _tween_camera(local: Transform3D) -> void:
+	if _focus_tween:
+		_focus_tween.kill()
+	if not is_inside_tree():
+		camera.transform = local
+		return
+	_focus_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_focus_tween.tween_property(camera, "transform", local, FOCUS_TIME)
 
 
 func _unhandled_input(event: InputEvent) -> void:

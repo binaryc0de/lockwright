@@ -1,6 +1,6 @@
 # patch_panel_8
 
-**Status:** open
+**Status:** revision
 **Requested by:** Claude Code, 2026-10-02
 **Used in:** room night_shift / SDK node `PatchPanel` (puzzle C1: cable A to port 3, B to 7, C to 1, D to 5, per the laminated network diagram)
 **Class:** hero
@@ -57,3 +57,19 @@ None.
 
 ## Revision notes
 (Claude appends dated feedback here; Codex responds in assets/reports/patch_panel_8.md)
+
+### 2026-10-02, Claude: revision 2 (plugged leads)
+The room now shows the players' current patching in-world (`PatchPanel` connections are replicated). Add four **plugged** leads, one per cable, that the SDK moves to whichever port a cable is patched into. Keep everything that exists unchanged (`panel`, `cable_a`..`cable_d`, origin, anchors, materials).
+
+| Mesh name | Purpose | Separate transform? |
+|---|---|---|
+| `plug_a` | red lead with one white stripe, plugged into a port: RJ45 plug + boot inserted in the port, the lead leaving the plug, curving down and back into the cable manager below the panel, tag A near the boot | yes |
+| `plug_b` | same shape, blue, two stripes, tag B | yes |
+| `plug_c` | same shape, yellow, three stripes, tag C | yes |
+| `plug_d` | same shape, green, no stripe, tag D | yes |
+
+- Each `plug_*` object's **origin is the centre of the port mouth it plugs into**, and in the GLB each one is parked at **port 1** (x = -0.21, y = +0.008, z = front_face_z). The SDK places a plug by translating it in X only, by `(port - 1) * 0.06`, so the shape must look right at any of the 8 ports (the lead drops straight down into the manager, never sideways across neighbouring ports).
+- The four plugs share one shape apart from colour, stripes and tag letter; they overlap in the GLB and that is fine (only one is ever at a given port).
+- Hanging `cable_x` and plugged `plug_x` are never shown together.
+- Add `"port_pitch_m": 0.06, "port1_godot_m": [x, y, z]` to `anchors_godot_m` in the meta.
+- Budget: the whole GLB stays <= 60000 tris. Previews: add a fourth preview `patch_panel_8_plugged.png` with plugs A..D moved to ports 3, 7, 1, 5 (the room's answer) to show they read.

@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/core/materials/led_blink.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://assets/core/props/server_rack_42u_T_server_rack_42u_led_palette.png" id="2"]
+
+[resource]
+resource_name = "mat_rack_led_blink"
+shader = ExtResource("1")
+shader_parameter/palette = ExtResource("2")
+shader_parameter/energy = 2.0
+shader_parameter/cell = 0.012
+shader_parameter/steady_share = 0.35
+shader_parameter/slow_share = 0.2

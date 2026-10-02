@@ -74,6 +74,7 @@
 [ext_resource type="PackedScene" path="res://assets/core/props/uv_torch.glb" id="86_uvtorch"]
 [ext_resource type="PackedScene" path="res://assets/core/props/usb_stick.glb" id="87_usb"]
 [ext_resource type="PackedScene" path="res://assets/core/props/exit_sign_lightbox.glb" id="88_exitsign"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_rack_led_blink.tres" id="89_ledblink"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
 size = Vector3(0.39, 0.34, 0.52)
 
@@ -1709,6 +1710,7 @@ solution = "A:3,B:7,C:1,D:5"
 targets = Array[NodePath]([NodePath("../../Office/ExitDoor/Keypad")])
 display_name = "Patch panel P1"
 verbs = PackedStringArray("patch")
+model = NodePath("Model")
 
 [node name="Panel" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=2010716929]
 
@@ -2392,3 +2394,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.006, 0)
 
 [node name="ExitSignLightbox" parent="Structure" instance=ExtResource("88_exitsign")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.695, 2.2, 2.5)
+
+[node name="leds" parent="Cage/RackModel"]
+surface_material_override/0 = ExtResource("89_ledblink")

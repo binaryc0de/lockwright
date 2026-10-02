@@ -14,6 +14,13 @@ extends Interactable
 ## Correct mapping, "A:3,B:1,C:4,D:2". Server-only.
 @export var solution: String = ""
 @export var targets: Array[NodePath] = []
+## Optional model with `cable_<id>` (hanging) and `plug_<id>` (plugged, parked
+## at port 1) parts, ids lower-cased. Patched cables show their plug moved to
+## the port along the model's X axis; the rest hang.
+@export var model: NodePath
+@export var port_pitch: float = 0.06
+
+var _plug_home := {}  # plug node -> its port-1 position
 
 
 func _init() -> void:
@@ -74,6 +81,26 @@ func _server_intent(_player_id: String, verb: String, payload: Dictionary) -> Di
 			authority.activate(room_path_of(t))
 		return {"ok": true}
 	return {"ok": false, "error": "no_effect", "message": "Nothing happens."}
+
+
+func _apply_state(state: Dictionary) -> void:
+	var m := get_node_or_null(model)
+	if m == null:
+		return
+	var conn: Dictionary = state.get("connections", {})
+	for id in cable_ids:
+		var plug := m.find_child("plug_" + id.to_lower(), true, false) as Node3D
+		var hanging := m.find_child("cable_" + id.to_lower(), true, false) as Node3D
+		if plug == null:
+			continue  # an older model without plugs: cables always hang
+		if not _plug_home.has(plug):
+			_plug_home[plug] = plug.position
+		var port := int(conn.get(id, 0))
+		plug.visible = port > 0
+		if hanging:
+			hanging.visible = port <= 0
+		if port > 0:
+			plug.position = (_plug_home[plug] as Vector3) + Vector3((port - 1) * port_pitch, 0, 0)
 
 
 func client_interact(_item_path: String = "") -> void:

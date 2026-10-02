@@ -162,6 +162,20 @@ func _open(panel: ModalPanel) -> ModalPanel:
 	return panel
 
 
+## Moves the camera in on a device while its focused panel is open.
+func _focus(target: Node3D, panel: ModalPanel) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	var at := target.global_position
+	var shapes := target.find_children("*", "CollisionShape3D", true, false)
+	if not shapes.is_empty():
+		at = (shapes[0] as Node3D).global_position
+	player.focus_on(at)
+	panel.closed.connect(func() -> void:
+		if is_instance_valid(player):
+			player.unfocus())
+
+
 func _set_free_mouse(free: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if free else Input.MOUSE_MODE_CAPTURED
 	if player:
@@ -178,15 +192,18 @@ func open_item(item: Item) -> void:
 
 
 func open_keypad(lock: KeypadLock) -> void:
-	(_open(KeypadPanel.new()) as KeypadPanel).setup(lock)
+	_focus(lock, (_open(KeypadPanel.new()) as KeypadPanel))
+	(_modal as KeypadPanel).setup(lock)
 
 
 func open_patch_panel(panel: PatchPanel) -> void:
-	(_open(PatchPanelUI.new()) as PatchPanelUI).setup(panel)
+	_focus(panel, (_open(PatchPanelUI.new()) as PatchPanelUI))
+	(_modal as PatchPanelUI).setup(panel)
 
 
 func open_terminal(term: Terminal) -> void:
-	(_open(TerminalPanel.new()) as TerminalPanel).setup(term)
+	_focus(term, (_open(TerminalPanel.new()) as TerminalPanel))
+	(_modal as TerminalPanel).setup(term)
 
 
 var tutorial: TutorialOverlay = null
