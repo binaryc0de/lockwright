@@ -2,7 +2,7 @@
 
 Milestone checklist from PLAN.md Section 11. Check an item only when it was actually run; each milestone ends with a verification note saying what ran, where, and with which command. Untested things are listed as untested.
 
-**Current milestone: M2 (multiplayer).** M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Pulled forward from M4 at the owner's request: dressing the server cage.
+**Current milestone: M2 (multiplayer).** M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Server cage dressed (pulled forward from M4) and merged. M2 networking working headless; LAN play-test with real people pending.
 
 ## M0: Repo and specs
 
@@ -48,7 +48,20 @@ Milestone checklist from PLAN.md Section 11. Check an item only when it was actu
 Deferred to later milestones, noted from the room build: camera move-in for focused views (M4 polish); in-world patch cable visuals (M4); "use UV torch on X" as an explicit intent (the reveal is passive, solution uses `examine`); MaglockGate is an Interactable that is never targetable; `godot --script` tools cannot reference SDK classes because the `Game` autoload is absent in that mode; Planned SDK nodes in ROOM_AUTHORING.md.
 
 ## M2: Multiplayer
-Not started.
+Started 2026-10-02 on branch `m2-multiplayer` (design: ADR-0015).
+- [x] Dedicated server mode: `godot --headless --path game -- --server --session --room [--port --transport --token --snapshot]` (export templates still not installed, so no `escapebox-server` binary yet; the same project runs headless)
+- [x] ENet and WebSocket transports
+- [x] Join token handshake against a stub verifier (shared invite token; platform verify is M3); rejection reaches the client
+- [x] World sync: whole-snapshot push coalesced per frame, client mirror diff re-applies only changed nodes; events and intent results ordered after the state push
+- [x] Async intents (`Game.request(..., on_result)`); offline mode unchanged
+- [x] Player positions 15 Hz, sent with every intent; remote avatars (capsule, head lamp, name tag)
+- [x] Pickup conflicts (first intent wins, server-serialised), evidence notes, hints, auto-nudge, clock start through the server; server-owned timer with client clock offset
+- [x] Co-inspection notice ("X is examining Y") and join/leave toasts
+- [x] Snapshot export/import to JSON; server restart resumes from the snapshot; clients reconnect automatically (2 s retry, ~6 s dead-server detection)
+- [x] `tools/m2_smoke.sh` (in `tools/test.sh`): server + 3 bots + crash/restore + rejected token + WebSocket
+- [ ] Windowed check: two real clients on this PC see each other's avatars and play together (not yet run; needs a person at the keyboard or a GPU screenshot harness)
+- [ ] Acceptance on real hardware: 3 clients (2 on one PC + 1 remote LAN PC) play Night Shift together; disconnect/rejoin; server restart (owner)
+- [ ] Main menu "Join" form (today joining is command-line only)
 
 ## M3: Platform service and CTF orchestration
 Not started. Known blocker: the dev user is not in the `docker` group (`permission denied` on `/var/run/docker.sock`); decide rootless Docker vs group membership before M3 (PLAN.md open question 1).
@@ -122,3 +135,9 @@ Not started.
 - Room: greybox cage meshes stripped, colliders and node paths kept; door leaf follows the SDK hinge via RemoteTransform3D; cage maglock LED and patch panel visuals from the GLBs; RACK 062 is a textured decal on the rack's blank plate (Document text unchanged; all nine clue strings verified identical to main).
 - Ran: Godot import clean; roomcheck PASS; gdUnit4 55/55; `packroom -verify night_shift` passes from the pack; `tools/shots/cage_views.sh` rendered 7 views after and 7 "before" from a worktree of main (16d93a6), no errors.
 - Review notes: the "slab" in `05_cage_inside` is the back of the rack (solid black cabinet near the east wall), not a stray mesh. The painted-concrete floor is busy (worn patches); swap or tone down if the owner dislikes it. Patch cables stay hanging after the puzzle is solved (in-world re-patching is still deferred). Rack LEDs are static emissive (no blink yet).
+
+### 2026-10-02, M2 networking (branch m2-multiplayer)
+- `tools/test.sh`: exit 0. go test, roomcheck, assetcheck 20/20, Godot import clean, gdUnit4 63/63 (8 new in `tests/core/test_net.gd`: client/server args, snapshot store incl. corrupt file, join verifier, unique player ids, every Night Shift solution step maps to an intent, client mirror applies and announces only changes, offline intents still synchronous, disconnected client fails fast), pack replay, and `tools/m2_smoke.sh` PASS.
+- `tools/m2_smoke.sh` passed 4 runs in a row on the Alienware (all headless, one machine): Carol (idle observer) joins; Alice plays solution steps 0-8 over ENet; the server is `kill -9`ed and restarted with `restored snapshot`; Carol reconnects on her own; Bob plays steps 9-15 and wins; Carol receives the live win event; Mallory with a wrong token is rejected (exit 3); Dana joins over WebSocket and plays two steps.
+- Found and fixed while building: a 2 s server-side ENet timeout dropped clients that were still loading the room (the load blocks the main loop for seconds); the server now keeps ENet defaults and the client tightens its own timeout only after loading. The rejection RPC was lost when the peer was dropped in the same frame; the drop is now delayed 0.5 s.
+- Not verified: anything visual or interactive in multiplayer (avatars, HUD toasts, two windows at once), a second physical machine, the 60 fps target with avatars.

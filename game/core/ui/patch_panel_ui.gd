@@ -42,7 +42,12 @@ func _connect() -> void:
 			_status.text = "Every cable needs a port."
 			return
 		m[id] = port
-	var r := Game.request(panel, "patch", {"value": PatchPanel.format_mapping(m)})
+	Game.request(panel, "patch", {"value": PatchPanel.format_mapping(m)}, _on_result)
+
+
+func _on_result(r: Dictionary) -> void:
+	if not is_instance_valid(self) or not is_inside_tree():
+		return
 	if r.get("ok", false):
 		_status.text = "Relay clicks. Something powers up."
 		get_tree().create_timer(1.0).timeout.connect(close)

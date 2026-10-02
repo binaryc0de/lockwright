@@ -60,17 +60,22 @@ func _on_submit(text: String) -> void:
 		if text.strip_edges().is_empty():
 			_status.text = "Type or paste a flag first."
 			return
-		var r := Game.request(term, "submit_flag", {"value": text.strip_edges()})
-		if r.get("ok", false):
-			_status.text = "ACCESS GRANTED"
-			_log.append_text("[color=#5f5]> flag accepted[/color]\n")
-		elif r.has("retry_after_s"):
-			_status.text = "Too many attempts. Wait %d s." % int(r["retry_after_s"])
-		else:
-			_status.text = "Flag rejected."
-			_log.append_text("[color=#f55]> flag rejected[/color]\n")
+		Game.request(term, "submit_flag", {"value": text.strip_edges()}, _on_flag_result)
 		return
 	if text.strip_edges() == "clear":
 		_log.clear()
 		return
 	_log.append_text("[b]$ %s[/b]\n%s\n" % [text.replace("[", "[lb]"), term.run_command(text).replace("[", "[lb]")])
+
+
+func _on_flag_result(r: Dictionary) -> void:
+	if not is_instance_valid(self) or not is_inside_tree():
+		return
+	if r.get("ok", false):
+		_status.text = "ACCESS GRANTED"
+		_log.append_text("[color=#5f5]> flag accepted[/color]\n")
+	elif r.has("retry_after_s"):
+		_status.text = "Too many attempts. Wait %d s." % int(r["retry_after_s"])
+	else:
+		_status.text = "Flag rejected."
+		_log.append_text("[color=#f55]> flag rejected[/color]\n")

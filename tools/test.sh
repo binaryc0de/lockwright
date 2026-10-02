@@ -36,3 +36,6 @@ for room_yaml in game/rooms/*/room.yaml; do
     go run ./tools/packroom -verify "$id"
   fi
 done
+
+step "multiplayer smoke (server + bots + crash/restore + ws, ADR-0015)"
+GODOT="$GODOT" tools/m2_smoke.sh

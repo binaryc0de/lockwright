@@ -1,0 +1,252 @@
+class_name SessionServer
+extends Node
+## Dedicated-server side of a session (PLAN.md 7, ADR-0015): owns the peer,
+## the joined players and the snapshot file, and turns RoomAuthority changes
+## into RPCs. Game must already be in SERVER mode with the room loaded.
+
+const ROSTER_HZ := 15.0
+const SNAPSHOT_DEBOUNCE_S := 0.5
+const SNAPSHOT_PERIOD_S := 30.0
+const MAX_PLAYERS := 6
+
+var session_id: String = ""
+var room_id: String = ""
+var room_version: String = ""
+var verifier: JoinVerifier
+var store: SnapshotStore
+
+## peer id -> {id: player id, name: display name}
+var players: Dictionary = {}
+## player id -> {name, pos: Vector3, yaw: float}
+var _positions: Dictionary = {}
+
+var _net: NetBridge
+var _auth: RoomAuthority
+var _dirty := false
+var _outbox: Array = []          # [[peer or 0 for all, kind, payload...]] sent after the state push
+var _roster_t := 0.0
+var _save_due := -1.0
+var _save_period_t := 0.0
+
+
+## Opens the listening socket. Returns OK or an Error.
+func start(port: int, transport: String, p_verifier: JoinVerifier, p_store: SnapshotStore) -> Error:
+	verifier = p_verifier
+	store = p_store
+	_net = Game.net
+	_auth = Game.authority
+	_net.server = self
+	var err: Error
+	var peer: MultiplayerPeer
+	if transport == "ws":
+		var ws := WebSocketMultiplayerPeer.new()
+		err = ws.create_server(port)
+		peer = ws
+	else:
+		var enet := ENetMultiplayerPeer.new()
+		err = enet.create_server(port, MAX_PLAYERS)
+		peer = enet
+	if err != OK:
+		return err
+	multiplayer.multiplayer_peer = peer
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	for sig: Signal in [_auth.node_state_changed, _auth.inventory_changed, _auth.evidence_changed, _auth.puzzles_changed]:
+		sig.connect(func(_a = null, _b = null) -> void: _mark_dirty())
+	_auth.event_logged.connect(func(_k: String, _d: Dictionary) -> void: _mark_dirty())
+	_auth.puzzle_solved.connect(func(id: String) -> void: _queue_event(0, "puzzle_solved", {"puzzle": id}))
+	_auth.hint_revealed.connect(func(p: String, t: int, text: String, a: bool) -> void:
+		_queue_event(0, "hint_revealed", {"puzzle": p, "tier": t, "text": text, "automatic": a}))
+	_auth.narrated.connect(func(t: String) -> void: _queue_event(0, "narrated", {"text": t}))
+	_auth.time_up.connect(func() -> void: _queue_event(0, "time_up", {}))
+	_auth.session_finished.connect(func(won: bool) -> void: _queue_event(0, "session_finished", {"won": won}))
+	print("escapebox server: session %s room %s listening on %s:%d" % [session_id, room_id, transport, port])
+	return OK
+
+
+func stop() -> void:
+	_save_now()
+	if multiplayer.multiplayer_peer:
+		multiplayer.multiplayer_peer.close()
+	multiplayer.multiplayer_peer = null
+	if _net and _net.server == self:
+		_net.server = null
+
+
+# --- Incoming (called by NetBridge) -----------------------------------------
+
+func on_join(peer: int, token: String, display_name: String) -> void:
+	if players.has(peer):
+		return
+	var v := verifier.verify(token)
+	if not v.get("ok", false):
+		_net.rpc_rejected.rpc_id(peer, v.get("reason", "rejected"))
+		print("join rejected for peer %d: %s" % [peer, v.get("reason")])
+		# Let the rejection reach the client before dropping it.
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			if multiplayer.multiplayer_peer and not players.has(peer):
+				multiplayer.multiplayer_peer.disconnect_peer(peer))
+		return
+	var pid := _unique_player_id(display_name)
+	players[peer] = {"id": pid, "name": display_name.strip_edges().left(32)}
+	_auth.event_logged.emit("player_joined", {"player": pid})
+	_net.rpc_welcome.rpc_id(peer, {
+		"player_id": pid,
+		"room_id": room_id,
+		"room_version": room_version,
+		"snapshot_json": JSON.stringify(_auth.snapshot()),
+		"server_now": _auth.clock.call(),
+	})
+	_queue_toast_others(peer, "%s joined." % players[peer]["name"])
+	print("player %s joined (peer %d)" % [pid, peer])
+
+
+func on_intent(peer: int, req_id: int, path: String, verb: String, payload: Dictionary) -> void:
+	var pid := _player(peer)
+	if pid.is_empty():
+		return
+	var r := _auth.handle_intent(pid, path, verb, payload)
+	_mark_dirty()
+	_outbox.append([peer, "result", req_id, r])
+
+
+func on_note(peer: int, req_id: int, text: String) -> void:
+	var pid := _player(peer)
+	if pid.is_empty():
+		return
+	var r := _auth.add_note(pid, players[peer]["name"], text)
+	_mark_dirty()
+	_outbox.append([peer, "result", req_id, r])
+
+
+func on_remove_note(peer: int, note_id: int) -> void:
+	var pid := _player(peer)
+	if not pid.is_empty():
+		_auth.remove_note(pid, note_id)
+		_mark_dirty()
+
+
+func on_hint(peer: int, puzzle_id: String) -> void:
+	var pid := _player(peer)
+	if not pid.is_empty():
+		_auth.request_hint(pid, puzzle_id)
+		_mark_dirty()
+
+
+func on_auto_nudge(peer: int, enabled: bool) -> void:
+	var pid := _player(peer)
+	if not pid.is_empty():
+		_auth.set_auto_nudge(pid, enabled)
+		_mark_dirty()
+
+
+func on_start_clock(peer: int) -> void:
+	var pid := _player(peer)
+	if not pid.is_empty():
+		_auth.start_clock(pid)
+		_mark_dirty()
+
+
+func on_position(peer: int, pos: Vector3, yaw: float) -> void:
+	var pid := _player(peer)
+	if pid.is_empty():
+		return
+	_auth.update_player_position(pid, pos)
+	_positions[pid] = {"name": players[peer]["name"], "pos": pos, "yaw": yaw}
+
+
+func on_examining(peer: int, title: String) -> void:
+	if players.has(peer):
+		_queue_toast_others(peer, "%s is examining %s." % [players[peer]["name"], title.left(60)])
+
+
+func _on_peer_disconnected(peer: int) -> void:
+	if not players.has(peer):
+		return
+	var p: Dictionary = players[peer]
+	players.erase(peer)
+	_positions.erase(p["id"])
+	_auth.player_positions.erase(p["id"])
+	_auth.event_logged.emit("player_left", {"player": p["id"]})
+	_queue_toast_others(peer, "%s left." % p["name"])
+	print("player %s left" % p["id"])
+
+
+# --- Outgoing ---------------------------------------------------------------
+
+func _process(delta: float) -> void:
+	if _net == null:
+		return
+	if _dirty:
+		_dirty = false
+		var json := JSON.stringify(_auth.snapshot())
+		var now: float = _auth.clock.call()
+		for peer: int in players:
+			_net.rpc_state.rpc_id(peer, json, now)
+		_save_due = SNAPSHOT_DEBOUNCE_S if _save_due < 0.0 else _save_due
+	# Results and events follow the state push so a client's callback and
+	# signal handlers already see the world they describe.
+	var out := _outbox
+	_outbox = []
+	for m: Array in out:
+		var target: int = m[0]
+		match m[1]:
+			"result":
+				if players.has(target):
+					_net.rpc_result.rpc_id(target, m[2], m[3])
+			"event":
+				for peer: int in players:
+					if target == 0 or (target < 0 and peer != -target):
+						_net.rpc_event.rpc_id(peer, m[2], m[3])
+	_roster_t -= delta
+	if _roster_t <= 0.0 and not players.is_empty():
+		_roster_t = 1.0 / ROSTER_HZ
+		for peer: int in players:
+			_net.rpc_roster.rpc_id(peer, _positions)
+	if _save_due >= 0.0:
+		_save_due -= delta
+		if _save_due < 0.0:
+			_save_now()
+	_save_period_t += delta
+	if _save_period_t >= SNAPSHOT_PERIOD_S:
+		_save_period_t = 0.0
+		_save_now()
+
+
+func _mark_dirty() -> void:
+	_dirty = true
+
+
+## Target 0 = everyone; a negative target -p = everyone except peer p.
+func _queue_event(target: int, kind: String, data: Dictionary) -> void:
+	_outbox.append([target, "event", kind, data])
+
+
+func _queue_toast_others(peer: int, text: String) -> void:
+	_queue_event(-peer, "toast", {"text": text})
+
+
+func _save_now() -> void:
+	_save_due = -1.0
+	if store and _auth and _auth.state:
+		store.save(_auth.snapshot())
+
+
+func _player(peer: int) -> String:
+	return players[peer]["id"] if players.has(peer) else ""
+
+
+## Player id from the display name; a name that is already connected gets a
+## suffix, a name that left keeps its id (rejoin keeps identity).
+func _unique_player_id(display_name: String) -> String:
+	var base := display_name.strip_edges().to_lower().validate_node_name().replace(" ", "_").left(24)
+	if base.is_empty():
+		base = "player"
+	var taken := {}
+	for peer: int in players:
+		taken[players[peer]["id"]] = true
+	var pid := base
+	var n := 2
+	while taken.has(pid):
+		pid = "%s_%d" % [base, n]
+		n += 1
+	return pid

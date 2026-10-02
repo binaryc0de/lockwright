@@ -80,8 +80,9 @@ func _show(i: int) -> void:
 
 
 func _add() -> void:
-	if Game.add_note(_note.text).get("ok", false):
-		_note.clear()
+	Game.add_note(_note.text, func(r: Dictionary) -> void:
+		if is_instance_valid(self) and r.get("ok", false):
+			_note.clear())
 
 
 func _remove_selected() -> void:

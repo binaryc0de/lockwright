@@ -59,9 +59,15 @@ func _press(key: String) -> void:
 func _submit() -> void:
 	if _entry.is_empty():
 		return
-	var r := Game.request(lock, "submit_code", {"value": _entry})
+	var code := _entry
 	_entry = ""
 	_refresh()
+	Game.request(lock, "submit_code", {"value": code}, _on_result)
+
+
+func _on_result(r: Dictionary) -> void:
+	if not is_instance_valid(self) or not is_inside_tree():
+		return
 	if r.get("ok", false):
 		_set_led(Lock.COLOR_OPEN)
 		_display.text = "OPEN"

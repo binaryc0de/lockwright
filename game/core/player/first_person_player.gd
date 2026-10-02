@@ -87,8 +87,8 @@ func _physics_process(delta: float) -> void:
 	_update_target()
 	_report_timer -= delta
 	if _report_timer <= 0.0:
-		_report_timer = 0.2
-		Game.report_position(global_position + Vector3.UP * EYE_HEIGHT)
+		_report_timer = 1.0 / 15.0
+		Game.report_position(global_position + Vector3.UP * EYE_HEIGHT, rotation.y)
 
 
 func _update_target() -> void:

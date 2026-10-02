@@ -39,3 +39,26 @@ Conventions:
 ## Session manager (not HTTP)
 
 The platform spawns one `escapebox-server` per running session (PLAN.md 7.1) with `--session --room --pack --port --platform --token [--transport]`, restarts it on the next join after an idle stop (exit code 0 after 5 minutes with no players), and treats any other exit code as a crash: restart from the last snapshot, at most 3 times in 10 minutes.
+
+## Game server protocol (Godot RPC, ADR-0015)
+
+Not HTTP: Godot high-level multiplayer over ENet (UDP, default) or WebSocket (`--transport ws`), all RPCs on `/root/Game/Net` (`core/net/net_bridge.gd`). SDK nodes are named by `eb_path` (path from the room root). World snapshots travel as JSON text (`WorldState.to_dict()`).
+
+Launch: `godot --headless --path game -- --server --session <id> --room <room_id> [--pack <file.pck>] [--port 7777] [--transport enet|ws] [--token <invite>] [--snapshot <file.json>]`. Join: `godot --path game -- --connect <host[:port]> --name <display name> [--token <invite>] [--transport ws]`.
+
+| Direction | RPC | Channel | Purpose |
+|---|---|---|---|
+| client -> server | `rpc_join(token, display_name)` | reliable | first RPC after connecting; verified by `JoinVerifier` (M2: shared invite; M3: `/internal/.../verify`) |
+| client -> server | `rpc_intent(req_id, path, verb, payload, pos, yaw)` | reliable | player action; carries the player's position for the reach check |
+| client -> server | `rpc_note(req_id, text)`, `rpc_remove_note(id)` | reliable | evidence board notes |
+| client -> server | `rpc_hint(puzzle_id)`, `rpc_auto_nudge(enabled)`, `rpc_start_clock()` | reliable | hints and clock |
+| client -> server | `rpc_position(pos, yaw)` | unreliable ordered, 15 Hz | avatar replication and reach |
+| client -> server | `rpc_examining(title)` | reliable | "X is examining Y" for teammates |
+| server -> client | `rpc_welcome({player_id, room_id, room_version, snapshot_json, server_now})` | reliable | join accepted; full world (also on every rejoin) |
+| server -> client | `rpc_rejected(reason)` | reliable | join refused (`bad_token`); the peer is dropped 0.5 s later |
+| server -> client | `rpc_state(snapshot_json, server_now)` | reliable, at most once per frame | whole world after any change; clients diff it |
+| server -> client | `rpc_event(kind, data)` | reliable, after the state push | `puzzle_solved`, `hint_revealed`, `narrated`, `toast`, `time_up`, `session_finished` |
+| server -> client | `rpc_result(req_id, result)` | reliable, after the state push | answer to an intent or note |
+| server -> client | `rpc_roster({player_id: {name, pos, yaw}})` | unreliable ordered, 15 Hz | everyone's position |
+
+Snapshots are written to `--snapshot` (default `user://snapshots/<session>.json`) 0.5 s after a change and every 30 s, and restored at start (M3: posted to the platform instead).
