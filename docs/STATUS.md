@@ -86,7 +86,14 @@ Started 2026-10-02 on branch `m3-platform` (design: ADR-0018; Docker access: ADR
 ## M4: Night Shift content and polish
 Pulled forward at the owner's request (2026-10-02), on branch `m4-cage-dressing`:
 - [x] Server cage dressed: `cage_partition_kit`, `cage_door_maglock`, `server_rack_42u`, `patch_panel_8` (replaces the planned `patch_panel_24`: the puzzle uses 8 ports), `ups_tower`, `cable_tray_kit`, `rack_stencil` printable, CC0 painted-concrete cage floor; lit battens and spots in the cage. Before/after in `docs/screenshots/m4-cage/`.
-- [ ] Everything else in M4 (audio, airlock briefing, remaining hero props such as `uv_torch`, performance pass, blind play-tests)
+Continued on branch `m4-polish`:
+- [x] Airlock onboarding (ADR-0020): `AirlockGate` SDK node, corridor start, contractor work order on the corridor wall, controls tutorial overlay, seal on all-inside or 60 s after the first player, stragglers moved in (`rpc_place`), late joiners spawn inside, Dale's seal line. Corridor dressed with the office's CC0 plaster/carpet/ceiling.
+- [x] Audio: CC0 Kenney sounds (fetched by `tools/thirdparty/fetch_cc0.sh`), `EBSound` library, per-node state-change sounds heard by every client, UI clicks/paper/chime/end sting, footsteps (local and teammates), synthesised `AmbientZone` for server fans and tube buzz.
+- [x] Printables `network_diagram_laminated` and `work_order` (Codex) in the room.
+- [ ] Hero props `uv_torch`, `usb_stick`, `exit_sign_lightbox` (Codex, in progress)
+- [ ] Polish: rack LED blink, patch cables after solving, focused-view camera move-in, desk lamp decimation, corridor light leak
+- [ ] Windows/Linux exports, performance pass (60 fps mid-range), Codex review
+- [ ] Owner: 3 blind play-tests
 
 ## M5: LAN deployment and sign-off
 Not started. Includes `docker compose up` for the platform and challenge images (moved from M3, ADR-0019).

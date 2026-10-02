@@ -67,6 +67,10 @@
 [ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/rack_stencil.png" id="79_tex_stencil"]
 [ext_resource type="Script" path="res://addons/escapebox_sdk/airlock_gate.gd" id="80_airlock"]
 [ext_resource type="Script" path="res://addons/escapebox_sdk/ambient_zone.gd" id="81_ambient"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_network_diagram.tres" id="82_doc_netdiag"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_work_order.tres" id="83_doc_wo"]
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/network_diagram_laminated.png" id="84_tex_netdiag"]
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/work_order.png" id="85_tex_wo"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
 size = Vector3(0.39, 0.34, 0.52)
 
@@ -95,6 +99,9 @@ size = Vector2(0.21, 0.297)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_workorder"]
 size = Vector3(0.22, 0.31, 0.01)
+
+[sub_resource type="QuadMesh" id="QuadMesh_netdiag"]
+size = Vector2(0.297, 0.21)
 
 [sub_resource type="Environment" id="Environment_vrwxm"]
 background_mode = 1
@@ -1392,6 +1399,7 @@ _Laminated. Do not remove from the cabinet._
 If the mains fail, patching P1 as above hands the door panels to the UPS."
 display_name = "Network diagram (laminated)"
 verbs = PackedStringArray("read")
+texture = ExtResource("84_tex_netdiag")
 
 [node name="Sheet" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Contents/NetworkDiagram" unique_id=588390716]
 mesh = SubResource("BoxMesh_ruelm")
@@ -1411,6 +1419,7 @@ DIAGRAM
 P1: A B C D"
 font_size = 24
 outline_size = 0
+visible = false
 
 [node name="UsbStick" type="Node3D" parent="Office/FilingCabinet/Drawer/Contents" unique_id=190909720]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.015, 0.05)
@@ -2265,12 +2274,14 @@ seal_text = "That bang was the maglock. The badge system just crashed and took t
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.95, 1.45, 2.994)
 script = ExtResource("4_7mnw5")
 title = "Contractor work order"
-text_md = "# Kestrel Logistics - contractor work order KL-WO-2026-0417\n\n**Site:** regional office, Unit 4 Harbour Road - sysadmin office\n\n**Window:** 22:30 - 02:00. **Task:** core switch migration, night 2 of 2; cutover at 23:30.\n\nSysadmin **M. Reyes is off site tonight**; his notes are on the office whiteboard.\n\n**Security:** Dale (night guard) - use the office intercom.\n\nBadge doors run on the maglock system. If the mains fail, the UPS keeps the door panels alive for about an hour."
+text_md = "# Kestrel Logistics - contractor work order KL-WO-2026-0417\n\n**Site:** regional office, Unit 4 Harbour Road - sysadmin office\n\n**Window:** 22:30 - 02:00. **Task:** core switch migration, night 2 of 2; cutover at 23:30.\n\nSysadmin **M. Reyes is off site tonight**; his notes are on the office whiteboard.\n\n**Security:** Dale (night guard) - use the office intercom.\n\nBadge doors run on the maglock system. If the mains fail, the UPS keeps the door panels alive for about an hour.\n\nSign in at the door, then go straight in.\n\n_Handwritten:_ Laptop + creds on Mark's desk - good luck! - J."
 display_name = "Work order"
 verbs = PackedStringArray("read")
+texture = ExtResource("85_tex_wo")
 
 [node name="Paper" type="MeshInstance3D" parent="Office/WorkOrder"]
 mesh = SubResource("QuadMesh_workorder")
+material_override = ExtResource("83_doc_wo")
 
 [node name="Body" type="StaticBody3D" parent="Office/WorkOrder/Paper"]
 
@@ -2357,3 +2368,11 @@ buzz = 0.3
 volume_db = -30.0
 unit_size = 1.2
 max_distance = 6.0
+
+[node name="PrintYaw" type="Node3D" parent="Office/FilingCabinet/Drawer/Contents/NetworkDiagram"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0.0035, 0)
+
+[node name="Print" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Contents/NetworkDiagram/PrintYaw"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("QuadMesh_netdiag")
+material_override = ExtResource("82_doc_netdiag")

@@ -60,6 +60,7 @@ Launch: `godot --headless --path game -- --server --session <id> --room <room_id
 | server -> client | `rpc_state(snapshot_json, server_now)` | reliable, at most once per frame | whole world after any change; clients diff it |
 | server -> client | `rpc_event(kind, data)` | reliable, after the state push | `puzzle_solved`, `hint_revealed`, `narrated`, `toast`, `time_up`, `session_finished` |
 | server -> client | `rpc_result(req_id, result)` | reliable, after the state push | answer to an intent or note |
+| server -> client | `rpc_place(eye_position)` | reliable | the server moved this player (airlock stragglers, ADR-0020); the client teleports |
 | server -> client | `rpc_roster({player_id: {name, pos, yaw}})` | unreliable ordered, 15 Hz | everyone's position |
 
 Snapshots are written to `--snapshot` (default `user://snapshots/<session>.json`) 0.5 s after a change and every 30 s, and restored at start (M3: posted to the platform instead).

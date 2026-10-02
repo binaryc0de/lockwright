@@ -53,7 +53,10 @@ Offline (M1) the laptop's flag field accepts any non-empty value (`DevFlagValida
 
 | Path | Node | Notes |
 |---|---|---|
-| `SpawnPoint` | Marker3D | office centre, facing the desk/whiteboard wall |
+| `SpawnPoint` | Marker3D | exit corridor, facing the open office door (airlock start) |
+| `LateSpawn` | Marker3D | office centre; stragglers and joiners after the seal |
+| `Office/Airlock` | AirlockGate | seals `Office/ExitDoor` when everyone is in, or 60 s after the first player (ADR-0020) |
+| `Office/WorkOrder` | Document | corridor wall; the briefing as an in-world contractor work order |
 | `Office/Desk/Drawer` | ContainerProp | unlocked; slides 0.4 m |
 | `Office/Desk/Drawer/Slide/Contents/UVTorch` | UVTorch | `uv_torch` |
 | `Office/Desk/StickyNote` | Document | username |

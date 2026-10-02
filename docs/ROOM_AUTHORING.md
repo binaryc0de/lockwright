@@ -43,13 +43,17 @@ Compose your scene from these. They replicate themselves; you never write netcod
 | `UVReveal` | UV-ink text on a surface, visible with a UV torch selected nearby | `label` (a Label3D), `text` (may be `{{var}}`), `reveal_range` | |
 | `Intercom` | Shows hints and narration in the room | `label`, `chime`, `speaker_name` | |
 | `SessionClock` | Countdown display | `label` | |
-| Planned | `DialLock`, `LetterLock`, `DirectionalLock`, `PushButton`, `Switch`, `Dial`, `FuseBox`, `TriggerVolume`, `PuzzleMarker`, `AmbientZone` | | |
+| `AirlockGate` | Optional onboarding (ADR-0020): players start outside at `spawn_point`; seals `door`, starts the clock and narrates `seal_text` when everyone is inside (or `seal_after_s` after the first); stragglers and later joiners go to `late_spawn`. While it waits, the HUD shows the controls tutorial instead of the briefing | `door`, `inside_min`/`inside_max` (room coordinates), `seal_after_s`, `seal_text`, `late_spawn` | waiting, sealed |
+| `AmbientZone` | Positional room tone synthesised at start-up (mains hum, fan noise, tube buzz); no audio files | `hum_hz`, `hum_level`, `harmonics`, `noise_level`, `noise_cutoff_hz`, `buzz`, `volume_db` | |
+| Planned | `DialLock`, `LetterLock`, `DirectionalLock`, `PushButton`, `Switch`, `Dial`, `FuseBox`, `TriggerVolume`, `PuzzleMarker` | | |
 
 **Wiring.** `locked_by` points an openable at its lock. `targets` (on `FlagGate`, `PatchPanel`, `Lever`) *activate* other nodes: an unpowered lock gains power, a powered lock unlocks. That covers "the flag releases the cage maglock" and "the patch panel powers the exit keypad" without scripts.
 
 **Collision.** Every interactable needs a `StaticBody3D` + `CollisionShape3D` below it (the SDK puts it on the interaction layer). Walls and furniture use layer 1. Things inside a closed `ContainerProp`'s `contents` are hidden and untargetable automatically.
 
 **Room script rules.** Connect to SDK signals and call SDK methods (`set_state`, `unlock`, `give_item`, `narrate`, `play_sfx`, `set_var`). Do not call `rpc`, touch `multiplayer`, use `HTTPRequest`/`OS.execute`/raw sockets, read files outside your room directory, or declare `class_name` (pack class caches are ignored, ADR-0007; use `preload` instead). `roomcheck` warns on these.
+
+**Sound.** SDK nodes already sound right: doors, drawers, keypads (including wrong codes), maglocks, pick-ups, patch panels and levers play a CC0 library sound (`EBSound`) on every client when their state changes, never on join or restore. Override with `open_sound`/`close_sound` on openables, or a custom `chime` on the intercom. An airlock exit door must not be the room's exit condition by itself, because it starts open.
 
 Node paths are the room's public interface: `room.yaml` refers to nodes as paths from the scene root (`Cabinet/Keypad`). Keep them stable; renaming a node breaks saved sessions.
 
