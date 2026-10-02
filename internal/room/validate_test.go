@@ -1,0 +1,264 @@
+package room
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+const goodYAML = `spec_version: 1
+id: test_room
+title: Test Room
+version: 0.1.0
+authors: [tester]
+requires: { platform: ">=0.1", sdk: ">=0.1" }
+mode:
+  duration_minutes: 60
+  players: { min: 1, max: 4 }
+  auto_nudge_minutes: 6
+entry_scene: res://rooms/test_room/room.tscn
+briefing:
+  intro_md: briefing/intro.md
+  win_md: briefing/win.md
+  timeout_md: briefing/timeout.md
+variables:
+  cabinet_code: { type: digits, length: 4 }
+puzzles:
+  - id: find_torch
+    title: Find the torch
+    requires: []
+    solved_when: { item_picked_up: uv_torch }
+    hints: ["Look around.", "Check the desk.", "Top drawer."]
+  - id: open_cabinet
+    title: Open the cabinet
+    requires: [find_torch]
+    solved_when: { node_state: { path: "Cabinet/Keypad", state: unlocked } }
+    hints: ["Shine it.", "The whiteboard.", "The code is on the whiteboard."]
+  - id: hack
+    title: Hack the intranet
+    requires: []
+    solved_when: { flag_accepted: { challenge: intranet } }
+    hints: ["The laptop.", "Tickets.", "Change the id."]
+  - id: escape
+    title: Escape
+    requires: [open_cabinet, hack]
+    solved_when:
+      all_of:
+        - { node_state: { path: "ExitDoor", state: open } }
+    hints: ["The door.", "The keypad.", "Enter the code."]
+exit: { puzzle: escape }
+ctf:
+  challenges:
+    - id: intranet
+      title: Intranet
+      kind: service
+      difficulty: easy
+      build: ctf/intranet
+      ports: [{ container: 8080, protocol: http }]
+      flag: { type: per_instance, format: "FLAG{{{nonce}}}", inject_env: FLAG }
+      healthcheck: { path: /healthz, timeout_s: 30 }
+      hints: ["a", "b", "c"]
+solution:
+  - { act: pick_up, item: uv_torch }
+  - { act: input_code, lock: "Cabinet/Keypad", value: "{{cabinet_code}}" }
+  - { act: submit_flag, challenge: intranet, value: "{{flags.intranet}}" }
+`
+
+const roomScene = `[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://rooms/test_room/scenes/cabinet.tscn" id="1_cab"]
+
+[node name="TestRoom" type="Node3D"]
+
+[node name="Cabinet" parent="." instance=ExtResource("1_cab")]
+
+[node name="ExitDoor" type="Node3D" parent="."]
+`
+
+const cabinetScene = `[gd_scene format=3]
+
+[node name="Cabinet" type="Node3D"]
+
+[node name="Keypad" type="Node3D" parent="."]
+
+[node name="Led" type="Node3D" parent="Keypad"]
+`
+
+// writeRoom creates <tmp>/game/rooms/test_room with the given room.yaml and
+// returns (roomDir, resRoot).
+func writeRoom(t *testing.T, yaml string) (string, string) {
+	t.Helper()
+	res := filepath.Join(t.TempDir(), "game")
+	dir := filepath.Join(res, "rooms", "test_room")
+	files := map[string]string{
+		"room.yaml":               yaml,
+		"room.tscn":               roomScene,
+		"scenes/cabinet.tscn":     cabinetScene,
+		"briefing/intro.md":       "intro",
+		"briefing/win.md":         "win",
+		"briefing/timeout.md":     "timeout",
+		"ctf/intranet/Dockerfile": "FROM scratch\n",
+	}
+	for name, body := range files {
+		p := filepath.Join(dir, name)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := WriteJSON(dir); err != nil {
+		t.Fatal(err)
+	}
+	return dir, res
+}
+
+func validate(t *testing.T, yaml string) *Report {
+	t.Helper()
+	dir, res := writeRoom(t, yaml)
+	s, err := CompileSchema(filepath.Join("..", "..", "docs", "schema", "room.schema.json"))
+	if err != nil {
+		t.Fatalf("compile schema: %v", err)
+	}
+	return Validate(dir, res, s)
+}
+
+func hasIssue(r *Report, level Level, code, substr string) bool {
+	for _, i := range r.Issues {
+		if i.Level == level && i.Code == code && strings.Contains(i.Msg, substr) {
+			return true
+		}
+	}
+	return false
+}
+
+func TestValidRoomPasses(t *testing.T) {
+	r := validate(t, goodYAML)
+	if r.Failed() || len(r.Issues) > 0 {
+		t.Fatalf("expected clean report, got %v", r.Issues)
+	}
+}
+
+func TestRejectsCycle(t *testing.T) {
+	y := strings.Replace(goodYAML,
+		"  - id: find_torch\n    title: Find the torch\n    requires: []",
+		"  - id: find_torch\n    title: Find the torch\n    requires: [escape]", 1)
+	r := validate(t, y)
+	if !hasIssue(r, Error, "graph", "cycle") {
+		t.Fatalf("expected cycle error, got %v", r.Issues)
+	}
+}
+
+func TestRejectsUnknownPrerequisite(t *testing.T) {
+	y := strings.Replace(goodYAML, "requires: [open_cabinet, hack]", "requires: [open_cabinet, hack, nope]", 1)
+	r := validate(t, y)
+	if !hasIssue(r, Error, "graph", `unknown puzzle "nope"`) {
+		t.Fatalf("expected unknown prerequisite error, got %v", r.Issues)
+	}
+}
+
+func TestRejectsMissingExit(t *testing.T) {
+	y := strings.Replace(goodYAML, "exit: { puzzle: escape }", "exit: { puzzle: nowhere }", 1)
+	r := validate(t, y)
+	if !hasIssue(r, Error, "graph", "exit.puzzle") {
+		t.Fatalf("expected exit error, got %v", r.Issues)
+	}
+}
+
+func TestWarnsOnOrphanPuzzle(t *testing.T) {
+	y := strings.Replace(goodYAML, "requires: [open_cabinet, hack]", "requires: [open_cabinet]", 1)
+	r := validate(t, y)
+	if r.Failed() || !hasIssue(r, Warning, "graph", `"hack" does not lead to the exit`) {
+		t.Fatalf("expected orphan warning only, got %v", r.Issues)
+	}
+}
+
+func TestResolvesNodePathsThroughInstancedScenes(t *testing.T) {
+	y := strings.Replace(goodYAML, `path: "Cabinet/Keypad"`, `path: "Cabinet/Keypad/Led"`, 1)
+	if r := validate(t, y); r.Failed() {
+		t.Fatalf("nested instanced path should resolve, got %v", r.Issues)
+	}
+	y = strings.Replace(goodYAML, `path: "Cabinet/Keypad"`, `path: "Cabinet/Missing"`, 1)
+	r := validate(t, y)
+	if !hasIssue(r, Error, "node_path", "Cabinet/Missing") {
+		t.Fatalf("expected node_path error, got %v", r.Issues)
+	}
+}
+
+func TestSchemaRejectsTooFewHints(t *testing.T) {
+	y := strings.Replace(goodYAML, `hints: ["Look around.", "Check the desk.", "Top drawer."]`, `hints: ["Only one."]`, 1)
+	r := validate(t, y)
+	if !hasIssue(r, Error, "schema", "/puzzles/0/hints") {
+		t.Fatalf("expected schema error on hints, got %v", r.Issues)
+	}
+}
+
+func TestSchemaRejectsUnknownKeyAndBadCondition(t *testing.T) {
+	r := validate(t, goodYAML+"bogus_key: 1\n")
+	if !hasIssue(r, Error, "schema", "bogus_key") {
+		t.Fatalf("expected unknown key error, got %v", r.Issues)
+	}
+	y := strings.Replace(goodYAML, "solved_when: { item_picked_up: uv_torch }", "solved_when: { item_picked_up: uv_torch, flag_accepted: { challenge: intranet } }", 1)
+	if r := validate(t, y); !hasIssue(r, Error, "schema", "/puzzles/0/solved_when") {
+		t.Fatalf("expected single-key condition error, got %v", r.Issues)
+	}
+}
+
+func TestSchemaRequiresNonceInPerInstanceFlag(t *testing.T) {
+	y := strings.Replace(goodYAML, `format: "FLAG{{{nonce}}}"`, `format: "FLAG{{{session}}}"`, 1)
+	if r := validate(t, y); !hasIssue(r, Error, "schema", "/ctf/challenges/0/flag/format") {
+		t.Fatalf("expected flag format error, got %v", r.Issues)
+	}
+}
+
+func TestRejectsLiteralFlagWithoutEchoingIt(t *testing.T) {
+	dir, res := writeRoom(t, goodYAML)
+	secret := "FLAG{d34db33f_real_value}"
+	if err := os.WriteFile(filepath.Join(dir, "ctf", "intranet", "app.py"), []byte("x = 1\nFLAG = '"+secret+"'\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s, _ := CompileSchema(filepath.Join("..", "..", "docs", "schema", "room.schema.json"))
+	r := Validate(dir, res, s)
+	if !hasIssue(r, Error, "flag_literal", "ctf/intranet/app.py:2") {
+		t.Fatalf("expected literal flag error, got %v", r.Issues)
+	}
+	for _, i := range r.Issues {
+		if strings.Contains(i.Msg, "d34db33f") {
+			t.Fatalf("report leaked the flag value: %v", i)
+		}
+	}
+}
+
+func TestRejectsStaleRoomJSON(t *testing.T) {
+	dir, res := writeRoom(t, goodYAML)
+	if err := os.WriteFile(filepath.Join(dir, "room.yaml"), []byte(strings.Replace(goodYAML, "title: Test Room", "title: Renamed", 1)), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s, _ := CompileSchema(filepath.Join("..", "..", "docs", "schema", "room.schema.json"))
+	if r := Validate(dir, res, s); !hasIssue(r, Error, "room_json", "stale") {
+		t.Fatalf("expected stale room.json error, got %v", r.Issues)
+	}
+}
+
+func TestRejectsUndeclaredTemplateVariable(t *testing.T) {
+	y := strings.Replace(goodYAML, `value: "{{cabinet_code}}"`, `value: "{{safe_code}}"`, 1)
+	if r := validate(t, y); !hasIssue(r, Error, "template", "safe_code") {
+		t.Fatalf("expected template error, got %v", r.Issues)
+	}
+}
+
+func TestWarnsOnForbiddenAPIInRoomScript(t *testing.T) {
+	dir, res := writeRoom(t, goodYAML)
+	if err := os.MkdirAll(filepath.Join(dir, "scripts"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "scripts", "bad.gd"), []byte("func f():\n\tvar h = HTTPRequest.new()\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s, _ := CompileSchema(filepath.Join("..", "..", "docs", "schema", "room.schema.json"))
+	if r := Validate(dir, res, s); !hasIssue(r, Warning, "forbidden_api", "HTTPRequest") {
+		t.Fatalf("expected forbidden api warning, got %v", r.Issues)
+	}
+}
