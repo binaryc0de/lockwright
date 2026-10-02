@@ -1,6 +1,6 @@
 # Room authoring guide
 
-For people and AI agents building an escapebox room. Read it fully, then the example room `game/rooms/night_shift/`. **Status: M0 draft.** The SDK nodes below are specified but not implemented until M1; the manifest format and `roomcheck` work today.
+For people and AI agents building an escapebox room. Read it fully, then the example room `game/rooms/night_shift/`. **Status: M1.** The SDK nodes marked as built in Section 2 work offline (single-player); multiplayer replication arrives in M2 without changes to rooms.
 
 ## 1. What a room is
 
@@ -23,24 +23,31 @@ game/rooms/<room_id>/
 
 ## 2. SDK nodes (`res://addons/escapebox_sdk/`)
 
-Compose your scene from these. They replicate themselves; you never write netcode.
+Compose your scene from these. They replicate themselves; you never write netcode. Every node's state has a `state` string that `node_state` conditions match. "Planned" nodes are specified in PLAN.md 8.2 but not built yet; ask for them rather than scripting around them.
 
-| Node | Use it for | Key exports / signals |
-|---|---|---|
-| `RoomRoot` | Scene root; exposes `vars` (per-session variables) | `room_ready`, `puzzle_solved(id)`, `session_finished(win)` |
-| `Interactable` | Base for anything the player can aim at | `verbs`, `interacted(player, verb)` |
-| `Item` | Things players pick up, inspect, combine | `item_id`, `inspect_mesh`, `uv_texture`, `combines_with`, `combine_result` |
-| `Document` | Paper, photos, books; auto-pinned to the evidence board | `text_md` or `texture`, `uv_text` |
-| `Container` | Drawers, cabinets, safes, hatches | `open`, `opened`, `locked_by` |
-| `Lock` and `KeypadLock`, `DialLock`, `LetterLock`, `KeyLock`, `DirectionalLock`, `MaglockGate` | Server-checked locks with a focused UI | `code` (may be `{{var}}`), `unlocked` |
-| `Door` | Doors; `is_exit` ends the session | `locked_by`, `is_exit` |
-| `Lever`, `Switch`, `Button`, `Dial`, `PatchPanel`, `FuseBox` | Multi-state mechanisms | `state`, `changed(state)` |
-| `TriggerVolume` | Player enters/leaves an area | `entered(player)` |
-| `UVTorch` | Item that reveals UV layers in range | |
-| `Terminal` | In-game terminal: `simulated` shell or `remote` CTF connection card + flag field | `mode`, `challenge_id`, `script` |
-| `FlagGate` | Opens/activates targets when a CTF flag is accepted | `challenge_id`, `targets` |
-| `PuzzleMarker` | Optional: mark a puzzle solved when a node reaches a state | `puzzle_id`, `solved_state` |
-| `Intercom`, `SessionClock`, `AmbientZone` | Hint delivery, countdown display, reverb/ambience | |
+| Node | Use it for | Key exports | `state` values |
+|---|---|---|---|
+| `RoomRoot` | Scene root | `spawn_point` | |
+| `Item` | Things players pick up into the shared inventory | `item_id`, `display_name`, `description`, `uv_text` | world, inventory, consumed |
+| `UVTorch` | Item that reveals UV content while selected | as `Item` | as `Item` |
+| `Document` | Paper, cards, photos; auto-pinned to the evidence board when read | `title`, `text_md`, `back_text_md` (Flip), `uv_text`, `texture` | unread, read |
+| `ContainerProp` | Drawers, cabinets, safes, hatches (Godot already has `Container`, ADR-0008) | `locked_by`, `moving_part`, `open_offset`, `open_rotation_deg`, `contents`, `start_open` | closed, open |
+| `Door` | Doors and cage gates | as `ContainerProp` minus `contents`, plus `is_exit` | closed, open |
+| `KeypadLock` | Number pad with focused UI | `code` (may be `{{var}}`), `display_length`, `starts_powered`, `status_light`, `status_label` | locked, unlocked |
+| `KeyLock` | Opened by using an inventory item on it | `key_item_id`, `consume_key` | locked, unlocked |
+| `MaglockGate` | Lock with no input, released by activation | | locked, unlocked |
+| `Lever` | Two-position lever/switch; activates `targets` once when switched on | `targets`, `moving_part`, `on_rotation_deg` | off, on |
+| `PatchPanel` | Loose cables to plug into ports; activates `targets` when solved | `cable_ids`, `cable_labels` (never colour alone), `port_count`, `solution` ("A:3,B:1"), `targets` | idle, solved |
+| `Terminal` | `remote`: CTF connection card + flag field; `simulated`: offline shell | `mode`, `challenge_id`, `banner`, `commands` | open, solved |
+| `FlagGate` | Activates `targets` when a challenge's flag is accepted | `challenge_id`, `targets` | waiting, fired |
+| `UVReveal` | UV-ink text on a surface, visible with a UV torch selected nearby | `label` (a Label3D), `text` (may be `{{var}}`), `reveal_range` | |
+| `Intercom` | Shows hints and narration in the room | `label`, `chime`, `speaker_name` | |
+| `SessionClock` | Countdown display | `label` | |
+| Planned | `DialLock`, `LetterLock`, `DirectionalLock`, `PushButton`, `Switch`, `Dial`, `FuseBox`, `TriggerVolume`, `PuzzleMarker`, `AmbientZone` | | |
+
+**Wiring.** `locked_by` points an openable at its lock. `targets` (on `FlagGate`, `PatchPanel`, `Lever`) *activate* other nodes: an unpowered lock gains power, a powered lock unlocks. That covers "the flag releases the cage maglock" and "the patch panel powers the exit keypad" without scripts.
+
+**Collision.** Every interactable needs a `StaticBody3D` + `CollisionShape3D` below it (the SDK puts it on the interaction layer). Walls and furniture use layer 1. Things inside a closed `ContainerProp`'s `contents` are hidden and untargetable automatically.
 
 **Room script rules.** Connect to SDK signals and call SDK methods (`set_state`, `unlock`, `give_item`, `narrate`, `play_sfx`, `set_var`). Do not call `rpc`, touch `multiplayer`, use `HTTPRequest`/`OS.execute`/raw sockets, read files outside your room directory, or declare `class_name` (pack class caches are ignored, ADR-0007; use `preload` instead). `roomcheck` warns on these.
 
@@ -136,7 +143,9 @@ Use CC0 assets (Poly Haven, ambientCG, Kenney, Quaternius) or your own; record e
 go run ./tools/roomcheck -write-json game/rooms/<room_id>   # regenerate room.json, then validate
 go run ./tools/roomcheck                                    # validate every room
 godot --headless --path game --import                       # import assets
-# M1+: tools/packroom <room_id>  (export .pck + sha256 + catalog entry)
+godot --path game -- --room <room_id>                       # play in dev mode
+go run ./tools/packroom -verify <room_id>                   # export build/packs/<id>-<ver>.pck + sha256 + catalog entry,
+                                                            # then replay your tests against the pack alone
 ```
 
 ## 8. Done means

@@ -28,3 +28,11 @@ step "godot import"
 step "gdUnit4"
 GODOT_BIN="$(readlink -f "$(command -v "$GODOT")")" \
   bash game/addons/gdUnit4/runtest.sh --path game --headless --ignoreHeadlessMode -a res://tests -c
+
+step "room packs (export + replay from the pack alone)"
+for room_yaml in game/rooms/*/room.yaml; do
+  id="$(basename "$(dirname "$room_yaml")")"
+  if [[ -f "game/tests/rooms/test_${id}.gd" ]]; then
+    go run ./tools/packroom -verify "$id"
+  fi
+done
