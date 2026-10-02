@@ -26,7 +26,7 @@
     0.113229357,
     0.026000001
   ],
-  "built_at": "2026-10-02T21:17:11+00:00",
+  "built_at": "2026-10-02T21:24:50+00:00",
   "collision": null,
   "dimensions_nominal_m": {
     "body_diameter": 0.022,
@@ -35,7 +35,7 @@
     "lens_diameter": 0.018
   },
   "forward": "Blender +Y -> Godot -Z",
-  "glb_sha256": "4762d12ef0fa1808c5ab7add8f11afeb653a1cd530debfc4ab0859c4ccfcf64f",
+  "glb_sha256": "55e432707f90ccf5c71bb4df120e71b235580a61478d3495bb2addb4ffc57ada",
   "label_strings": [
     "UV 365nm",
     "KL-IT-0118"
@@ -69,7 +69,8 @@
     "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
     "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
   },
-  "script_sha256": "70b65b24b51ccb546faf4a8cc27743cf9be353a5a5603456db48dff0df2d74e3",
+  "script_sha256": "7f0b67d99f3eab3a28af93d0b1c3a338ccc0ddb37d63315dfa86644d8a57707d",
+  "tangent_export": "XYZ quantized to 0.001 then normalized; removes MikkTSpace thread-order jitter",
   "textures": [
     {
       "embedded": true,

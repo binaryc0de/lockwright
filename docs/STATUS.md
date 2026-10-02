@@ -90,7 +90,7 @@ Continued on branch `m4-polish`:
 - [x] Airlock onboarding (ADR-0020): `AirlockGate` SDK node, corridor start, contractor work order on the corridor wall, controls tutorial overlay, seal on all-inside or 60 s after the first player, stragglers moved in (`rpc_place`), late joiners spawn inside, Dale's seal line. Corridor dressed with the office's CC0 plaster/carpet/ceiling.
 - [x] Audio: CC0 Kenney sounds (fetched by `tools/thirdparty/fetch_cc0.sh`), `EBSound` library, per-node state-change sounds heard by every client, UI clicks/paper/chime/end sting, footsteps (local and teammates), synthesised `AmbientZone` for server fans and tube buzz.
 - [x] Printables `network_diagram_laminated` and `work_order` (Codex) in the room.
-- [ ] Hero props `uv_torch`, `usb_stick`, `exit_sign_lightbox` (Codex, in progress)
+- [x] Hero props `uv_torch`, `usb_stick`, `exit_sign_lightbox` (Codex) in the room; `tools/test.sh` exit 0 (gdUnit4 97/97, assetcheck 23/23, m2 + m3 smoke with real Docker)
 - [ ] Polish: rack LED blink, patch cables after solving, focused-view camera move-in, desk lamp decimation, corridor light leak
 - [ ] Windows/Linux exports, performance pass (60 fps mid-range), Codex review
 - [ ] Owner: 3 blind play-tests

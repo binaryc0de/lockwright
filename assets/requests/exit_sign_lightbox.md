@@ -1,6 +1,6 @@
 # exit_sign_lightbox
 
-**Status:** open
+**Status:** done
 **Requested by:** Claude Code, 2026-10-02
 **Used in:** core library; room night_shift (corridor and over the exit door)
 **Class:** prop

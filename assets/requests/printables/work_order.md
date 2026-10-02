@@ -1,6 +1,6 @@
 # work_order
 
-**Status:** open · **Requested by:** Claude Code, 2026-10-02 · **Used in:** room night_shift, the airlock corridor (the briefing as an in-world document players read first)
+**Status:** done · **Requested by:** Claude Code, 2026-10-02 · **Used in:** room night_shift, the airlock corridor (the briefing as an in-world document players read first)
 **Output:** `game/rooms/night_shift/assets/docs/work_order.png`, portrait A4 ratio, 1448 x 2048 px, opaque.
 
 A contractor work order on a clipboard-style printed form, laser-printed, a few handwritten ticks and a signature scrawl, a coffee ring in a corner away from text. Exact text (hierarchy up to you):

@@ -4,7 +4,9 @@ Self-contained deterministic Blender 5.2 build. No downloads or fonts.
 Surface baking follows the accepted hero props; only this asset is written.
 """
 from array import array
+import json
 import math
+import struct
 from pathlib import Path
 import random
 import sys
@@ -446,6 +448,42 @@ def geometry(mats,label):
     return parts,optics
 
 
+def stabilize_tangents(path):
+    """Remove MikkTSpace's tiny thread-order jitter from the GLB tangent data.
+
+    Blender 5.2's body tangent export varied in two bytes of one component
+    between otherwise byte-identical builds. Quantize XYZ to 0.001, normalize
+    again, and retain the original handedness. Maximum directional change is
+    below 0.05 degrees; the packed normal maps and all other data are intact.
+    This asset-local canonicalization leaves shared exporters unchanged.
+    """
+    raw = bytearray(Path(path).read_bytes())
+    json_length = struct.unpack_from('<I', raw, 12)[0]
+    gltf = json.loads(raw[20:20+json_length])
+    binary_start = 28 + json_length
+    accessors = {primitive['attributes']['TANGENT']
+                 for mesh in gltf['meshes'] for primitive in mesh['primitives']
+                 if 'TANGENT' in primitive['attributes']}
+    for index in sorted(accessors):
+        accessor = gltf['accessors'][index]
+        if accessor['componentType'] != 5126 or accessor['type'] != 'VEC4':
+            raise RuntimeError('Unexpected tangent accessor format')
+        view = gltf['bufferViews'][accessor['bufferView']]
+        offset = binary_start + view.get('byteOffset', 0) + accessor.get('byteOffset', 0)
+        stride = view.get('byteStride', 16)
+        for i in range(accessor['count']):
+            where = offset + i*stride
+            x, y, z, handedness = struct.unpack_from('<4f', raw, where)
+            v = [round(c, 3) for c in (x, y, z)]
+            length = math.sqrt(sum(c*c for c in v))
+            if length < .5:
+                raise RuntimeError('Invalid tangent vector')
+            struct.pack_into('<4f', raw, where, *(c/length for c in v), handedness)
+    Path(path).write_bytes(raw)
+    print(f'PASS deterministic export: {len(accessors)} tangent accessors canonicalized and normalized', flush=True)
+    return gltf
+
+
 def build(out_dir):
     reset_scene(SEED)
     cache=ROOT/'assets/cache'/ASSET_ID
@@ -474,11 +512,13 @@ def build(out_dir):
     print('PASS geometry: two identity-transform meshes; floor min y=0; lens faces Godot -Z; no collision',flush=True)
     path=Path(out_dir).resolve()/f'{ASSET_ID}.glb'
     export_glb(path,objects)
+    stabilize_tangents(path)
     metadata=write_metadata(ASSET_ID,ROOT/'assets/meta'/f'{ASSET_ID}.json',path,objects,
                            Path(__file__),textures,'base_center',extra={
         'forward':'Blender +Y -> Godot -Z','collision':None,'third_party':[],
         'dimensions_nominal_m':{'body_length':.105,'body_diameter':.022,'head_diameter':.026,'lens_diameter':.018},
         'label_strings':['UV 365nm','KL-IT-0118'],
+        'tangent_export':'XYZ quantized to 0.001 then normalized; removes MikkTSpace thread-order jitter',
         'lens_emission':{'linear_rgb':[.28,.008,1.0],'strength':.75},
         'anchors_godot_m':{'lens_surface_centre':[shift.x,CENTRE+shift.z,-(.0508+shift.y)]},
     })

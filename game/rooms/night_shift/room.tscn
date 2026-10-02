@@ -71,6 +71,9 @@
 [ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_work_order.tres" id="83_doc_wo"]
 [ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/network_diagram_laminated.png" id="84_tex_netdiag"]
 [ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/work_order.png" id="85_tex_wo"]
+[ext_resource type="PackedScene" path="res://assets/core/props/uv_torch.glb" id="86_uvtorch"]
+[ext_resource type="PackedScene" path="res://assets/core/props/usb_stick.glb" id="87_usb"]
+[ext_resource type="PackedScene" path="res://assets/core/props/exit_sign_lightbox.glb" id="88_exitsign"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
 size = Vector3(0.39, 0.34, 0.52)
 
@@ -968,6 +971,7 @@ modulate = Color(0.3, 1, 0.4, 1)
 text = "EXIT  >>  STAIRWELL B"
 font_size = 48
 outline_size = 0
+visible = false
 
 [node name="SpawnPoint" type="Marker3D" parent="." unique_id=417192878]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.35, 0, 2.5)
@@ -1230,10 +1234,12 @@ verbs = PackedStringArray("pick_up")
 [node name="Mesh" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide/Contents/UVTorch" unique_id=1174891060]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
 mesh = SubResource("CylinderMesh_gn1rv")
+visible = false
 
 [node name="Lens" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide/Contents/UVTorch" unique_id=971949595]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.09)
 mesh = SubResource("BoxMesh_ysuod")
+visible = false
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/Drawer/Slide/Contents/UVTorch" unique_id=533725471]
 
@@ -1431,6 +1437,7 @@ verbs = PackedStringArray("pick_up")
 
 [node name="Mesh" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Contents/UsbStick" unique_id=1802005156]
 mesh = SubResource("BoxMesh_pnt3d")
+visible = false
 
 [node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Drawer/Contents/UsbStick/Mesh" unique_id=1163887578]
 
@@ -2289,7 +2296,7 @@ material_override = ExtResource("83_doc_wo")
 shape = SubResource("BoxShape3D_workorder")
 
 [node name="ExitSignGlow" type="OmniLight3D" parent="Lights"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 1.9, 2.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.55, 2.2, 2.5)
 light_color = Color(0.4, 1, 0.5, 1)
 light_energy = 0.12
 light_specular = 0.0
@@ -2376,3 +2383,12 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0.0035, 0)
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
 mesh = SubResource("QuadMesh_netdiag")
 material_override = ExtResource("82_doc_netdiag")
+
+[node name="Model" parent="Office/Desk/Drawer/Slide/Contents/UVTorch" instance=ExtResource("86_uvtorch")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.022, 0)
+
+[node name="Model" parent="Office/FilingCabinet/Drawer/Contents/UsbStick" instance=ExtResource("87_usb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.006, 0)
+
+[node name="ExitSignLightbox" parent="Structure" instance=ExtResource("88_exitsign")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.695, 2.2, 2.5)

@@ -1,6 +1,6 @@
 # uv_torch
 
-**Status:** open
+**Status:** done
 **Requested by:** Claude Code, 2026-10-02
 **Used in:** core library; room night_shift / SDK node `UVTorch` (an `Item`; puzzle A1 find, A2 reveal the cabinet code on the whiteboard)
 **Class:** hero

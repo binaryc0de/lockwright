@@ -1,6 +1,6 @@
 # usb_stick
 
-**Status:** open
+**Status:** done
 **Requested by:** Claude Code, 2026-10-02
 **Used in:** room night_shift / SDK node `Item` "usb_stick" (in the filing cabinet; decorative in the prototype, the hard-mode variant uses it later)
 **Class:** prop
