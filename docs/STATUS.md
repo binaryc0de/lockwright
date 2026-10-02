@@ -95,7 +95,8 @@ Continued on branch `m4-polish`:
 - [x] Patch cables shown plugged into their ports: `PatchPanel.model` + `plug_*` parts (Codex `patch_panel_8` revision 2, 57.9k tris); render with A3 B7 C1 D5 checked; `tools/test.sh` exit 0 (gdUnit4 85 + 17 room, assetcheck 24/24, m2 + m3 smoke)
 - [x] Exports (ADR-0021): `tools/export.sh` builds Linux/Windows clients, the stripped Linux server and room packs; `tools/export_smoke.sh` plays to the win with the exported Linux builds. Windows `.exe` built, not run.
 - [x] Performance pass: graphics presets low/medium/high (pause menu), `tests/scenes/perf_bench.tscn`
-- [ ] Measure on the owner's target mid-range GPU (PLAN.md open question 2); Codex review of M4
+- [x] Codex review of M4 (`codex review --base main`, gpt-6.1-sol high, 2026-10-02): 1 P1 + 2 P2, all fixed with regression tests that fail on the old code: the open airlock door could be closed from the corridor (softlock; `Openable` now refuses `held_open`), a player dropped in the corridor rejoined behind the sealed door (`RoomRoot.rejoin_eye`), and inspecting the torch/USB stick showed the hidden greybox meshes (`InspectPanel` copies only meshes visible under the item). `tools/test.sh` exit 0 (gdUnit4 88 + 20 room, assetcheck 24/24, m2 + m3 smoke).
+- [ ] Measure on the owner's target mid-range GPU (PLAN.md open question 2); run the Windows build on Windows
 - [ ] Owner: 3 blind play-tests
 
 ## M5: LAN deployment and sign-off

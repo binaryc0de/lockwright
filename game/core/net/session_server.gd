@@ -124,6 +124,8 @@ func _complete_join(peer: int, display_name: String, v: Dictionary) -> void:
 	# The server decides where a (re)joining player stands: where they were
 	# last seen this server lifetime, else the spawn point.
 	var start: Vector3 = _known_pos.get(pid, _spawn_eye())
+	if Game.room:
+		start = Game.room.rejoin_eye(start)  # not left outside a sealed airlock
 	_last_move[pid] = {"pos": start, "t": _now()}
 	_auth.update_player_position(pid, start)
 	_auth.event_logged.emit("player_joined", {"player": pid})

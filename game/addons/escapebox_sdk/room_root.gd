@@ -33,6 +33,15 @@ func join_spawn_transform() -> Transform3D:
 	return spawn_transform()
 
 
+## Eye position for a rejoining player last seen at `known_eye`: keep it,
+## unless they were left outside a sealed airlock (then the inside spawn).
+func rejoin_eye(known_eye: Vector3) -> Vector3:
+	var a := airlock()
+	if a and a.is_sealed() and not a.is_inside(known_eye):
+		return join_spawn_transform().origin + Vector3.UP * FirstPersonPlayer.EYE_HEIGHT
+	return known_eye
+
+
 ## Per-session room variables (room.yaml `variables`).
 func vars() -> Dictionary:
 	return Game.vars()

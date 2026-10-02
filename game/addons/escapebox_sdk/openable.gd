@@ -78,9 +78,18 @@ func _server_intent(_player_id: String, verb: String, _payload: Dictionary) -> D
 			set_state({"state": "open"})
 			return {"ok": true}
 		"close":
+			if _held_open():
+				return {"ok": false, "error": "held_open", "message": "It's held open until everyone is inside."}
 			set_state({"state": "closed"})
 			return {"ok": true}
 	return {"ok": false, "error": "unsupported_verb"}
+
+
+## An airlock's door stays open while the airlock waits (ADR-0020): closing it
+## could shut the team out behind its own lock.
+func _held_open() -> bool:
+	var gate: AirlockGate = room_root.airlock() if room_root is RoomRoot else null
+	return gate != null and not gate.is_sealed() and gate.get_node_or_null(gate.door) == self
 
 
 func _apply_state(state: Dictionary) -> void:

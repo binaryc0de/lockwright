@@ -409,3 +409,34 @@ func test_patched_plugs_sit_under_their_printed_ports() -> void:
 			.is_equal_approx(0.21 - (port - 1) * 0.06, 0.003)
 		assert_bool(plug.visible).is_true()
 		assert_bool((m.find_child("cable_" + id.to_lower(), true, false) as Node3D).visible).is_false()
+
+
+func test_airlock_door_cannot_be_closed_before_the_seal() -> void:
+	var r := act("Office/ExitDoor", "close")
+	assert_str(r.get("error", "")).is_equal("held_open")
+	assert_str(auth.state.node_state("Office/ExitDoor").get("state")).is_equal("open")
+	room.airlock().seal()
+	assert_str(auth.state.node_state("Office/ExitDoor").get("state")).is_equal("closed")
+
+
+func test_rejoin_outside_a_sealed_airlock_comes_back_inside() -> void:
+	var corridor := Vector3(-1.3, 1.6, 2.5)
+	var office := Vector3(2.0, 1.6, 2.0)
+	assert_vector(room.rejoin_eye(corridor)).is_equal(corridor)  # still waiting
+	room.airlock().seal()
+	assert_vector(room.rejoin_eye(office)).is_equal(office)
+	assert_bool(room.airlock().is_inside(room.rejoin_eye(corridor))).is_true()
+
+
+func test_inspect_skips_hidden_greybox_meshes() -> void:
+	for path: String in ["Office/Desk/Drawer/Slide/Contents/UVTorch", "Office/FilingCabinet/Drawer/Contents/UsbStick"]:
+		var item := room.get_node(path) as Node3D
+		var dest := auto_free(Node3D.new()) as Node3D
+		var panel := auto_free(InspectPanel.new()) as InspectPanel
+		panel._copy_meshes(item, dest)
+		assert_int(dest.get_child_count()).override_failure_message("%s copied nothing" % path).is_greater(0)
+		for copy: MeshInstance3D in dest.get_children():
+			for m: MeshInstance3D in Interactable._meshes(item):
+				if copy.mesh == m.mesh:
+					assert_bool(InspectPanel._shown_under(m, item)) \
+						.override_failure_message("%s: hidden mesh %s copied" % [path, m.name]).is_true()
