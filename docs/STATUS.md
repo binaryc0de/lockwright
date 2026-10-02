@@ -2,7 +2,7 @@
 
 Milestone checklist from PLAN.md Section 11. Check an item only when it was actually run; each milestone ends with a verification note saying what ran, where, and with which command. Untested things are listed as untested.
 
-**Current milestone: M1 (single-player room core).** M0 closed 2026-10-01. M1 code complete and reviewed; look test rendered 2026-10-02; waiting on the owner's verdict on the look and the owner play-test.
+**Current milestone: M2 (multiplayer).** M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Pulled forward from M4 at the owner's request: dressing the server cage.
 
 ## M0: Repo and specs
 
@@ -41,6 +41,8 @@ Milestone checklist from PLAN.md Section 11. Check an item only when it was actu
 - [x] Look test (owner request after the greybox review): office corner (desk, whiteboard, filing cabinet) dressed with CC0 PBR materials, six Codex hero props, SDFGI lighting, fog and glow (ADR-0012). Before/after in `docs/screenshots/m1-looktest/` (`compare.png`); owner sign-off on the visual bar pending
 - [x] Full office dressing (owner request 2026-10-02): rendered and reviewed; before/after in `docs/screenshots/m1-office/` (`compare.png`); owner sign-off on the look pending
 - [x] Owner play-test: Night Shift played solo to the win screen in a window, 2026-10-02 (dressed office, greybox cage), on the Alienware. Launched in dev mode (`godot --path game -- --room night_shift`, room loaded from `res://rooms/`); play from the `.pck` is covered by `packroom -verify` (solution replay), not by a human run
+- [x] Codex review of the look-test and office-dressing branch (`codex review --base main`, gpt-6.1-sol high, 2026-10-02): no actionable findings; it also re-ran gdUnit4 55/55, the pack replay and the printable checks
+- [x] **M1 closed 2026-10-02**; `m1-look-pass` merged into `main`
 - [x] Codex milestone review of M1 triaged: 3 findings (P2 clock started behind the briefing, P2 image-only documents blank on the evidence board, P3 keypad result overwritten), all fixed with tests; gdUnit4 now 53/53
 
 Deferred to later milestones, noted from the room build: camera move-in for focused views (M4 polish); in-world patch cable visuals (M4); "use UV torch on X" as an explicit intent (the reveal is passive, solution uses `examine`); MaglockGate is an Interactable that is never targetable; `godot --script` tools cannot reference SDK classes because the `Game` autoload is absent in that mode; Planned SDK nodes in ROOM_AUTHORING.md.
@@ -110,4 +112,5 @@ Not started.
 ### 2026-10-02, owner play-test
 - Owner escaped Night Shift solo, windowed on the RTX 3080 Ti with a 3440x1440 HDMI monitor; the game window was the default 1600x900 (letterboxed), clock showed 44:25 left mid-run, around the CTF step.
 - Bug found: pressing Enter on an empty flag field showed "Flag rejected." (and would cost a rate-limited attempt once M3 lands). Fixed in `terminal_panel.gd` with a regression assertion in `test_hud_panels.gd`; gdUnit4 55/55. Commit 4f06bfb.
-- Not captured: total time, hints used, hesitation points (the game does not log solves or hints to disk yet). Owner to add if remembered.
+- Owner's report: about 30 minutes, taking time to explore everything; "pretty easy"; "everything felt pretty smooth" (movement, controls, performance). Hint use not reported. The game does not log solves or hints to disk yet.
+- Caveat: the owner co-designed the room (PLAN.md section 10 lists every answer), so this is not a blind run and says little about difficulty. Difficulty is judged by the 3 blind play-tests in M4 (target par 35-45 min for a team of 3); if those also come in fast, harden the cage half.
