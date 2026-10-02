@@ -1,0 +1,149 @@
+{
+  "anchors_godot_m": {
+    "floor_origin": [
+      0,
+      0,
+      0
+    ],
+    "swivel_axis": [
+      -0.0,
+      0.383,
+      -0.002267316
+    ]
+  },
+  "animations": [],
+  "asset_id": "office_chair",
+  "bake": {
+    "margin_px": 8,
+    "method": "procedural_to_texture",
+    "normal_space": "tangent",
+    "samples": 16,
+    "uv_layout": "non_overlapping_per_material"
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.31400001,
+      1.001227856,
+      0.321964204
+    ],
+    "min": [
+      -0.31400001,
+      0.0,
+      -0.321964204
+    ]
+  },
+  "bounds_m": [
+    0.628000021,
+    0.643928409,
+    1.001227856
+  ],
+  "built_at": "2026-10-02T05:58:26+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/office_chair.glb",
+  "glb_sha256": "93cc2ba2cfd4892501793ef420149b9d9c2ac1d2bc5ba374cc8e8e6bbfe75b49",
+  "materials": [
+    "M_office_chair_fabric",
+    "M_office_chair_metal",
+    "M_office_chair_plastic"
+  ],
+  "origin": "base_center",
+  "parts": [
+    "base",
+    "seat"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "46c4e5885743af2ab343dfeb01476a6c74dd9a4b14694ac84798bd767839631d",
+  "textures": [
+    {
+      "embedded": true,
+      "name": "T_office_chair_fabric_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "name": "T_office_chair_fabric_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "name": "T_office_chair_fabric_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "name": "T_office_chair_metal_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "name": "T_office_chair_metal_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "name": "T_office_chair_metal_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "name": "T_office_chair_plastic_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "name": "T_office_chair_plastic_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "name": "T_office_chair_plastic_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    }
+  ],
+  "triangles": 16256
+}

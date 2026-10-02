@@ -1,0 +1,180 @@
+{
+  "anchors_godot_m": {
+    "carcass_back_z": 0.336,
+    "carcass_front_z": -0.264,
+    "drawer_top": [
+      0,
+      0.85,
+      -0.284
+    ],
+    "keypad_mount": [
+      0,
+      1.12,
+      -0.264
+    ],
+    "label_card_top": [
+      0,
+      0.907,
+      -0.2858
+    ]
+  },
+  "animations": [],
+  "asset_id": "filing_cabinet_keypad",
+  "baking": {
+    "margin_px": 8,
+    "method": "procedural_to_texture",
+    "orm": "R=1 (AO neutral), G=roughness, B=metallic"
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.25,
+      1.200000048,
+      0.336000025
+    ],
+    "min": [
+      -0.25,
+      0.0,
+      -0.335999995
+    ]
+  },
+  "bounds_m": [
+    0.5,
+    0.672000021,
+    1.200000048
+  ],
+  "built_at": "2026-10-02T05:55:50+00:00",
+  "carcass_translation_godot_m": [
+    0,
+    0,
+    0.036
+  ],
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/filing_cabinet_keypad.glb",
+  "glb_sha256": "a0a0ca2e58658cbab30f5e2512ba26bdf2ff59b7c047a627fe73f88363400a98",
+  "materials": [
+    "M_filing_cabinet_keypad_card",
+    "M_filing_cabinet_keypad_interior",
+    "M_filing_cabinet_keypad_metal",
+    "M_filing_cabinet_keypad_paint"
+  ],
+  "origin": "base_center",
+  "parts": [
+    "body",
+    "drawer_low",
+    "drawer_mid",
+    "drawer_top"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "528cb9084624d9dfb07dd15d83d2cb572be0d130112c3433ab968392f6862327",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "card_base_color",
+      "name": "T_filing_cabinet_keypad_card_base_color",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "interior_base_color",
+      "name": "T_filing_cabinet_keypad_interior_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "interior_normal",
+      "name": "T_filing_cabinet_keypad_interior_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "interior_orm",
+      "name": "T_filing_cabinet_keypad_interior_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "metal_base_color",
+      "name": "T_filing_cabinet_keypad_metal_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "metal_normal",
+      "name": "T_filing_cabinet_keypad_metal_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "metal_orm",
+      "name": "T_filing_cabinet_keypad_metal_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "paint_base_color",
+      "name": "T_filing_cabinet_keypad_paint_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "paint_normal",
+      "name": "T_filing_cabinet_keypad_paint_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "paint_orm",
+      "name": "T_filing_cabinet_keypad_paint_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    }
+  ],
+  "triangles": 13720
+}

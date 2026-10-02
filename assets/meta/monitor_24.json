@@ -1,0 +1,128 @@
+{
+  "anchor_notes": "Visual right viewed from Godot -Z is -X. Anchor is on lower-right bezel for an external sticky note.",
+  "anchors_godot_m": {
+    "bezel_bottom_right": [
+      -0.27,
+      0.1315,
+      -0.031275
+    ],
+    "bezel_front_z": -0.031275,
+    "screen_centre": [
+      0,
+      0.292,
+      -0.0297
+    ]
+  },
+  "animations": [],
+  "asset_id": "monitor_24",
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.280000001,
+      0.460000008,
+      0.085000001
+    ],
+    "min": [
+      -0.280000001,
+      0.0,
+      -0.085000001
+    ]
+  },
+  "bounds_m": [
+    0.560000002,
+    0.170000002,
+    0.460000008
+  ],
+  "built_at": "2026-10-02T05:59:07+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/monitor_24.glb",
+  "glb_sha256": "940d5e0363c21c5345d707e5d24c33c4e14a0841b094b85c353c14437a1637e1",
+  "materials": [
+    "M_monitor_24_led",
+    "M_monitor_24_metal",
+    "M_monitor_24_plastic",
+    "M_monitor_24_screen"
+  ],
+  "origin": "base_center",
+  "panel_size_m": [
+    0.56,
+    0.045,
+    0.34
+  ],
+  "parts": [
+    "led_power",
+    "panel",
+    "screen",
+    "stand"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "screen_size_m": [
+    0.531,
+    0.299
+  ],
+  "screen_uv": {
+    "max": [
+      1,
+      1
+    ],
+    "min": [
+      0,
+      0
+    ],
+    "visual_right": "u=1"
+  },
+  "script_sha256": "aa6f9138a92d9c502faf62ecc120c1c599b26377c1f4832543dbf15378573838",
+  "texture_bake": {
+    "atlas": "non-overlapping plastic and metal islands",
+    "margin_px": 8,
+    "method": "CPU analytic surface raster bake",
+    "seed": 242026
+  },
+  "textures": [
+    {
+      "embedded": true,
+      "map": "surface_base_color",
+      "name": "T_monitor_24_surface_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "surface_normal",
+      "name": "T_monitor_24_surface_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "surface_orm",
+      "name": "T_monitor_24_surface_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "triangles": 9314
+}

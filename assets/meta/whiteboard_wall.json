@@ -1,0 +1,164 @@
+{
+  "anchors_godot_m": {
+    "surface_front_z": -0.022,
+    "surface_size": [
+      1.564,
+      0.964
+    ]
+  },
+  "animations": [],
+  "asset_id": "whiteboard_wall",
+  "blender_version": "5.2.2 LTS",
+  "board_outer_m": [
+    1.6,
+    0.025,
+    1.0
+  ],
+  "bounds_godot_m": {
+    "max": [
+      0.800000012,
+      0.5,
+      -0.0
+    ],
+    "min": [
+      -0.800000012,
+      -0.5,
+      -0.082000002
+    ]
+  },
+  "bounds_m": [
+    1.600000024,
+    0.082000002,
+    1.0
+  ],
+  "built_at": "2026-10-02T05:37:28+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "ghosting": {
+    "max_darkening_fraction": 0.048,
+    "protected_rect_ghosting": 0,
+    "protected_rect_godot_xy_m": [
+      -0.65,
+      -0.35,
+      0.65,
+      0.3
+    ]
+  },
+  "glb_path": "game/assets/core/props/whiteboard_wall.glb",
+  "glb_sha256": "5b2ebf406b39faae9adcea2eeedb15947c5a4da4e59ed2756bfeb0dd8b03a6a8",
+  "materials": [
+    "M_whiteboard_wall_frame",
+    "M_whiteboard_wall_markers",
+    "M_whiteboard_wall_plastic",
+    "M_whiteboard_wall_surface"
+  ],
+  "origin": "mount_plane_center",
+  "parts": [
+    "frame",
+    "surface",
+    "tray"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "5ba402c29314e765a17257ffa91c40fa379a3f364de803b2742bc1a16d08fdd3",
+  "texture_method": "original_seeded_analytic_raster_maps; no external sources",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "accessories_base_color",
+      "name": "T_whiteboard_wall_accessories_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "accessories_normal",
+      "name": "T_whiteboard_wall_accessories_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "accessories_orm",
+      "name": "T_whiteboard_wall_accessories_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "frame_base_color",
+      "name": "T_whiteboard_wall_frame_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "frame_normal",
+      "name": "T_whiteboard_wall_frame_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "frame_orm",
+      "name": "T_whiteboard_wall_frame_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "surface_base_color",
+      "name": "T_whiteboard_wall_surface_base_color",
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "surface_normal",
+      "name": "T_whiteboard_wall_surface_normal",
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "surface_orm",
+      "name": "T_whiteboard_wall_surface_orm",
+      "size": [
+        2048,
+        1024
+      ]
+    }
+  ],
+  "triangles": 12154
+}
