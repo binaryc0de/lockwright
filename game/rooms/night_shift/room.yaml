@@ -1,0 +1,137 @@
+spec_version: 1
+id: night_shift
+title: Night Shift
+version: 0.1.0
+authors: [binaryc0de]
+requires: { platform: ">=0.1", sdk: ">=0.1" }
+mode:
+  duration_minutes: 60
+  players: { min: 1, max: 4 }
+  auto_nudge_minutes: 6
+entry_scene: res://rooms/night_shift/room.tscn
+briefing:
+  intro_md: briefing/intro.md
+  win_md: briefing/win.md
+  timeout_md: briefing/timeout.md
+  gm_notes_md: briefing/gm_notes.md
+variables:
+  cabinet_code: { type: digits, length: 4 }
+
+# Threads (PLAN.md 10): A = desk -> whiteboard -> cabinet (find_uv, open_cabinet);
+# B = sticky note + WiFi card -> intranet CTF (hack_intranet);
+# C = patch panel in the cage (restore_power, needs A's diagram and B's cage);
+# D = SITE + RACK observation feeding the final override (override_door).
+puzzles:
+  - id: find_uv
+    title: Find the UV torch
+    requires: []
+    solved_when: { item_picked_up: uv_torch }
+    hints:
+      - "Dale here, security. Mark - your sysadmin - always kept his gadgets close to hand. I'd start with his desk."
+      - "The top drawer of Mark's desk never locks. Have a rummage under the papers in there."
+      - "Open the top drawer of the desk and pick up the UV torch lying under the papers."
+    gm_notes: >-
+      First solve, meant to land within 2-3 minutes. Office/Desk/Drawer is an unlocked
+      ContainerProp; the UV torch (Office/Desk/Drawer/Slide/Contents/UVTorch) lies under
+      decorative papers. If players stall, push them towards the desk.
+
+  - id: open_cabinet
+    title: Open the filing cabinet
+    requires: [find_uv]
+    solved_when: { node_state: { path: "Office/FilingCabinet/Keypad", state: unlocked } }
+    hints:
+      - "That filing cabinet takes a four-digit code. Mark never wrote codes anywhere you could just read them."
+      - "Mark had a thing for invisible ink. Select the UV torch and stand at the whiteboard, near his note about the filing cabinet."
+      - "With the UV torch selected, stand within a couple of metres of the whiteboard: four violet digits glow to the right of the 'Filing cabinet code' note. They change every shift, so read them off the board and type them left to right into the cabinet keypad."
+    gm_notes: >-
+      The code is the per-session variable cabinet_code (4 digits), shown by the UVReveal
+      Office/Whiteboard/UVInk only while a player has the UV torch selected and is within
+      2.5 m. The marker note on the board points at it. Enter it on
+      Office/FilingCabinet/Keypad, then open the cabinet drawer: laminated network diagram
+      (patch mapping, needed for restore_power) and a USB stick (flavour in the prototype).
+
+  - id: hack_intranet
+    title: Get into the Kestrel intranet
+    requires: []
+    solved_when: { flag_accepted: { challenge: intranet } }
+    hints:
+      - "Mark's laptop is still on. If you can get into the intranet, maybe the maglock people left something useful on a ticket."
+      - "Mark's username is on the sticky note on his monitor, and he reused a password. That Guest WiFi card on the pinboard - flip it over."
+      - "Log in as mreyes with password Kestrel#2019. Open a ticket, then change the ticket number in the address bar to look at the neighbouring tickets. The maglock vendor's ticket has an override token: paste it into the laptop's flag field."
+    gm_notes: >-
+      Parallel thread from minute one. Clues: sticky note (Office/Desk/StickyNote, user
+      mreyes) and the back of the Guest WiFi card (Office/Pinboard/WifiCard, password
+      Kestrel#2019). The laptop (Office/Desk/Laptop, remote Terminal) shows the connection
+      card; players use their own browser. Tickets page uses ?id=1042; neighbouring ids
+      (IDOR) reveal the maglock vendor's facilities ticket with the per-session flag.
+      Submitting it fires Cage/FlagGate, which releases Cage/Door/Maglock.
+
+  - id: restore_power
+    title: Put the door panels on the UPS
+    requires: [hack_intranet, open_cabinet]
+    solved_when: { node_state: { path: "Cage/PatchPanel", state: solved } }
+    hints:
+      - "The door panels run off the mains, and the mains are gone. That UPS in the cage could carry them if it were cabled up right."
+      - "There's a patch panel on the rack in the cage with four loose cables. The laminated network diagram from the filing cabinet says where each one goes."
+      - "On patch panel P1: cable A to port 3, B to port 7, C to port 1, D to port 5. The cables are tagged by letter and by stripe count, not just colour."
+    gm_notes: >-
+      Inside the cage (Cage/PatchPanel). The mapping A:3, B:7, C:1, D:5 comes from the
+      network diagram in the filing cabinet. Cables are labelled by letter plus stripe count
+      (A one stripe, B two, C three, D none), never colour alone. Solving it powers the exit
+      override panel (Office/ExitDoor/Keypad): the panel's status changes from blank to LOCKED.
+
+  - id: override_door
+    title: Override the exit maglock
+    requires: [restore_power]
+    solved_when: { node_state: { path: "Office/ExitDoor/Keypad", state: unlocked } }
+    hints:
+      - "Once the exit panel lights up it wants an override code. The plate just above it tells you how the code is built."
+      - "SITE plus RACK. The site number is on the fire inspection certificate on the office wall; the rack number is stencilled on the rack inside the cage."
+      - "Type 417062 on the exit door override panel: site 417, then rack 062."
+    gm_notes: >-
+      Meta puzzle. Plate above the exit keypad: "MAGLOCK OVERRIDE: SITE + RACK". SITE 417 is
+      on Office/FireCertificate (readable from the start); RACK 062 is on Cage/RackStencil
+      (visible through the cage mesh, readable up close once inside). Code 417062. Unlocking
+      the panel ends the session with a win; the exit door then opens.
+
+exit:
+  puzzle: override_door
+
+ctf:
+  challenges:
+    - id: intranet
+      title: Kestrel Intranet
+      kind: service
+      difficulty: easy
+      build: ctf/intranet
+      ports: [{ container: 8080, protocol: http }]
+      flag: { type: per_instance, format: "FLAG{{{nonce}}}", inject_env: FLAG }
+      healthcheck: { path: /healthz, timeout_s: 30 }
+      resources: { cpu: 0.5, memory_mb: 256 }
+      hints:
+        - "The laptop tells you where the intranet lives. Open that address in your own browser - any browser will do."
+        - "Once you're logged in, open a ticket and watch the address bar. That number at the end - what happens if you change it?"
+        - "Try ticket ids just above and below 1042 in ?id=. The facilities ticket from the maglock vendor holds the override token; copy it exactly into the laptop's flag field."
+      unlocks: cage
+
+solution:
+  # Thread A: desk -> UV whiteboard -> filing cabinet
+  - { act: interact, node: "Office/Desk/Drawer", verb: open }
+  - { act: pick_up, item: uv_torch }
+  - { act: examine, target: "Office/Whiteboard/UVInk" }
+  - { act: input_code, lock: "Office/FilingCabinet/Keypad", value: "{{cabinet_code}}" }
+  - { act: interact, node: "Office/FilingCabinet", verb: open }
+  - { act: examine, target: "Office/FilingCabinet/Drawer/Contents/NetworkDiagram" }
+  - { act: pick_up, item: usb_stick }
+  # Thread B: credentials -> intranet CTF -> cage
+  - { act: examine, target: "Office/Desk/StickyNote" }
+  - { act: examine, target: "Office/Pinboard/WifiCard" }
+  - { act: submit_flag, challenge: intranet, value: "{{flags.intranet}}" }
+  - { act: interact, node: "Cage/Door", verb: open }
+  # Thread D: SITE + RACK
+  - { act: examine, target: "Office/FireCertificate" }
+  - { act: examine, target: "Cage/RackStencil" }
+  # Thread C and the meta
+  - { act: interact, node: "Cage/PatchPanel", verb: patch, value: "A:3,B:7,C:1,D:5" }
+  - { act: input_code, lock: "Office/ExitDoor/Keypad", value: "417062" }
+  - { act: interact, node: "Office/ExitDoor", verb: open }

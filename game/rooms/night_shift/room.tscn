@@ -1,0 +1,1771 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/escapebox_sdk/room_root.gd" id="1_hmi7j"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/container_prop.gd" id="2_nub3g"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/uv_torch.gd" id="3_hbjcy"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/document.gd" id="4_7mnw5"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/terminal.gd" id="5_tnwkv"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/uv_reveal.gd" id="6_bwsy5"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/item.gd" id="7_8kqgp"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/keypad_lock.gd" id="8_pl6hf"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/door.gd" id="9_vtr8h"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/intercom.gd" id="10_jcy83"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/session_clock.gd" id="11_dlbfh"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/maglock_gate.gd" id="12_1brxc"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/flag_gate.gd" id="13_h0p10"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/patch_panel.gd" id="14_fnm6y"]
+
+[sub_resource type="Environment" id="Environment_vrwxm"]
+background_mode = 1
+background_color = Color(0.02, 0.02, 0.03, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.58, 0.7, 1)
+ambient_light_energy = 0.35
+tonemap_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3yv7q"]
+resource_name = "floor"
+albedo_color = Color(0.3, 0.3, 0.32, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_pa7wy"]
+material = SubResource("StandardMaterial3D_3yv7q")
+size = Vector3(8.700001, 0.1, 5.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pq31a"]
+size = Vector3(8.700001, 0.1, 5.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ypvdp"]
+resource_name = "ceiling"
+albedo_color = Color(0.55, 0.55, 0.56, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_u7yku"]
+material = SubResource("StandardMaterial3D_ypvdp")
+size = Vector3(8.700001, 0.10000014, 5.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_linl0"]
+resource_name = "wall"
+albedo_color = Color(0.72, 0.72, 0.7, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ymtj8"]
+material = SubResource("StandardMaterial3D_linl0")
+size = Vector3(8.700001, 2.8, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5ylps"]
+size = Vector3(8.700001, 2.8, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_js24t"]
+material = SubResource("StandardMaterial3D_linl0")
+size = Vector3(0.10000038, 2.8, 5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ekyhm"]
+size = Vector3(0.10000038, 2.8, 5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_a6248"]
+material = SubResource("StandardMaterial3D_linl0")
+size = Vector3(0.1, 2.8, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_181u7"]
+size = Vector3(0.1, 2.8, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i6i25"]
+material = SubResource("StandardMaterial3D_linl0")
+size = Vector3(0.1, 0.70000005, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wkci7"]
+size = Vector3(0.1, 0.70000005, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wbsem"]
+resource_name = "cage"
+transparency = 1
+cull_mode = 2
+albedo_color = Color(0.55, 0.58, 0.62, 0.35)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_uagr2"]
+material = SubResource("StandardMaterial3D_wbsem")
+size = Vector3(0.10000038, 2.8, 3.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7jaca"]
+size = Vector3(0.10000038, 2.8, 3.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sa20j"]
+material = SubResource("StandardMaterial3D_wbsem")
+size = Vector3(0.10000038, 2.8, 0.4000001)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r5dd5"]
+size = Vector3(0.10000038, 2.8, 0.4000001)
+
+[sub_resource type="BoxMesh" id="BoxMesh_utpcc"]
+material = SubResource("StandardMaterial3D_wbsem")
+size = Vector3(0.10000038, 0.70000005, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_u6x2m"]
+material = SubResource("StandardMaterial3D_3yv7q")
+size = Vector3(1.6, 0.1, 1.1999999)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2763j"]
+size = Vector3(1.6, 0.1, 1.1999999)
+
+[sub_resource type="BoxMesh" id="BoxMesh_px6lo"]
+material = SubResource("StandardMaterial3D_ypvdp")
+size = Vector3(1.6, 0.099999905, 1.1999999)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wfkr1"]
+resource_name = "corridor"
+albedo_color = Color(0.6, 0.62, 0.58, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ps8ym"]
+material = SubResource("StandardMaterial3D_wfkr1")
+size = Vector3(1.6, 2.4, 0.100000024)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_e42ee"]
+size = Vector3(1.6, 2.4, 0.100000024)
+
+[sub_resource type="BoxMesh" id="BoxMesh_puieo"]
+material = SubResource("StandardMaterial3D_wfkr1")
+size = Vector3(0.099999905, 2.4, 1.1999999)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wijf2"]
+size = Vector3(0.099999905, 2.4, 1.1999999)
+
+[sub_resource type="BoxMesh" id="BoxMesh_v4tdi"]
+material = SubResource("StandardMaterial3D_wfkr1")
+size = Vector3(1.6, 0.3000002, 0.05000007)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w0rvc"]
+resource_name = "desk"
+albedo_color = Color(0.45, 0.32, 0.2, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_nxbe4"]
+material = SubResource("StandardMaterial3D_w0rvc")
+size = Vector3(1.6, 0.04, 0.75)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_t8m7l"]
+size = Vector3(1.6, 0.04, 0.75)
+
+[sub_resource type="BoxMesh" id="BoxMesh_p25ph"]
+material = SubResource("StandardMaterial3D_w0rvc")
+size = Vector3(0.04, 0.72, 0.7)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ol2bh"]
+size = Vector3(0.04, 0.72, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_uts3r"]
+material = SubResource("StandardMaterial3D_w0rvc")
+size = Vector3(1.52, 0.4, 0.02)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_higau"]
+size = Vector3(1.52, 0.4, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ra74m"]
+resource_name = "monitor"
+albedo_color = Color(0.06, 0.06, 0.07, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_xqeq4"]
+material = SubResource("StandardMaterial3D_ra74m")
+size = Vector3(0.56, 0.34, 0.04)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_05elm"]
+size = Vector3(0.56, 0.34, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_w1eqn"]
+material = SubResource("StandardMaterial3D_ra74m")
+size = Vector3(0.06, 0.2, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7koh0"]
+resource_name = "drawer"
+albedo_color = Color(0.78, 0.62, 0.4, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_brntq"]
+material = SubResource("StandardMaterial3D_7koh0")
+size = Vector3(0.6, 0.14, 0.02)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vvu0o"]
+size = Vector3(0.6, 0.14, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b1n1d"]
+resource_name = "handle"
+albedo_color = Color(0.15, 0.15, 0.15, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_w3ntq"]
+material = SubResource("StandardMaterial3D_b1n1d")
+size = Vector3(0.16, 0.02, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_l1u0l"]
+material = SubResource("StandardMaterial3D_7koh0")
+size = Vector3(0.56, 0.01, 0.46)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ugstm"]
+material = SubResource("StandardMaterial3D_7koh0")
+size = Vector3(0.01, 0.11, 0.46)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gxwv2"]
+material = SubResource("StandardMaterial3D_7koh0")
+size = Vector3(0.56, 0.11, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_okinh"]
+resource_name = "papers"
+albedo_color = Color(0.95, 0.95, 0.92, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_v5cf3"]
+material = SubResource("StandardMaterial3D_okinh")
+size = Vector3(0.24, 0.012, 0.31)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wacv1"]
+resource_name = "torch"
+albedo_color = Color(0.45, 0.2, 0.75, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_gn1rv"]
+material = SubResource("StandardMaterial3D_wacv1")
+top_radius = 0.018
+bottom_radius = 0.022
+height = 0.17
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f6qle"]
+resource_name = "torch_lens"
+albedo_color = Color(0.6, 0.3, 1, 1)
+roughness = 0.85
+emission_enabled = true
+emission = Color(0.6, 0.3, 1, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_ysuod"]
+material = SubResource("StandardMaterial3D_f6qle")
+size = Vector3(0.04, 0.04, 0.01)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_y40hg"]
+size = Vector3(0.08, 0.07, 0.21)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vs5h8"]
+resource_name = "sticky"
+albedo_color = Color(1, 0.92, 0.25, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_eto6l"]
+material = SubResource("StandardMaterial3D_vs5h8")
+size = Vector3(0.1, 0.1, 0.004)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_jn5ad"]
+size = Vector3(0.12, 0.12, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tydg1"]
+resource_name = "laptop"
+albedo_color = Color(0.25, 0.3, 0.4, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ky2ry"]
+material = SubResource("StandardMaterial3D_tydg1")
+size = Vector3(0.36, 0.02, 0.25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_apddg"]
+size = Vector3(0.38, 0.26, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_smsu5"]
+resource_name = "screen"
+albedo_color = Color(0.25, 0.45, 0.85, 1)
+roughness = 0.85
+emission_enabled = true
+emission = Color(0.25, 0.45, 0.85, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_xk2hm"]
+material = SubResource("StandardMaterial3D_smsu5")
+size = Vector3(0.36, 0.23, 0.012)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hkwpt"]
+resource_name = "chair"
+albedo_color = Color(0.2, 0.22, 0.26, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_l7cjs"]
+material = SubResource("StandardMaterial3D_hkwpt")
+size = Vector3(0.48, 0.45, 0.48)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_u2pa4"]
+size = Vector3(0.48, 0.45, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_t5n06"]
+material = SubResource("StandardMaterial3D_hkwpt")
+size = Vector3(0.48, 0.5, 0.06)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qk46n"]
+size = Vector3(0.48, 0.5, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_30i5e"]
+resource_name = "whiteboard"
+albedo_color = Color(0.96, 0.97, 0.98, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_xuf78"]
+material = SubResource("StandardMaterial3D_30i5e")
+size = Vector3(1.6, 1, 0.03)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2u681"]
+size = Vector3(1.6, 1, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_efwkb"]
+resource_name = "frame"
+albedo_color = Color(0.6, 0.6, 0.62, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_5ftxi"]
+material = SubResource("StandardMaterial3D_efwkb")
+size = Vector3(1.6, 0.03, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j2jy3"]
+resource_name = "cabinet"
+albedo_color = Color(0.38, 0.45, 0.3, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_o04mf"]
+material = SubResource("StandardMaterial3D_j2jy3")
+size = Vector3(0.5, 1.2, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mkjtw"]
+size = Vector3(0.5, 1.2, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_61mn6"]
+material = SubResource("StandardMaterial3D_j2jy3")
+size = Vector3(0.46, 0.7, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7nenl"]
+resource_name = "cab_drawer"
+albedo_color = Color(0.55, 0.65, 0.42, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_63s2m"]
+material = SubResource("StandardMaterial3D_7nenl")
+size = Vector3(0.46, 0.22, 0.02)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_aa7sk"]
+size = Vector3(0.46, 0.22, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tlcvk"]
+material = SubResource("StandardMaterial3D_b1n1d")
+size = Vector3(0.14, 0.025, 0.025)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7in5u"]
+material = SubResource("StandardMaterial3D_7nenl")
+size = Vector3(0.42, 0.01, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mijbg"]
+material = SubResource("StandardMaterial3D_7nenl")
+size = Vector3(0.01, 0.16, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4v2ub"]
+resource_name = "diagram"
+albedo_color = Color(0.55, 0.85, 0.9, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ruelm"]
+material = SubResource("StandardMaterial3D_4v2ub")
+size = Vector3(0.21, 0.006, 0.297)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_h3h1n"]
+size = Vector3(0.23, 0.04, 0.31)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3oxn5"]
+resource_name = "usb"
+albedo_color = Color(0.95, 0.5, 0.1, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_pnt3d"]
+material = SubResource("StandardMaterial3D_3oxn5")
+size = Vector3(0.025, 0.012, 0.06)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nkjm4"]
+size = Vector3(0.06, 0.04, 0.09)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e1ayh"]
+resource_name = "keypad"
+albedo_color = Color(0.1, 0.1, 0.12, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_yvjyg"]
+material = SubResource("StandardMaterial3D_e1ayh")
+size = Vector3(0.16, 0.1, 0.02)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_l0lni"]
+size = Vector3(0.18, 0.12, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4k4kx"]
+resource_name = "led_off"
+albedo_color = Color(0.08, 0.08, 0.08, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_uyhg4"]
+material = SubResource("StandardMaterial3D_4k4kx")
+size = Vector3(0.015, 0.015, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dtar8"]
+resource_name = "cork"
+albedo_color = Color(0.62, 0.45, 0.28, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_p3rgj"]
+material = SubResource("StandardMaterial3D_dtar8")
+size = Vector3(1.2, 0.8, 0.02)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7ewxv"]
+size = Vector3(1.2, 0.8, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rhdh0"]
+resource_name = "wifi"
+albedo_color = Color(0.7, 0.85, 1, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ddy8a"]
+material = SubResource("StandardMaterial3D_rhdh0")
+size = Vector3(0.18, 0.12, 0.004)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5o2un"]
+size = Vector3(0.2, 0.14, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bi5pd"]
+resource_name = "cert_border"
+albedo_color = Color(0.8, 0.15, 0.12, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_b1vnm"]
+material = SubResource("StandardMaterial3D_bi5pd")
+size = Vector3(0.34, 0.44, 0.01)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4qv3h"]
+size = Vector3(0.36, 0.46, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_itcua"]
+resource_name = "cert"
+albedo_color = Color(0.98, 0.94, 0.82, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_gtkx8"]
+material = SubResource("StandardMaterial3D_itcua")
+size = Vector3(0.3, 0.4, 0.004)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_npv2k"]
+resource_name = "exit_door"
+albedo_color = Color(0.42, 0.5, 0.58, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_jpsml"]
+material = SubResource("StandardMaterial3D_npv2k")
+size = Vector3(0.05, 2.08, 0.98)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3tl2t"]
+size = Vector3(0.05, 2.08, 0.98)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1fb0e"]
+material = SubResource("StandardMaterial3D_b1n1d")
+size = Vector3(0.04, 0.05, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cnebj"]
+material = SubResource("StandardMaterial3D_e1ayh")
+size = Vector3(0.16, 0.22, 0.03)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_avmwc"]
+size = Vector3(0.18, 0.24, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_c6gvp"]
+material = SubResource("StandardMaterial3D_4k4kx")
+size = Vector3(0.02, 0.02, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_42ib3"]
+resource_name = "plate"
+albedo_color = Color(0.92, 0.92, 0.9, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_2bs2r"]
+material = SubResource("StandardMaterial3D_42ib3")
+size = Vector3(0.36, 0.13, 0.004)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nw2my"]
+resource_name = "intercom"
+albedo_color = Color(0.5, 0.52, 0.55, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_lb256"]
+material = SubResource("StandardMaterial3D_nw2my")
+size = Vector3(0.18, 0.26, 0.04)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wwoyb"]
+size = Vector3(0.18, 0.26, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jvd1o"]
+resource_name = "grille"
+albedo_color = Color(0.2, 0.2, 0.22, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_c06tj"]
+material = SubResource("StandardMaterial3D_jvd1o")
+size = Vector3(0.12, 0.1, 0.005)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lpcgg"]
+resource_name = "clock"
+albedo_color = Color(0.04, 0.04, 0.04, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ke2mx"]
+material = SubResource("StandardMaterial3D_lpcgg")
+size = Vector3(0.5, 0.18, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8ja3s"]
+resource_name = "cage_leaf"
+transparency = 1
+cull_mode = 2
+albedo_color = Color(0.85, 0.75, 0.25, 0.55)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_5soa4"]
+material = SubResource("StandardMaterial3D_8ja3s")
+size = Vector3(0.05, 2.08, 0.98)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8uksl"]
+material = SubResource("StandardMaterial3D_efwkb")
+size = Vector3(0.06, 0.06, 0.98)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8qvye"]
+resource_name = "maglock"
+albedo_color = Color(0.45, 0.08, 0.08, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_680in"]
+material = SubResource("StandardMaterial3D_8qvye")
+size = Vector3(0.06, 0.06, 0.25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_eurjj"]
+size = Vector3(0.06, 0.06, 0.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lv7iq"]
+material = SubResource("StandardMaterial3D_4k4kx")
+size = Vector3(0.01, 0.02, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bv20w"]
+resource_name = "rack"
+albedo_color = Color(0.08, 0.08, 0.09, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ae2x8"]
+material = SubResource("StandardMaterial3D_bv20w")
+size = Vector3(1, 2, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xlwts"]
+size = Vector3(1, 2, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cbhbp"]
+resource_name = "ups"
+albedo_color = Color(0.22, 0.22, 0.24, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_etymv"]
+material = SubResource("StandardMaterial3D_cbhbp")
+size = Vector3(0.6, 0.9, 0.7)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_miniw"]
+size = Vector3(0.6, 0.9, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_egqwu"]
+resource_name = "patch"
+albedo_color = Color(0.7, 0.74, 0.76, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_p0v6k"]
+material = SubResource("StandardMaterial3D_egqwu")
+size = Vector3(0.52, 0.12, 0.03)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5biev"]
+size = Vector3(0.56, 0.4, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vpigr"]
+resource_name = "port"
+albedo_color = Color(0.05, 0.05, 0.05, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_wxun1"]
+material = SubResource("StandardMaterial3D_vpigr")
+size = Vector3(0.03, 0.025, 0.006)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_npe7g"]
+resource_name = "cable_a"
+albedo_color = Color(0.85, 0.15, 0.12, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_d8jy8"]
+material = SubResource("StandardMaterial3D_npe7g")
+size = Vector3(0.015, 0.22, 0.015)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_owqjs"]
+resource_name = "cable_b"
+albedo_color = Color(0.15, 0.35, 0.9, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ko43o"]
+material = SubResource("StandardMaterial3D_owqjs")
+size = Vector3(0.015, 0.22, 0.015)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4y8p6"]
+resource_name = "cable_c"
+albedo_color = Color(0.95, 0.85, 0.15, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_lhd2x"]
+material = SubResource("StandardMaterial3D_4y8p6")
+size = Vector3(0.015, 0.22, 0.015)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v5xfe"]
+resource_name = "cable_d"
+albedo_color = Color(0.2, 0.7, 0.25, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_dnftt"]
+material = SubResource("StandardMaterial3D_v5xfe")
+size = Vector3(0.015, 0.22, 0.015)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7pd2a"]
+material = SubResource("StandardMaterial3D_42ib3")
+size = Vector3(0.42, 0.14, 0.006)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hn8e6"]
+size = Vector3(0.44, 0.16, 0.03)
+
+[node name="NightShift" type="Node3D" unique_id=952849071]
+script = ExtResource("1_hmi7j")
+spawn_point = NodePath("SpawnPoint")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=571369069]
+environment = SubResource("Environment_vrwxm")
+
+[node name="Lights" type="Node3D" parent="." unique_id=2024267365]
+
+[node name="OfficeCeiling" type="OmniLight3D" parent="Lights" unique_id=816336112]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.6, 2.5)
+light_color = Color(0.85, 0.9, 1, 1)
+light_energy = 0.7
+omni_range = 6.0
+
+[node name="DeskLamp" type="OmniLight3D" parent="Lights" unique_id=1557967856]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 1.35, 0.5)
+light_color = Color(1, 0.85, 0.6, 1)
+light_energy = 1.2
+omni_range = 2.2
+
+[node name="CabinetCorner" type="OmniLight3D" parent="Lights" unique_id=860659840]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.3, 4.3)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 0.8
+omni_range = 3.5
+
+[node name="ExitDoorLight" type="OmniLight3D" parent="Lights" unique_id=1977985672]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 2.4, 2.7)
+light_color = Color(1, 0.55, 0.45, 1)
+light_energy = 0.7
+omni_range = 2.8
+
+[node name="CageLight" type="OmniLight3D" parent="Lights" unique_id=78556901]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 2.55, 2.5)
+light_color = Color(0.75, 0.85, 1, 1)
+light_energy = 0.8
+omni_range = 4.5
+
+[node name="RackLight" type="OmniLight3D" parent="Lights" unique_id=1617260405]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, 1.9, 1.8)
+light_color = Color(0.8, 1, 0.9, 1)
+light_energy = 0.8
+omni_range = 2.0
+
+[node name="CorridorLight" type="OmniLight3D" parent="Lights" unique_id=13626691]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 2.3, 2.5)
+light_color = Color(0.6, 1, 0.6, 1)
+light_energy = 0.6
+omni_range = 2.5
+
+[node name="WhiteboardSpot" type="SpotLight3D" parent="Lights" unique_id=310523839]
+transform = Transform3D(1, 0, 0, 0, 0.49999997, 0.86602545, 0, -0.86602545, 0.49999997, 4.1, 2.6, 1.2)
+light_energy = 1.2
+spot_range = 3.5
+spot_angle = 40.0
+
+[node name="Structure" type="Node3D" parent="." unique_id=907547806]
+
+[node name="Floor" type="MeshInstance3D" parent="Structure" unique_id=124375362]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, -0.05, 2.5)
+mesh = SubResource("BoxMesh_pa7wy")
+
+[node name="Body" type="StaticBody3D" parent="Structure/Floor" unique_id=54659209]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/Floor/Body" unique_id=987320784]
+shape = SubResource("BoxShape3D_pq31a")
+
+[node name="Ceiling" type="MeshInstance3D" parent="Structure" unique_id=299534900]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 2.85, 2.5)
+mesh = SubResource("BoxMesh_u7yku")
+
+[node name="Body" type="StaticBody3D" parent="Structure/Ceiling" unique_id=1341906304]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/Ceiling/Body" unique_id=1586203052]
+shape = SubResource("BoxShape3D_pq31a")
+
+[node name="WallNorth" type="MeshInstance3D" parent="Structure" unique_id=556371040]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 1.4, -0.05)
+mesh = SubResource("BoxMesh_ymtj8")
+
+[node name="Body" type="StaticBody3D" parent="Structure/WallNorth" unique_id=799511084]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/WallNorth/Body" unique_id=921124741]
+shape = SubResource("BoxShape3D_5ylps")
+
+[node name="WallSouth" type="MeshInstance3D" parent="Structure" unique_id=1461753580]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 1.4, 5.05)
+mesh = SubResource("BoxMesh_ymtj8")
+
+[node name="Body" type="StaticBody3D" parent="Structure/WallSouth" unique_id=658379682]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/WallSouth/Body" unique_id=1263977599]
+shape = SubResource("BoxShape3D_5ylps")
+
+[node name="WallEast" type="MeshInstance3D" parent="Structure" unique_id=1465306349]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.55, 1.4, 2.5)
+mesh = SubResource("BoxMesh_js24t")
+
+[node name="Body" type="StaticBody3D" parent="Structure/WallEast" unique_id=1473313315]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/WallEast/Body" unique_id=1045270916]
+shape = SubResource("BoxShape3D_ekyhm")
+
+[node name="WallWestA" type="MeshInstance3D" parent="Structure" unique_id=487773922]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 1.4, 1)
+mesh = SubResource("BoxMesh_a6248")
+
+[node name="Body" type="StaticBody3D" parent="Structure/WallWestA" unique_id=1309298548]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/WallWestA/Body" unique_id=837668242]
+shape = SubResource("BoxShape3D_181u7")
+
+[node name="WallWestB" type="MeshInstance3D" parent="Structure" unique_id=877926694]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 1.4, 4)
+mesh = SubResource("BoxMesh_a6248")
+
+[node name="Body" type="StaticBody3D" parent="Structure/WallWestB" unique_id=1077077562]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/WallWestB/Body" unique_id=640750172]
+shape = SubResource("BoxShape3D_181u7")
+
+[node name="WallWestLintel" type="MeshInstance3D" parent="Structure" unique_id=64790140]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 2.4499998, 2.5)
+mesh = SubResource("BoxMesh_i6i25")
+
+[node name="Body" type="StaticBody3D" parent="Structure/WallWestLintel" unique_id=281460030]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/WallWestLintel/Body" unique_id=154112883]
+shape = SubResource("BoxShape3D_wkci7")
+
+[node name="CageWallA" type="MeshInstance3D" parent="Structure" unique_id=1680665030]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.4, 1.8)
+mesh = SubResource("BoxMesh_uagr2")
+
+[node name="Body" type="StaticBody3D" parent="Structure/CageWallA" unique_id=441709239]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/CageWallA/Body" unique_id=998149259]
+shape = SubResource("BoxShape3D_7jaca")
+
+[node name="CageWallB" type="MeshInstance3D" parent="Structure" unique_id=612404716]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.4, 4.8)
+mesh = SubResource("BoxMesh_sa20j")
+
+[node name="Body" type="StaticBody3D" parent="Structure/CageWallB" unique_id=468730365]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/CageWallB/Body" unique_id=1324551102]
+shape = SubResource("BoxShape3D_r5dd5")
+
+[node name="CageWallLintel" type="MeshInstance3D" parent="Structure" unique_id=747935358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.4499998, 4.1)
+mesh = SubResource("BoxMesh_utpcc")
+
+[node name="Body" type="StaticBody3D" parent="Structure/CageWallLintel" unique_id=295636751]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/CageWallLintel/Body" unique_id=325240408]
+shape = SubResource("BoxShape3D_wkci7")
+
+[node name="CorridorFloor" type="MeshInstance3D" parent="Structure" unique_id=1865642203]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, -0.05, 2.5)
+mesh = SubResource("BoxMesh_u6x2m")
+
+[node name="Body" type="StaticBody3D" parent="Structure/CorridorFloor" unique_id=1091517350]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/CorridorFloor/Body" unique_id=844627431]
+shape = SubResource("BoxShape3D_2763j")
+
+[node name="CorridorCeiling" type="MeshInstance3D" parent="Structure" unique_id=473017157]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, 2.45, 2.5)
+mesh = SubResource("BoxMesh_px6lo")
+
+[node name="Body" type="StaticBody3D" parent="Structure/CorridorCeiling" unique_id=237785562]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/CorridorCeiling/Body" unique_id=1124088587]
+shape = SubResource("BoxShape3D_2763j")
+
+[node name="CorridorWallN" type="MeshInstance3D" parent="Structure" unique_id=569140633]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, 1.2, 1.95)
+mesh = SubResource("BoxMesh_ps8ym")
+
+[node name="Body" type="StaticBody3D" parent="Structure/CorridorWallN" unique_id=1404420345]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/CorridorWallN/Body" unique_id=298419790]
+shape = SubResource("BoxShape3D_e42ee")
+
+[node name="CorridorWallS" type="MeshInstance3D" parent="Structure" unique_id=1954240198]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, 1.2, 3.05)
+mesh = SubResource("BoxMesh_ps8ym")
+
+[node name="Body" type="StaticBody3D" parent="Structure/CorridorWallS" unique_id=2076646205]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/CorridorWallS/Body" unique_id=43722698]
+shape = SubResource("BoxShape3D_e42ee")
+
+[node name="CorridorEnd" type="MeshInstance3D" parent="Structure" unique_id=1712616876]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 1.2, 2.5)
+mesh = SubResource("BoxMesh_puieo")
+
+[node name="Body" type="StaticBody3D" parent="Structure/CorridorEnd" unique_id=2037548792]
+
+[node name="Shape" type="CollisionShape3D" parent="Structure/CorridorEnd/Body" unique_id=1181490784]
+shape = SubResource("BoxShape3D_wijf2")
+
+[node name="CorridorLintel" type="MeshInstance3D" parent="Structure" unique_id=1378074676]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, 2.25, 1.925)
+mesh = SubResource("BoxMesh_v4tdi")
+
+[node name="ExitSign" type="Label3D" parent="Structure" unique_id=926420341]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.69, 1.9, 2.5)
+pixel_size = 0.004
+double_sided = false
+modulate = Color(0.3, 1, 0.4, 1)
+text = "EXIT  >>  STAIRWELL B"
+font_size = 48
+outline_size = 0
+
+[node name="SpawnPoint" type="Marker3D" parent="." unique_id=417192878]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 2.6)
+
+[node name="Office" type="Node3D" parent="." unique_id=1979274450]
+
+[node name="Desk" type="Node3D" parent="Office" unique_id=301479544]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0, 0)
+
+[node name="Top" type="MeshInstance3D" parent="Office/Desk" unique_id=1272285634]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, 0.375)
+mesh = SubResource("BoxMesh_nxbe4")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/Top" unique_id=1774952892]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/Top/Body" unique_id=1253121094]
+shape = SubResource("BoxShape3D_t8m7l")
+
+[node name="LegLeft" type="MeshInstance3D" parent="Office/Desk" unique_id=2082097719]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.78, 0.36, 0.375)
+mesh = SubResource("BoxMesh_p25ph")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/LegLeft" unique_id=217803682]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/LegLeft/Body" unique_id=1244086689]
+shape = SubResource("BoxShape3D_ol2bh")
+
+[node name="LegRight" type="MeshInstance3D" parent="Office/Desk" unique_id=800548866]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 0.36, 0.375)
+mesh = SubResource("BoxMesh_p25ph")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/LegRight" unique_id=6621821]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/LegRight/Body" unique_id=1470431814]
+shape = SubResource("BoxShape3D_ol2bh")
+
+[node name="Modesty" type="MeshInstance3D" parent="Office/Desk" unique_id=1665143148]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.05)
+mesh = SubResource("BoxMesh_uts3r")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/Modesty" unique_id=564529911]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/Modesty/Body" unique_id=1670425119]
+shape = SubResource("BoxShape3D_higau")
+
+[node name="Monitor" type="MeshInstance3D" parent="Office/Desk" unique_id=1103431246]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 1.05, 0.2)
+mesh = SubResource("BoxMesh_xqeq4")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/Monitor" unique_id=629969102]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/Monitor/Body" unique_id=1620622743]
+shape = SubResource("BoxShape3D_05elm")
+
+[node name="MonitorStand" type="MeshInstance3D" parent="Office/Desk" unique_id=823107704]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 0.86, 0.2)
+mesh = SubResource("BoxMesh_w1eqn")
+
+[node name="Drawer" type="Node3D" parent="Office/Desk" unique_id=2128899347]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.62, 0.75)
+script = ExtResource("2_nub3g")
+contents = NodePath("Slide/Contents")
+moving_part = NodePath("Slide")
+open_offset = Vector3(0, 0, 0.4)
+display_name = "Top desk drawer"
+verbs = PackedStringArray("open", "close")
+
+[node name="Slide" type="Node3D" parent="Office/Desk/Drawer" unique_id=1233633006]
+
+[node name="Front" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=1146872968]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.01)
+mesh = SubResource("BoxMesh_brntq")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/Drawer/Slide/Front" unique_id=1905155372]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/Drawer/Slide/Front/Body" unique_id=446858219]
+shape = SubResource("BoxShape3D_vvu0o")
+
+[node name="Handle" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide/Front" unique_id=1275550765]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.02)
+mesh = SubResource("BoxMesh_w3ntq")
+
+[node name="TrayBottom" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=1281891614]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, -0.23)
+mesh = SubResource("BoxMesh_l1u0l")
+
+[node name="TraySideL" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=1018606846]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0, -0.23)
+mesh = SubResource("BoxMesh_ugstm")
+
+[node name="TraySideR" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=1843883511]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0, -0.23)
+mesh = SubResource("BoxMesh_ugstm")
+
+[node name="TrayBack" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=125718942]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.455)
+mesh = SubResource("BoxMesh_gxwv2")
+
+[node name="Contents" type="Node3D" parent="Office/Desk/Drawer/Slide" unique_id=1752680531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, -0.2)
+
+[node name="Papers" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide/Contents" unique_id=1570760037]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 0.06, 0.02)
+mesh = SubResource("BoxMesh_v5cf3")
+
+[node name="UVTorch" type="Node3D" parent="Office/Desk/Drawer/Slide/Contents" unique_id=1189261646]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.03, 0)
+script = ExtResource("3_hbjcy")
+item_id = "uv_torch"
+description = "A pocket UV torch, the kind used to check banknotes. Select it to see UV ink nearby."
+display_name = "UV torch"
+verbs = PackedStringArray("pick_up")
+
+[node name="Mesh" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide/Contents/UVTorch" unique_id=1174891060]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_gn1rv")
+
+[node name="Lens" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide/Contents/UVTorch" unique_id=971949595]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.09)
+mesh = SubResource("BoxMesh_ysuod")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/Drawer/Slide/Contents/UVTorch" unique_id=533725471]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/Drawer/Slide/Contents/UVTorch/Body" unique_id=1766695187]
+shape = SubResource("BoxShape3D_y40hg")
+
+[node name="StickyNote" type="Node3D" parent="Office/Desk" unique_id=1621984435]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.17, 0.93, 0.225)
+script = ExtResource("4_7mnw5")
+title = "Sticky note (monitor)"
+text_md = "intranet login
+
+user: **mreyes**
+
+pw: same as the guest wifi one :)"
+display_name = "Sticky note"
+verbs = PackedStringArray("read")
+
+[node name="Paper" type="MeshInstance3D" parent="Office/Desk/StickyNote" unique_id=947431957]
+mesh = SubResource("BoxMesh_eto6l")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/StickyNote/Paper" unique_id=2103266819]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/StickyNote/Paper/Body" unique_id=1076055484]
+shape = SubResource("BoxShape3D_jn5ad")
+
+[node name="Text" type="Label3D" parent="Office/Desk/StickyNote" unique_id=347367048]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.004)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.1, 0.1, 0.3, 1)
+text = "user:
+mreyes"
+font_size = 22
+outline_size = 0
+
+[node name="Laptop" type="Node3D" parent="Office/Desk" unique_id=1186745705]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 0.76, 0.35)
+script = ExtResource("5_tnwkv")
+challenge_id = "intranet"
+banner = "KESTREL LOGISTICS - IT ASSET KL-LT-0332 (M. Reyes)
+Intranet session expired. Sign in again from your own browser using the connection card below.
+Maglock vendor override tokens are filed as facilities tickets. Paste one into the flag field to release the cage."
+display_name = "Mark's laptop"
+verbs = PackedStringArray("terminal")
+
+[node name="Base" type="MeshInstance3D" parent="Office/Desk/Laptop" unique_id=1991148932]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+mesh = SubResource("BoxMesh_ky2ry")
+
+[node name="Body" type="StaticBody3D" parent="Office/Desk/Laptop" unique_id=509526670]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, -0.02)
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Desk/Laptop/Body" unique_id=340327433]
+shape = SubResource("BoxShape3D_apddg")
+
+[node name="Screen" type="MeshInstance3D" parent="Office/Desk/Laptop" unique_id=1789977912]
+transform = Transform3D(1, 0, 0, 0, 0.9781476, 0.2079117, 0, -0.2079117, 0.9781476, 0, 0.13, -0.12)
+mesh = SubResource("BoxMesh_xk2hm")
+
+[node name="ScreenText" type="Label3D" parent="Office/Desk/Laptop/Screen" unique_id=597984028]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.008)
+pixel_size = 0.002
+double_sided = false
+text = "KESTREL INTRANET
+session expired"
+font_size = 20
+outline_size = 0
+
+[node name="Chair" type="MeshInstance3D" parent="Office" unique_id=325948358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.225, 1.25)
+mesh = SubResource("BoxMesh_l7cjs")
+
+[node name="Body" type="StaticBody3D" parent="Office/Chair" unique_id=1002814082]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Chair/Body" unique_id=461791345]
+shape = SubResource("BoxShape3D_u2pa4")
+
+[node name="ChairBack" type="MeshInstance3D" parent="Office" unique_id=63404338]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.7, 1.47)
+mesh = SubResource("BoxMesh_t5n06")
+
+[node name="Body" type="StaticBody3D" parent="Office/ChairBack" unique_id=1237595540]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/ChairBack/Body" unique_id=1356852660]
+shape = SubResource("BoxShape3D_qk46n")
+
+[node name="Whiteboard" type="Node3D" parent="Office" unique_id=605767267]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0, 0)
+
+[node name="Board" type="MeshInstance3D" parent="Office/Whiteboard" unique_id=859323062]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.015)
+mesh = SubResource("BoxMesh_xuf78")
+
+[node name="Body" type="StaticBody3D" parent="Office/Whiteboard/Board" unique_id=1925917952]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Whiteboard/Board/Body" unique_id=2102510876]
+shape = SubResource("BoxShape3D_2u681")
+
+[node name="Tray" type="MeshInstance3D" parent="Office/Whiteboard" unique_id=1579540655]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.935, 0.04)
+mesh = SubResource("BoxMesh_5ftxi")
+
+[node name="Marker" type="Label3D" parent="Office/Whiteboard" unique_id=1514679596]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 1.5, 0.035)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.1, 0.15, 0.45, 1)
+text = "MIGRATION - NIGHT 2
+[x] backup core-sw
+[x] move DNS
+[ ] cutover 23:30
+
+Filing cabinet code:
+UV pen (audit rule!)  -->"
+font_size = 30
+outline_size = 0
+
+[node name="UVInk" type="Node3D" parent="Office/Whiteboard" unique_id=453137812]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.3, 0.035)
+script = ExtResource("6_bwsy5")
+label = NodePath("Text")
+text = "{{cabinet_code}}"
+
+[node name="Text" type="Label3D" parent="Office/Whiteboard/UVInk" unique_id=1746455957]
+visible = false
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.75, 0.45, 1, 1)
+font_size = 96
+outline_size = 0
+
+[node name="FilingCabinet" type="Node3D" parent="Office" unique_id=1394011568]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 1.25, 0, 5)
+script = ExtResource("2_nub3g")
+contents = NodePath("Drawer/Contents")
+locked_by = NodePath("Keypad")
+moving_part = NodePath("Drawer")
+open_offset = Vector3(0, 0, 0.4)
+display_name = "Filing cabinet"
+verbs = PackedStringArray("open", "close")
+
+[node name="Carcass" type="MeshInstance3D" parent="Office/FilingCabinet" unique_id=1922231185]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0.3)
+mesh = SubResource("BoxMesh_o04mf")
+
+[node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Carcass" unique_id=1276003154]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/FilingCabinet/Carcass/Body" unique_id=1072516564]
+shape = SubResource("BoxShape3D_mkjtw")
+
+[node name="LowerFront" type="MeshInstance3D" parent="Office/FilingCabinet" unique_id=925754255]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37, 0.605)
+mesh = SubResource("BoxMesh_61mn6")
+
+[node name="Tag" type="Label3D" parent="Office/FilingCabinet" unique_id=1083478888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.632)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "IT - NETWORK"
+font_size = 20
+outline_size = 0
+
+[node name="Drawer" type="Node3D" parent="Office/FilingCabinet" unique_id=183630264]
+
+[node name="Front" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer" unique_id=944837219]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0.61)
+mesh = SubResource("BoxMesh_63s2m")
+
+[node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Drawer/Front" unique_id=596637029]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/FilingCabinet/Drawer/Front/Body" unique_id=1850183056]
+shape = SubResource("BoxShape3D_aa7sk")
+
+[node name="Handle" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Front" unique_id=361756172]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0.02)
+mesh = SubResource("BoxMesh_tlcvk")
+
+[node name="TrayBottom" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer" unique_id=1981353022]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76, 0.35)
+mesh = SubResource("BoxMesh_7in5u")
+
+[node name="TraySideL" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer" unique_id=51112101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, 0.83, 0.35)
+mesh = SubResource("BoxMesh_mijbg")
+
+[node name="TraySideR" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer" unique_id=1540245907]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, 0.83, 0.35)
+mesh = SubResource("BoxMesh_mijbg")
+
+[node name="Contents" type="Node3D" parent="Office/FilingCabinet/Drawer" unique_id=1093235128]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.77, 0.4)
+
+[node name="NetworkDiagram" type="Node3D" parent="Office/FilingCabinet/Drawer/Contents" unique_id=1657313151]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.01, 0)
+script = ExtResource("4_7mnw5")
+title = "Network diagram (laminated)"
+text_md = "# Kestrel Logistics - site network (rev 7)
+_Laminated. Do not remove from the cabinet._
+
+## Cage rack: patch panel P1 -> UPS bypass relay
+- Cable **A** (red, one stripe) -> port **3**
+- Cable **B** (blue, two stripes) -> port **7**
+- Cable **C** (yellow, three stripes) -> port **1**
+- Cable **D** (green, no stripe) -> port **5**
+
+If the mains fail, patching P1 as above hands the door panels to the UPS."
+display_name = "Network diagram (laminated)"
+verbs = PackedStringArray("read")
+
+[node name="Sheet" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Contents/NetworkDiagram" unique_id=588390716]
+mesh = SubResource("BoxMesh_ruelm")
+
+[node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Drawer/Contents/NetworkDiagram/Sheet" unique_id=649331426]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/FilingCabinet/Drawer/Contents/NetworkDiagram/Sheet/Body" unique_id=1014794136]
+shape = SubResource("BoxShape3D_h3h1n")
+
+[node name="Title" type="Label3D" parent="Office/FilingCabinet/Drawer/Contents/NetworkDiagram" unique_id=1186803866]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.005, 0)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.1, 0.25, 1)
+text = "NETWORK
+DIAGRAM
+P1: A B C D"
+font_size = 24
+outline_size = 0
+
+[node name="UsbStick" type="Node3D" parent="Office/FilingCabinet/Drawer/Contents" unique_id=190909720]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.015, 0.05)
+script = ExtResource("7_8kqgp")
+item_id = "usb_stick"
+description = "A scuffed orange USB stick labelled \"MR - backups\" in marker. Whatever is on it will need a proper computer."
+display_name = "USB stick"
+verbs = PackedStringArray("pick_up")
+
+[node name="Mesh" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Contents/UsbStick" unique_id=1802005156]
+mesh = SubResource("BoxMesh_pnt3d")
+
+[node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Drawer/Contents/UsbStick/Mesh" unique_id=1163887578]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/FilingCabinet/Drawer/Contents/UsbStick/Mesh/Body" unique_id=1042038461]
+shape = SubResource("BoxShape3D_nkjm4")
+
+[node name="Keypad" type="Node3D" parent="Office/FilingCabinet" unique_id=1345321480]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.12, 0.61)
+script = ExtResource("8_pl6hf")
+code = "{{cabinet_code}}"
+status_light = NodePath("Led")
+status_label = NodePath("Status")
+display_name = "Cabinet keypad"
+verbs = PackedStringArray("enter_code")
+
+[node name="Pad" type="MeshInstance3D" parent="Office/FilingCabinet/Keypad" unique_id=1670299549]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.01)
+mesh = SubResource("BoxMesh_yvjyg")
+
+[node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Keypad/Pad" unique_id=1880870396]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/FilingCabinet/Keypad/Pad/Body" unique_id=832431955]
+shape = SubResource("BoxShape3D_l0lni")
+
+[node name="Led" type="MeshInstance3D" parent="Office/FilingCabinet/Keypad" unique_id=172644608]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.03, 0.022)
+mesh = SubResource("BoxMesh_uyhg4")
+
+[node name="Status" type="Label3D" parent="Office/FilingCabinet/Keypad" unique_id=1206101191]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.03, 0.022)
+pixel_size = 0.002
+double_sided = false
+font_size = 16
+outline_size = 0
+
+[node name="Pinboard" type="Node3D" parent="Office" unique_id=101055529]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 3.1, 0, 5)
+
+[node name="Board" type="MeshInstance3D" parent="Office/Pinboard" unique_id=1199930816]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.01)
+mesh = SubResource("BoxMesh_p3rgj")
+
+[node name="Body" type="StaticBody3D" parent="Office/Pinboard/Board" unique_id=57459547]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Pinboard/Board/Body" unique_id=1326602128]
+shape = SubResource("BoxShape3D_7ewxv")
+
+[node name="Header" type="Label3D" parent="Office/Pinboard" unique_id=256150880]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.78, 0.022)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.15, 0.08, 0.02, 1)
+text = "IT NOTICES"
+font_size = 28
+outline_size = 0
+
+[node name="WifiCard" type="Node3D" parent="Office/Pinboard" unique_id=1315181289]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.45, 0.024)
+script = ExtResource("4_7mnw5")
+title = "Guest WiFi"
+text_md = "# Guest WiFi
+Network: **KESTREL-GUEST**
+
+Password: see back
+
+_Please do not share with visitors._"
+back_text_md = "Password: **Kestrel#2019**
+
+_(same as my intranet one - IT, rotate this!! - M. Reyes)_"
+display_name = "Guest WiFi card"
+verbs = PackedStringArray("read")
+
+[node name="Card" type="MeshInstance3D" parent="Office/Pinboard/WifiCard" unique_id=1150384289]
+mesh = SubResource("BoxMesh_ddy8a")
+
+[node name="Body" type="StaticBody3D" parent="Office/Pinboard/WifiCard/Card" unique_id=1756484383]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Pinboard/WifiCard/Card/Body" unique_id=2092002576]
+shape = SubResource("BoxShape3D_5o2un")
+
+[node name="Text" type="Label3D" parent="Office/Pinboard/WifiCard" unique_id=1311807027]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.004)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.1, 0.3, 1)
+text = "GUEST WiFi
+KESTREL-GUEST"
+font_size = 22
+outline_size = 0
+
+[node name="FireCertificate" type="Node3D" parent="Office" unique_id=366191476]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 4.7, 1.45, 4.985)
+script = ExtResource("4_7mnw5")
+title = "Fire safety inspection certificate"
+text_md = "# Fire safety inspection certificate
+Premises: Kestrel Logistics, regional office, Unit 4 Harbour Road
+
+## SITE 417
+
+Inspected: March 2026 - **PASS**
+
+Next inspection due: March 2027"
+display_name = "Fire inspection certificate"
+verbs = PackedStringArray("read")
+
+[node name="Border" type="MeshInstance3D" parent="Office/FireCertificate" unique_id=1784108623]
+mesh = SubResource("BoxMesh_b1vnm")
+
+[node name="Body" type="StaticBody3D" parent="Office/FireCertificate/Border" unique_id=837915837]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/FireCertificate/Border/Body" unique_id=1223715753]
+shape = SubResource("BoxShape3D_4qv3h")
+
+[node name="Paper" type="MeshInstance3D" parent="Office/FireCertificate" unique_id=794863254]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.007)
+mesh = SubResource("BoxMesh_gtkx8")
+
+[node name="Text" type="Label3D" parent="Office/FireCertificate" unique_id=1633013816]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.011)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.4, 0.05, 0.05, 1)
+text = "FIRE SAFETY
+INSPECTION
+CERTIFICATE
+
+SITE 417"
+font_size = 24
+outline_size = 0
+
+[node name="ExitDoor" type="Node3D" parent="Office" unique_id=9458546]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+script = ExtResource("9_vtr8h")
+is_exit = true
+locked_by = NodePath("Keypad")
+moving_part = NodePath("Hinge")
+open_rotation_deg = Vector3(0, 100, 0)
+display_name = "Exit door"
+verbs = PackedStringArray("open", "close")
+
+[node name="Hinge" type="Node3D" parent="Office/ExitDoor" unique_id=1120518406]
+
+[node name="Leaf" type="MeshInstance3D" parent="Office/ExitDoor/Hinge" unique_id=2114885730]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, 1.04, 0.5)
+mesh = SubResource("BoxMesh_jpsml")
+
+[node name="Body" type="StaticBody3D" parent="Office/ExitDoor/Hinge/Leaf" unique_id=1572677273]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/ExitDoor/Hinge/Leaf/Body" unique_id=932277974]
+shape = SubResource("BoxShape3D_3tl2t")
+
+[node name="PushBar" type="MeshInstance3D" parent="Office/ExitDoor/Hinge/Leaf" unique_id=1278900815]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 0, 0.05)
+mesh = SubResource("BoxMesh_1fb0e")
+
+[node name="Sign" type="Label3D" parent="Office/ExitDoor/Hinge/Leaf" unique_id=1120969366]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.03, 0.35, 0)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.9, 0.9, 0.9, 1)
+text = "MAGLOCKED
+USE OVERRIDE PANEL"
+font_size = 26
+outline_size = 0
+
+[node name="Keypad" type="Node3D" parent="Office/ExitDoor" unique_id=687725508]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.03, 1.3, 1.4)
+script = ExtResource("8_pl6hf")
+display_length = 6
+code = "417062"
+starts_powered = false
+status_light = NodePath("Led")
+status_label = NodePath("Status")
+display_name = "Door override panel"
+verbs = PackedStringArray("enter_code")
+
+[node name="Pad" type="MeshInstance3D" parent="Office/ExitDoor/Keypad" unique_id=1494681865]
+mesh = SubResource("BoxMesh_cnebj")
+
+[node name="Body" type="StaticBody3D" parent="Office/ExitDoor/Keypad/Pad" unique_id=1334488905]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/ExitDoor/Keypad/Pad/Body" unique_id=401214837]
+shape = SubResource("BoxShape3D_avmwc")
+
+[node name="Led" type="MeshInstance3D" parent="Office/ExitDoor/Keypad" unique_id=2085375292]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.08, 0.02)
+mesh = SubResource("BoxMesh_c6gvp")
+
+[node name="Status" type="Label3D" parent="Office/ExitDoor/Keypad" unique_id=1972372581]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.08, 0.02)
+pixel_size = 0.002
+double_sided = false
+font_size = 18
+outline_size = 0
+
+[node name="OverridePlate" type="Node3D" parent="Office/ExitDoor" unique_id=40023663]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.012, 1.62, 1.4)
+
+[node name="Plate" type="MeshInstance3D" parent="Office/ExitDoor/OverridePlate" unique_id=1919314174]
+mesh = SubResource("BoxMesh_2bs2r")
+
+[node name="Text" type="Label3D" parent="Office/ExitDoor/OverridePlate" unique_id=1536281104]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.004)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "MAGLOCK OVERRIDE:
+SITE + RACK"
+font_size = 26
+outline_size = 0
+
+[node name="Intercom" type="Node3D" parent="Office" unique_id=260427690]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.02, 1.45, 1)
+script = ExtResource("10_jcy83")
+label = NodePath("Display")
+speaker_name = "DALE (SECURITY)"
+
+[node name="Panel" type="MeshInstance3D" parent="Office/Intercom" unique_id=295237723]
+mesh = SubResource("BoxMesh_lb256")
+
+[node name="Body" type="StaticBody3D" parent="Office/Intercom/Panel" unique_id=908109794]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Intercom/Panel/Body" unique_id=2009811322]
+shape = SubResource("BoxShape3D_wwoyb")
+
+[node name="Grille" type="MeshInstance3D" parent="Office/Intercom" unique_id=223843072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0.022)
+mesh = SubResource("BoxMesh_c06tj")
+
+[node name="Display" type="Label3D" parent="Office/Intercom" unique_id=1799777845]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0.01)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.75, 0.95, 1, 1)
+text = "INTERCOM - SECURITY DESK"
+font_size = 22
+outline_size = 0
+autowrap_mode = 3
+width = 420.0
+
+[node name="SessionClock" type="Node3D" parent="Office" unique_id=1623341385]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.015, 2.35, 2.5)
+script = ExtResource("11_dlbfh")
+label = NodePath("Display")
+
+[node name="Panel" type="MeshInstance3D" parent="Office/SessionClock" unique_id=819312366]
+mesh = SubResource("BoxMesh_ke2mx")
+
+[node name="Display" type="Label3D" parent="Office/SessionClock" unique_id=1258825275]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.012)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(1, 0.2, 0.15, 1)
+text = "60:00"
+font_size = 64
+outline_size = 0
+
+[node name="Caption" type="Label3D" parent="Office/SessionClock" unique_id=1605817336]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13, 0.012)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.9, 0.9, 0.9, 1)
+text = "UPS RUNTIME"
+font_size = 18
+outline_size = 0
+
+[node name="Cage" type="Node3D" parent="." unique_id=762002348]
+
+[node name="Door" type="Node3D" parent="Cage" unique_id=1228745595]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 4.6)
+script = ExtResource("9_vtr8h")
+locked_by = NodePath("Maglock")
+moving_part = NodePath("Hinge")
+open_rotation_deg = Vector3(0, -100, 0)
+display_name = "Cage door"
+verbs = PackedStringArray("open", "close")
+
+[node name="Hinge" type="Node3D" parent="Cage/Door" unique_id=1376184102]
+
+[node name="Leaf" type="MeshInstance3D" parent="Cage/Door/Hinge" unique_id=978056578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04, -0.5)
+mesh = SubResource("BoxMesh_5soa4")
+
+[node name="Body" type="StaticBody3D" parent="Cage/Door/Hinge/Leaf" unique_id=538117918]
+
+[node name="Shape" type="CollisionShape3D" parent="Cage/Door/Hinge/Leaf/Body" unique_id=45385236]
+shape = SubResource("BoxShape3D_3tl2t")
+
+[node name="Bar" type="MeshInstance3D" parent="Cage/Door/Hinge/Leaf" unique_id=602765875]
+mesh = SubResource("BoxMesh_8uksl")
+
+[node name="Maglock" type="Node3D" parent="Cage/Door" unique_id=1294980690]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 2.05, -0.85)
+script = ExtResource("12_1brxc")
+status_light = NodePath("Led")
+display_name = "Cage maglock"
+verbs = PackedStringArray("examine")
+
+[node name="Housing" type="MeshInstance3D" parent="Cage/Door/Maglock" unique_id=1714513496]
+mesh = SubResource("BoxMesh_680in")
+
+[node name="Body" type="StaticBody3D" parent="Cage/Door/Maglock/Housing" unique_id=1102637121]
+
+[node name="Shape" type="CollisionShape3D" parent="Cage/Door/Maglock/Housing/Body" unique_id=330471008]
+shape = SubResource("BoxShape3D_eurjj")
+
+[node name="Led" type="MeshInstance3D" parent="Cage/Door/Maglock" unique_id=2102157152]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.035, 0, 0.08)
+mesh = SubResource("BoxMesh_lv7iq")
+
+[node name="Tag" type="Label3D" parent="Cage/Door/Maglock" unique_id=1342449942]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -0.031, -0.06, 0)
+pixel_size = 0.002
+double_sided = false
+text = "MAGLOCK - CTRL: INTRANET"
+font_size = 14
+outline_size = 0
+
+[node name="FlagGate" type="Node3D" parent="Cage" unique_id=2120772676]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.2, 3.75)
+script = ExtResource("13_h0p10")
+challenge_id = "intranet"
+targets = Array[NodePath]([NodePath("../Door/Maglock")])
+
+[node name="ServerRack" type="MeshInstance3D" parent="Cage" unique_id=1884929345]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.9, 1, 1.8)
+mesh = SubResource("BoxMesh_ae2x8")
+
+[node name="Body" type="StaticBody3D" parent="Cage/ServerRack" unique_id=1620712405]
+
+[node name="Shape" type="CollisionShape3D" parent="Cage/ServerRack/Body" unique_id=411967837]
+shape = SubResource("BoxShape3D_xlwts")
+
+[node name="UPS" type="MeshInstance3D" parent="Cage" unique_id=1549114405]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.1, 0.45, 0.65)
+mesh = SubResource("BoxMesh_etymv")
+
+[node name="Body" type="StaticBody3D" parent="Cage/UPS" unique_id=2131946395]
+
+[node name="Shape" type="CollisionShape3D" parent="Cage/UPS/Body" unique_id=972506756]
+shape = SubResource("BoxShape3D_miniw")
+
+[node name="UPSLabel" type="Label3D" parent="Cage" unique_id=1286865545]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 7.79, 0.75, 0.65)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.9, 0.9, 0.9, 1)
+text = "UPS 3kVA
+BYPASS RELAY"
+font_size = 22
+outline_size = 0
+
+[node name="PatchPanel" type="Node3D" parent="Cage" unique_id=1969586604]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 7.385, 1.25, 1.8)
+script = ExtResource("14_fnm6y")
+cable_ids = PackedStringArray("A", "B", "C", "D")
+cable_labels = PackedStringArray("A - red, one stripe", "B - blue, two stripes", "C - yellow, three stripes", "D - green, no stripe")
+solution = "A:3,B:7,C:1,D:5"
+targets = Array[NodePath]([NodePath("../../Office/ExitDoor/Keypad")])
+display_name = "Patch panel P1"
+verbs = PackedStringArray("patch")
+
+[node name="Panel" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=2010716929]
+mesh = SubResource("BoxMesh_p0v6k")
+
+[node name="Body" type="StaticBody3D" parent="Cage/PatchPanel/Panel" unique_id=1352566136]
+
+[node name="Shape" type="CollisionShape3D" parent="Cage/PatchPanel/Panel/Body" unique_id=918712971]
+shape = SubResource("BoxShape3D_5biev")
+
+[node name="Title" type="Label3D" parent="Cage/PatchPanel" unique_id=783981753]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.17, 0.045, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "P1 -> UPS BYPASS"
+font_size = 14
+outline_size = 0
+
+[node name="Port1" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1301597528]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, -0.005, 0.016)
+mesh = SubResource("BoxMesh_wxun1")
+
+[node name="PortNum1" type="Label3D" parent="Cage/PatchPanel" unique_id=1545643084]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, -0.035, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "1"
+font_size = 16
+outline_size = 0
+
+[node name="Port2" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1867951288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.005, 0.016)
+mesh = SubResource("BoxMesh_wxun1")
+
+[node name="PortNum2" type="Label3D" parent="Cage/PatchPanel" unique_id=1447089219]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.035, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "2"
+font_size = 16
+outline_size = 0
+
+[node name="Port3" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=174964886]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, -0.005, 0.016)
+mesh = SubResource("BoxMesh_wxun1")
+
+[node name="PortNum3" type="Label3D" parent="Cage/PatchPanel" unique_id=436099841]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, -0.035, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "3"
+font_size = 16
+outline_size = 0
+
+[node name="Port4" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1700579633]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, -0.005, 0.016)
+mesh = SubResource("BoxMesh_wxun1")
+
+[node name="PortNum4" type="Label3D" parent="Cage/PatchPanel" unique_id=287360229]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, -0.035, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "4"
+font_size = 16
+outline_size = 0
+
+[node name="Port5" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1708798596]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, -0.005, 0.016)
+mesh = SubResource("BoxMesh_wxun1")
+
+[node name="PortNum5" type="Label3D" parent="Cage/PatchPanel" unique_id=5562265]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, -0.035, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "5"
+font_size = 16
+outline_size = 0
+
+[node name="Port6" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=388191806]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, -0.005, 0.016)
+mesh = SubResource("BoxMesh_wxun1")
+
+[node name="PortNum6" type="Label3D" parent="Cage/PatchPanel" unique_id=2048197046]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, -0.035, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "6"
+font_size = 16
+outline_size = 0
+
+[node name="Port7" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1665074419]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.005, 0.016)
+mesh = SubResource("BoxMesh_wxun1")
+
+[node name="PortNum7" type="Label3D" parent="Cage/PatchPanel" unique_id=1735720891]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.035, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "7"
+font_size = 16
+outline_size = 0
+
+[node name="Port8" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1277036388]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, -0.005, 0.016)
+mesh = SubResource("BoxMesh_wxun1")
+
+[node name="PortNum8" type="Label3D" parent="Cage/PatchPanel" unique_id=1332924900]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, -0.035, 0.016)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "8"
+font_size = 16
+outline_size = 0
+
+[node name="CableA" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=226077759]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18, -0.18, 0.03)
+mesh = SubResource("BoxMesh_d8jy8")
+
+[node name="Tag" type="Label3D" parent="Cage/PatchPanel/CableA" unique_id=1298513883]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.012)
+pixel_size = 0.002
+double_sided = false
+text = "A |"
+font_size = 18
+outline_size = 0
+
+[node name="CableB" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=719860563]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, -0.18, 0.03)
+mesh = SubResource("BoxMesh_ko43o")
+
+[node name="Tag" type="Label3D" parent="Cage/PatchPanel/CableB" unique_id=65509819]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.012)
+pixel_size = 0.002
+double_sided = false
+text = "B ||"
+font_size = 18
+outline_size = 0
+
+[node name="CableC" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=778247885]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, -0.18, 0.03)
+mesh = SubResource("BoxMesh_lhd2x")
+
+[node name="Tag" type="Label3D" parent="Cage/PatchPanel/CableC" unique_id=1496817896]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.012)
+pixel_size = 0.002
+double_sided = false
+text = "C |||"
+font_size = 18
+outline_size = 0
+
+[node name="CableD" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=2026786709]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, -0.18, 0.03)
+mesh = SubResource("BoxMesh_dnftt")
+
+[node name="Tag" type="Label3D" parent="Cage/PatchPanel/CableD" unique_id=901558285]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.012)
+pixel_size = 0.002
+double_sided = false
+text = "D -"
+font_size = 18
+outline_size = 0
+
+[node name="RackStencil" type="Node3D" parent="Cage" unique_id=446602374]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 7.39, 1.72, 1.8)
+script = ExtResource("4_7mnw5")
+title = "Rack stencil"
+text_md = "Stencilled on the rack frame in white paint:
+
+# RACK 062"
+display_name = "Rack ID stencil"
+verbs = PackedStringArray("read")
+
+[node name="Plate" type="MeshInstance3D" parent="Cage/RackStencil" unique_id=1089880150]
+mesh = SubResource("BoxMesh_7pd2a")
+
+[node name="Body" type="StaticBody3D" parent="Cage/RackStencil/Plate" unique_id=698575908]
+
+[node name="Shape" type="CollisionShape3D" parent="Cage/RackStencil/Plate/Body" unique_id=445009776]
+shape = SubResource("BoxShape3D_hn8e6")
+
+[node name="Text" type="Label3D" parent="Cage/RackStencil" unique_id=1781124631]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.005)
+pixel_size = 0.002
+double_sided = false
+modulate = Color(0.05, 0.05, 0.05, 1)
+text = "RACK 062"
+font_size = 56
+outline_size = 0
