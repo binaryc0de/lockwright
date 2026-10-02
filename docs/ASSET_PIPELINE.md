@@ -132,7 +132,7 @@ Exact strings that must be legible, font feel (dot-matrix, laser-printed, handwr
 
 - **Units**: metric, 1 BU = 1 m. Apply scale/rotation before export.
 - **Axes**: model with +Y forward in Blender; export with the glTF exporter's default `+Y up` conversion. Verify in Godot that the prop faces `-Z`. If a prop ends up backwards in-engine, fix the script, not the import.
-- **Origin**: base centre on the floor plane for floor props; mount plane centre for wall props; hinge axis for doors/lids.
+- **Origin**: base centre on the floor plane for floor props; mount plane centre for wall props; hinge axis for doors/lids; for a reworked CC0 source model, "as the source" keeps the source's origin so the GLB is a drop-in replacement (assetcheck warns; Claude verifies in-engine).
 - **Naming**: objects and meshes `snake_case`; `-col` suffix generates collision on Godot import; `-noimp` for helpers; `-convcol`/`-colonly` where appropriate. Materials `M_<asset_id>_<part>`. Images `T_<asset_id>_<map>`.
 - **Topology**: quads/tris only, no n-gons at export, no loose verts, normals outward, hard edges via auto-smooth/weighted normals, UVs non-overlapping for baked parts, texel density ~512 px/m for props and ~1024 px/m for printables and screens.
 - **Materials**: Principled BSDF only; metallic/roughness workflow; emissive for screens/LEDs with strength set so Godot's glow picks it up; ORM packing (occlusion R, roughness G, metallic B) when more than one map is needed.

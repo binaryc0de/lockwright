@@ -91,8 +91,11 @@ Continued on branch `m4-polish`:
 - [x] Audio: CC0 Kenney sounds (fetched by `tools/thirdparty/fetch_cc0.sh`), `EBSound` library, per-node state-change sounds heard by every client, UI clicks/paper/chime/end sting, footsteps (local and teammates), synthesised `AmbientZone` for server fans and tube buzz.
 - [x] Printables `network_diagram_laminated` and `work_order` (Codex) in the room.
 - [x] Hero props `uv_torch`, `usb_stick`, `exit_sign_lightbox` (Codex) in the room; `tools/test.sh` exit 0 (gdUnit4 97/97, assetcheck 23/23, m2 + m3 smoke with real Docker)
-- [ ] Polish: rack LED blink, patch cables after solving, focused-view camera move-in, desk lamp decimation, corridor light leak
-- [ ] Windows/Linux exports, performance pass (60 fps mid-range), Codex review
+- [x] Polish: blinking rack LEDs (shader), focused-view camera move-in (keypads, patch panel, terminals), desk lamp reduced to 11.6k triangles (Codex; `assetcheck` gained the `source` origin kind)
+- [ ] Patch cables shown plugged into their ports (SDK side done; `patch_panel_8` revision 2 with Codex)
+- [x] Exports (ADR-0021): `tools/export.sh` builds Linux/Windows clients, the stripped Linux server and room packs; `tools/export_smoke.sh` plays to the win with the exported Linux builds. Windows `.exe` built, not run.
+- [x] Performance pass: graphics presets low/medium/high (pause menu), `tests/scenes/perf_bench.tscn`
+- [ ] Measure on the owner's target mid-range GPU (PLAN.md open question 2); Codex review of M4
 - [ ] Owner: 3 blind play-tests
 
 ## M5: LAN deployment and sign-off
@@ -181,3 +184,12 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - First run exposed a test race (Alice finished before the first image build completed); fixed with `--bot-wait-card`.
 - `tools/test.sh` exit 0 with Docker available (gdUnit4 75/75, pack replay, m2 smoke, m3 smoke with real containers). No `escapebox.managed` containers left afterwards.
 - Not verified: a player's own browser on another LAN machine against the proxy port (the proxy binds 0.0.0.0; only 127.0.0.1 was exercised), rootless Docker (M5), Windows clients.
+
+### 2026-10-02, M4 polish, exports and performance (Alienware, RTX 3080 Ti Laptop, Godot 4.7.2)
+- Export templates 4.7.2 installed (official `.tpz`, SHA-512 verified; x86_64 Linux and Windows only). `tools/export.sh`: client-linux 73.5 MB binary + 274 MB pack, client-win 109 MB `.exe` + 274 MB pack, server-linux 73.5 MB + 0.76 MB pack (visuals stripped), `night_shift-0.1.0.pck` 4.0 MB.
+- `tools/export_smoke.sh` (exported server and client, packs found in `packs/`): before the fix, failures in about 3 of 10 runs (client dropped by its own ENet timeout right after the room load); after tightening the timeouts 2 s later instead, 15/15 release runs passed in a loop, plus the smoke script itself.
+- `perf_bench.tscn`, 1920x1080, walking path corridor -> office -> cage, 10 s per preset after a 3 s warm-up: GPU avg / p95 per frame: low 1.76 / 2.18 ms, medium 3.27 / 3.69 ms, high 3.76 / 4.17 ms. Frame time sat at 8.3 ms (120 Hz) with vsync off, so the display compositor appears to cap it. A GTX 1660 Super is roughly 2.5x slower than this GPU in raster, so high should be about 9-10 ms of GPU time there. That is an estimate, not a measurement.
+- Low vs high render compared (`room_shots.tscn --quality`): low is flatter without SDFGI but just as readable, with similar brightness.
+- Reduced desk lamp vs Poly Haven source rendered from the same view: identical placement; desk light pool brightness 160.6 vs 160.5.
+- `tools/test.sh` exit 0: gdUnit4 100/100 (84 core/UI + 16 room), assetcheck 24/24, m2 + m3 smoke (real Docker).
+

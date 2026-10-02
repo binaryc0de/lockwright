@@ -2,7 +2,7 @@ extends Node3D
 ## Renders screenshots of a room from fixed viewpoints, for art review on a
 ## machine with a real GPU (ADR-0003 forbids this on the iGPU dev box).
 ##   godot --path game res://tests/scenes/room_shots.tscn -- \
-##     --room night_shift --out /tmp/shots [--views name:x,y,z:yaw_deg:pitch_deg ...]
+##     --room night_shift --out /tmp/shots [--quality low|medium|high] [--views name:x,y,z:yaw_deg:pitch_deg ...]
 ## Without --views it uses the room spawn plus any Marker3D named Shot* in the room.
 
 const SETTLE_FRAMES := 45
@@ -26,6 +26,7 @@ func _ready() -> void:
 		return
 	var room := loader.instantiate()
 	add_child(room)
+	GraphicsQuality.apply(room, _arg(args, "--quality", "high"))
 	Game.start_local_session(loader.manifest, room, "shots")
 	_cam = Camera3D.new()
 	_cam.fov = 80.0

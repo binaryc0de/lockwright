@@ -19,7 +19,7 @@
 [ext_resource type="Material" path="res://assets/core/materials/mat_painted_plaster.tres" id="22_plaster"]
 
 [ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/mounted_fluorescent_lights/mounted_fluorescent_lights_1k.gltf" id="30_fluoro"]
-[ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/desk_lamp_arm_01/desk_lamp_arm_01_1k.gltf" id="31_lamp"]
+[ext_resource type="PackedScene" path="res://assets/core/props/desk_lamp_arm_01.glb" id="31_lamp"]
 [ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/office_notepads/office_notepads_1k.gltf" id="32_notepads"]
 [ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/clipboard/clipboard_1k.gltf" id="33_clipboard"]
 [ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/cardboard_box_01/cardboard_box_01_1k.gltf" id="34_box"]

@@ -12,6 +12,9 @@ const (
 	OriginBaseCenter = "base_center"
 	OriginMountBack  = "mount_back"
 	OriginHinge      = "hinge"
+	// OriginSource keeps a CC0 source model's own origin so the reworked GLB
+	// is a drop-in replacement ("Origin: as the source"); checked in-engine.
+	OriginSource = "source"
 )
 
 // Default budgets when a request omits them (docs/ASSET_PIPELINE.md section 4).
@@ -148,6 +151,8 @@ func ParseRequest(id, text string) (*Request, error) {
 		body := strings.ToLower(strings.Join(s.body, "\n"))
 		body = strings.ReplaceAll(body, templateWallAside, "")
 		switch {
+		case strings.Contains(body, "as the source") || strings.Contains(body, "as the cc0 source"):
+			r.Origin = OriginSource
 		case strings.Contains(body, "wall") || strings.Contains(body, "mount"):
 			r.Origin = OriginMountBack
 		case strings.Contains(body, "hinge"):

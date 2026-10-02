@@ -6,6 +6,8 @@ extends Node
 
 signal status_changed(status: String, detail: String)
 
+## Seconds of normal traffic after the welcome before short timeouts apply.
+const TIGHTEN_DELAY_S := 2.0
 const RETRY_S := 2.0
 
 var host: String = "127.0.0.1"
@@ -53,9 +55,11 @@ func open(p_host: String, p_port: int, p_transport: String, p_token: String, p_n
 		multiplayer.server_disconnected.connect(_on_lost.bind("server disconnected"))
 		Game.net.welcomed.connect(func(_i: Dictionary) -> void:
 			_joined = true
-			# After the room has loaded: the load itself can stall this process
-			# for seconds, which a short timeout would mistake for a dead link.
-			call_deferred("_tighten_timeouts")
+			# Well after the room has loaded: the load stalls this process for
+			# seconds, and ENet checks timeouts before it reads the acks that
+			# queued up meanwhile, so tightening right after the load drops a
+			# healthy link (seen in exported release builds).
+			_tighten_after(TIGHTEN_DELAY_S)
 			status_changed.emit("connected", ""))
 		Game.net.rejected.connect(func(reason: String) -> void:
 			_closing = true
@@ -127,6 +131,13 @@ func _connect_direct() -> Error:
 
 func _on_connected() -> void:
 	Game.net.send_join(token, display_name)
+
+
+func _tighten_after(seconds: float) -> void:
+	var peer := multiplayer.multiplayer_peer
+	get_tree().create_timer(seconds).timeout.connect(func() -> void:
+		if multiplayer.multiplayer_peer == peer and _joined:
+			_tighten_timeouts())
 
 
 func _tighten_timeouts() -> void:

@@ -1,6 +1,6 @@
 # desk_lamp_arm_01
 
-**Status:** open
+**Status:** done
 **Requested by:** Claude Code, 2026-10-02
 **Used in:** room night_shift, `Office/Desk` desk lamp (currently the Poly Haven glTF instanced directly)
 **Class:** set dressing (budget fix of a CC0 source)
@@ -14,6 +14,10 @@
 - Reduce with care: keep the silhouette, the arm joints, springs and the shade rim; flatten hidden/underside detail first. Target <= 12000 triangles, hard limit 20000.
 - Same transform as the source (origin, scale, orientation) so it is a drop-in replacement: the room instance's transform must not need to change.
 - Mesh names: `lamp` (everything but the bulb/light surface) and `lamp_light` (the emissive part).
+
+## Transforms
+- Origin: as the source (CC0 drop-in; the clamp mount stays where the source has it, the clamp hangs below y = 0).
+- Forward and scale: as the source.
 
 ## Acceptance
 - [ ] `tools/blender/build_assets.sh desk_lamp_arm_01` rebuilds headless

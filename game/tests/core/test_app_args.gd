@@ -42,3 +42,12 @@ func test_rejects_bad_port_transport_and_missing_value() -> void:
 	assert_int(a.errors.size()).is_equal(3)
 	assert_int(a.port).is_equal(7777)
 	assert_str(a.transport).is_equal("enet")
+
+
+func test_local_pack_lookup_picks_the_newest_version() -> void:
+	var dir := create_temp_dir("packs")
+	for f in ["night_shift-0.1.0.pck", "night_shift-0.10.0.pck", "night_shift-0.9.3.pck", "other-9.9.9.pck", "night_shift-x.pck", "notes.txt"]:
+		FileAccess.open(dir.path_join(f), FileAccess.WRITE).store_string("x")
+	assert_str(RoomLoader.find_local_pack("night_shift", [dir])).is_equal(dir.path_join("night_shift-0.10.0.pck"))
+	assert_str(RoomLoader.find_local_pack("missing", [dir])).is_empty()
+	assert_str(RoomLoader.find_local_pack("night_shift", [dir.path_join("nope")])).is_empty()

@@ -16,6 +16,8 @@ func load_room(room_id: String, pack_path: String = "") -> bool:
 	if not RoomLoader.valid_id(room_id):
 		error = "invalid room id %s" % room_id
 		return false
+	if pack_path.is_empty() and not FileAccess.file_exists("res://rooms/%s/room.json" % room_id):
+		pack_path = RoomLoader.find_local_pack(room_id)
 	if not pack_path.is_empty():
 		if not FileAccess.file_exists(pack_path):
 			error = "pack not found: %s" % pack_path
@@ -46,6 +48,32 @@ func instantiate() -> RoomRoot:
 		inst.free()
 		return null
 	return inst
+
+
+## Exported builds without --pack (ADR-0021): the newest
+## `<room_id>.pck` or `<room_id>-<version>.pck` in a `packs/` directory next to
+## the executable, or in user://packs/. "" if none. (Download from the platform
+## comes with /download in M5.)
+static func find_local_pack(room_id: String, dirs: PackedStringArray = []) -> String:
+	if dirs.is_empty():
+		dirs = [OS.get_executable_path().get_base_dir().path_join("packs"), ProjectSettings.globalize_path("user://packs")]
+	var re := RegEx.create_from_string("^%s(-(\\d+)\\.(\\d+)\\.(\\d+))?\\.pck$" % room_id)
+	var best := ""
+	var best_ver := -1
+	for d in dirs:
+		if not DirAccess.dir_exists_absolute(d):
+			continue
+		for f in DirAccess.get_files_at(d):
+			var m := re.search(f)
+			if m == null:
+				continue
+			var ver := 0
+			if not m.get_string(1).is_empty():
+				ver = int(m.get_string(2)) * 1000000 + int(m.get_string(3)) * 1000 + int(m.get_string(4))
+			if ver > best_ver:
+				best_ver = ver
+				best = d.path_join(f)
+	return best
 
 
 static func valid_id(id: String) -> bool:

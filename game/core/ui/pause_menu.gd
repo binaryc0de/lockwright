@@ -24,6 +24,18 @@ func setup() -> void:
 	_slider(grid, "Text size", 0.75, 2.0, 0.05, Settings.text_scale, func(v: float) -> void:
 		Settings.text_scale = v
 		get_tree().root.content_scale_factor = v)
+	var gfx_label := Label.new()
+	gfx_label.text = "Graphics"
+	grid.add_child(gfx_label)
+	var gfx := OptionButton.new()
+	for level: String in GraphicsQuality.LEVELS:
+		gfx.add_item(level.capitalize())
+	gfx.selected = GraphicsQuality.LEVELS.find(Settings.graphics)
+	gfx.item_selected.connect(func(i: int) -> void:
+		Settings.graphics = GraphicsQuality.LEVELS[i]
+		if Game.room:
+			GraphicsQuality.apply(Game.room, Settings.graphics))
+	grid.add_child(gfx)
 	var inv_label := Label.new()
 	inv_label.text = "Invert mouse Y"
 	grid.add_child(inv_label)

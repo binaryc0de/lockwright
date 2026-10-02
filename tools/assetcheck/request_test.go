@@ -90,6 +90,10 @@ func TestParseRequestVariants(t *testing.T) {
 	if r, _ := ParseRequest("x", hinge); r.Origin != OriginHinge {
 		t.Errorf("hinge Origin = %q", r.Origin)
 	}
+	source := strings.Replace(base, "- Origin: base centre on the floor plane (or wall-mount plane for wall props)", "- Origin: as the source (CC0 drop-in; the clamp mount stays where it was)", 1)
+	if r, _ := ParseRequest("x", source); r.Origin != OriginSource {
+		t.Errorf("source Origin = %q", r.Origin)
+	}
 	surface := strings.Replace(base, "- Origin: base centre on the floor plane (or wall-mount plane for wall props)", "- Origin: back face of this surface-mount box", 1)
 	if r, _ := ParseRequest("x", surface); r.Origin != OriginMountBack {
 		t.Errorf("surface-mount Origin = %q", r.Origin)

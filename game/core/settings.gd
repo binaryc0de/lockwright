@@ -7,6 +7,8 @@ const PATH := "user://settings.cfg"
 static var mouse_sensitivity: float = 0.0025
 static var invert_y: bool = false
 static var fov: float = 80.0
+## GraphicsQuality preset: low, medium or high.
+static var graphics: String = "high"
 static var text_scale: float = 1.0
 static var display_name: String = "Player"
 ## Last server joined from the menu (host[:port]).
@@ -21,6 +23,9 @@ static func load_settings() -> void:
 	mouse_sensitivity = clampf(cfg.get_value("input", "mouse_sensitivity", mouse_sensitivity), 0.0005, 0.01)
 	invert_y = cfg.get_value("input", "invert_y", invert_y)
 	fov = clampf(cfg.get_value("video", "fov", fov), 75.0, 90.0)
+	graphics = str(cfg.get_value("video", "graphics", graphics))
+	if not graphics in GraphicsQuality.LEVELS:
+		graphics = "high"
 	text_scale = clampf(cfg.get_value("ui", "text_scale", text_scale), 0.75, 2.0)
 	display_name = str(cfg.get_value("player", "display_name", display_name)).left(24)
 	last_server = str(cfg.get_value("network", "last_server", last_server)).left(120)
@@ -32,6 +37,7 @@ static func save_settings() -> void:
 	cfg.set_value("input", "mouse_sensitivity", mouse_sensitivity)
 	cfg.set_value("input", "invert_y", invert_y)
 	cfg.set_value("video", "fov", fov)
+	cfg.set_value("video", "graphics", graphics)
 	cfg.set_value("ui", "text_scale", text_scale)
 	cfg.set_value("player", "display_name", display_name)
 	cfg.set_value("network", "last_server", last_server)

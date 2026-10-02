@@ -5,6 +5,8 @@ config_version=5
 
 [application]
 
+run/flush_stdout_on_print=true
+
 config/name="escapebox"
 config/description="Virtual escape rooms with pluggable room packs and real CTF challenges."
 run/main_scene="res://core/main.tscn"

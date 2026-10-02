@@ -1,0 +1,151 @@
+{
+  "animations": [],
+  "asset_id": "desk_lamp_arm_01",
+  "attribution": {
+    "author": "Poly Haven",
+    "license": "CC0",
+    "source": "game/assets/core/third_party/polyhaven/desk_lamp_arm_01/desk_lamp_arm_01_1k.gltf",
+    "title": "Desk Lamp Arm 01",
+    "url": "https://polyhaven.com/a/desk_lamp_arm_01"
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.083298363,
+      0.804616928,
+      0.317235082
+    ],
+    "min": [
+      -0.118567765,
+      -0.087993771,
+      -0.296666473
+    ]
+  },
+  "bounds_m": [
+    0.201866128,
+    0.613901556,
+    0.892610699
+  ],
+  "built_at": "2026-10-02T21:49:23+00:00",
+  "glb_path": "game/assets/core/props/desk_lamp_arm_01.glb",
+  "glb_sha256": "2bcee2f545da2d656f5b617aceba5b53b44fba12994aace06012b63ebb4b3ebd",
+  "materials": [
+    "desk_lamp_arm_01",
+    "desk_lamp_arm_01_light"
+  ],
+  "max_bounds_delta_m": 9.459257125854492e-05,
+  "origin": "source_clamp",
+  "origin_reference": "Unmodified Poly Haven source origin at desk clamp; underside extends below mounting height",
+  "parts": [
+    "lamp",
+    "lamp_light"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "reduction": [
+    {
+      "category": "arm_spring_rim",
+      "components": 197,
+      "reduced_triangles": 5858,
+      "source_triangles": 7274
+    },
+    {
+      "category": "bulb",
+      "components": 1,
+      "reduced_triangles": 576,
+      "source_triangles": 1504
+    },
+    {
+      "category": "dense_joint_hardware",
+      "components": 9,
+      "reduced_triangles": 1506,
+      "source_triangles": 5520
+    },
+    {
+      "category": "shade_surface",
+      "components": 2,
+      "reduced_triangles": 2119,
+      "source_triangles": 5376
+    },
+    {
+      "category": "small_fastener",
+      "components": 12,
+      "reduced_triangles": 983,
+      "source_triangles": 2520
+    },
+    {
+      "category": "underside_clamp",
+      "components": 16,
+      "reduced_triangles": 565,
+      "source_triangles": 1908
+    }
+  ],
+  "render": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "933c1f9e0aaf467a431644d4540b7388aee604991186439fa6c79ebda4c6c07b",
+  "source_bounds_blender_m": [
+    [
+      -0.11847317218780518,
+      -0.3172350823879242,
+      -0.08799377083778381
+    ],
+    [
+      0.08325615525245667,
+      0.29663750529289246,
+      0.8046169281005859
+    ]
+  ],
+  "source_files_sha256": {
+    "game/assets/core/third_party/polyhaven/desk_lamp_arm_01/desk_lamp_arm_01.bin": "07f34e32abecbaa63d28b9d12d6a0eb82b775a0f50c92327655909d72ff8489b",
+    "game/assets/core/third_party/polyhaven/desk_lamp_arm_01/desk_lamp_arm_01_1k.gltf": "2ac8389afc1519449a9cfdf7efd9fa36780a2177bb47ab58f7a7dda7d247dc8c",
+    "game/assets/core/third_party/polyhaven/desk_lamp_arm_01/textures/desk_lamp_arm_01_arm_1k.jpg": "206404c79fb7dcf8e2c4558c13544342f87d2190526231a1750c3c9adc256fbc",
+    "game/assets/core/third_party/polyhaven/desk_lamp_arm_01/textures/desk_lamp_arm_01_diff_1k.jpg": "159eb178aba3271bd555cbe07ca36431d8af9a006f0b8e9d8c67030cbdc9e4d3",
+    "game/assets/core/third_party/polyhaven/desk_lamp_arm_01/textures/desk_lamp_arm_01_nor_gl_1k.jpg": "feefedc3835ecef3634e97a24977451671f8f57747a023f48cd14c84bc73513a"
+  },
+  "source_triangles": 24102,
+  "textures": [
+    {
+      "embedded": true,
+      "name": "desk_lamp_arm_01_diff_1k",
+      "size": [
+        1024,
+        1024
+      ],
+      "source_image_name": "desk_lamp_arm_01_diff",
+      "source_sha256": "159eb178aba3271bd555cbe07ca36431d8af9a006f0b8e9d8c67030cbdc9e4d3"
+    },
+    {
+      "embedded": true,
+      "name": "desk_lamp_arm_01_arm_1k",
+      "size": [
+        1024,
+        1024
+      ],
+      "source_image_name": "desk_lamp_arm_01_metal-desk_lamp_arm_01_rough",
+      "source_sha256": "206404c79fb7dcf8e2c4558c13544342f87d2190526231a1750c3c9adc256fbc"
+    },
+    {
+      "embedded": true,
+      "name": "desk_lamp_arm_01_nor_gl_1k",
+      "size": [
+        1024,
+        1024
+      ],
+      "source_image_name": "desk_lamp_arm_01_nor_gl",
+      "source_sha256": "feefedc3835ecef3634e97a24977451671f8f57747a023f48cd14c84bc73513a"
+    }
+  ],
+  "triangles": 11607
+}

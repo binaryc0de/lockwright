@@ -291,6 +291,8 @@ func checkOrigin(res *AssetResult, doc *gltf.Document, kind string) {
 		}
 	case OriginHinge:
 		res.warn("hinge origin not checked automatically; verify in-engine (%s)", where)
+	case OriginSource:
+		res.warn("source origin kept for a drop-in replacement; verify in-engine (%s)", where)
 	}
 }
 

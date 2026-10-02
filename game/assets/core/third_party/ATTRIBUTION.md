@@ -21,4 +21,4 @@ Every file under this directory is CC0 1.0 (each Kenney pack keeps its License.t
 | `kenney/rpg-audio/` | Kenney RPG Audio: door open/close, creak (drawer), leather (pick up), page flip, metal latch | https://kenney.nl/assets/rpg-audio | CC0 | SDK default sounds |
 | `polyhaven/stationery_supplies/` | Stationery Supplies, 1k glTF | https://polyhaven.com/a/stationery_supplies | CC0 | not placed yet (M4 desk dressing) |
 
-Known budget exception: `desk_lamp_arm_01` is about 25.7k polygons, over the 20k prop budget (PLAN.md 13.8). Accepted for the M1 look test; a Codex decimation pass is listed for M4.
+`desk_lamp_arm_01` (about 24.1k triangles) is no longer used by the room: Codex's reduced build `game/assets/core/props/desk_lamp_arm_01.glb` (11,607 triangles, same textures and origin; request `assets/requests/desk_lamp_arm_01.md`) replaces it. The source stays here as the build input.

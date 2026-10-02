@@ -163,6 +163,7 @@ func _load(room_id: String, pack_path: String) -> RoomLoader:
 		error = loader.error
 		return null
 	add_child(room)
+	GraphicsQuality.apply(room, Settings.graphics)
 	return loader
 
 
