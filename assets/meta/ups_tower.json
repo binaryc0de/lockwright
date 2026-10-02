@@ -1,0 +1,194 @@
+{
+  "anchors_godot_m": {
+    "battery_centre_x": 0.15,
+    "relay_lamp": [
+      0.227,
+      0.726,
+      -0.277
+    ],
+    "relay_lamp_front_z": -0.2822,
+    "screen_centre": [
+      -0.225,
+      0.752,
+      -0.299
+    ],
+    "screen_front_z": -0.2995,
+    "screen_size": [
+      0.09,
+      0.05
+    ],
+    "ups_centre_x": -0.225
+  },
+  "animations": [],
+  "asset_id": "ups_tower",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural colour/RM emission; tangent normal; ray AO packed ORM; original label strokes stamped in atlas",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.349999994,
+      0.899999976,
+      0.300000012
+    ],
+    "min": [
+      -0.350000024,
+      0.0,
+      -0.299999982
+    ]
+  },
+  "bounds_m": [
+    0.700000018,
+    0.599999994,
+    0.899999976
+  ],
+  "built_at": "2026-10-02T16:32:54+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/ups_tower.glb",
+  "glb_sha256": "32904e36b74e20b94dd21c5a615e80ef19e3cd681f1e77cc4e00fb58d30412c2",
+  "labels": [
+    "UPS 3kVA",
+    "BYPASS RELAY"
+  ],
+  "materials": [
+    "M_ups_tower_body",
+    "M_ups_tower_lamp",
+    "M_ups_tower_metal",
+    "M_ups_tower_print",
+    "M_ups_tower_screen"
+  ],
+  "origin": "base_center",
+  "origin_reference": "centre of nominal 0.70 x 0.60 footprint, floor y=0",
+  "parts": [
+    "body",
+    "relay_lamp",
+    "screen"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "c77d45efb18754eea23a4f8085136cca02b8149da7f56f3dd3ad8cecd71ed308",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_ups_tower_body",
+      "name": "T_ups_tower_body_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_ups_tower_body",
+      "name": "T_ups_tower_body_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_ups_tower_body",
+      "name": "T_ups_tower_body_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_ups_tower_metal",
+      "name": "T_ups_tower_metal_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_ups_tower_metal",
+      "name": "T_ups_tower_metal_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_ups_tower_metal",
+      "name": "T_ups_tower_metal_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_ups_tower_print",
+      "name": "T_ups_tower_print_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_ups_tower_print",
+      "name": "T_ups_tower_print_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_ups_tower_print",
+      "name": "T_ups_tower_print_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color_emission",
+      "material": "M_ups_tower_screen",
+      "name": "T_ups_tower_screen_base_color",
+      "size": [
+        512,
+        512
+      ]
+    }
+  ],
+  "third_party": [],
+  "triangles": 33028
+}

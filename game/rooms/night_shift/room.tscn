@@ -55,6 +55,16 @@
 [ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/fire_inspection_certificate.png" id="66_tex_cert"]
 [ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/wifi_card_front.png" id="67_tex_wifi"]
 [ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/sticky_note_username.png" id="68_tex_sticky"]
+[ext_resource type="PackedScene" path="res://assets/core/props/cage_partition_kit.glb" id="70_partition"]
+[ext_resource type="PackedScene" path="res://assets/core/props/cage_door_maglock.glb" id="71_cagedoor"]
+[ext_resource type="PackedScene" path="res://assets/core/props/server_rack_42u.glb" id="72_rack"]
+[ext_resource type="PackedScene" path="res://assets/core/props/patch_panel_8.glb" id="73_patch"]
+[ext_resource type="PackedScene" path="res://assets/core/props/ups_tower.glb" id="74_ups"]
+[ext_resource type="PackedScene" path="res://assets/core/props/cable_tray_kit.glb" id="75_tray"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_painted_concrete_floor.tres" id="76_concrete"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_led_amber.tres" id="77_amber"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_rack_stencil.tres" id="78_doc_stencil"]
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/rack_stencil.png" id="79_tex_stencil"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
 size = Vector3(0.39, 0.34, 0.52)
 
@@ -69,6 +79,14 @@ size = Vector2(0.076, 0.076)
 [sub_resource type="QuadMesh" id="QuadMesh_wb"]
 material = ExtResource("64_doc_wb")
 size = Vector2(1.564, 0.964)
+
+[sub_resource type="QuadMesh" id="QuadMesh_stencil"]
+material = ExtResource("78_doc_stencil")
+size = Vector2(0.42, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cagefloor"]
+material = ExtResource("76_concrete")
+size = Vector3(2.45, 0.004, 5.0)
 
 [sub_resource type="Environment" id="Environment_vrwxm"]
 background_mode = 1
@@ -724,14 +742,8 @@ omni_range = 2.8
 [node name="CageLight" type="OmniLight3D" parent="Lights" unique_id=78556901]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 2.55, 2.5)
 light_color = Color(0.75, 0.85, 1, 1)
-light_energy = 0.8
+light_energy = 0.25
 omni_range = 4.5
-
-[node name="RackLight" type="OmniLight3D" parent="Lights" unique_id=1617260405]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, 1.9, 1.8)
-light_color = Color(0.8, 1, 0.9, 1)
-light_energy = 0.8
-omni_range = 2.0
 
 [node name="CorridorLight" type="OmniLight3D" parent="Lights" unique_id=13626691]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 2.3, 2.5)
@@ -856,7 +868,6 @@ shape = SubResource("BoxShape3D_wkci7")
 
 [node name="CageWallA" type="MeshInstance3D" parent="Structure" unique_id=1680665030]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.4, 1.8)
-mesh = SubResource("BoxMesh_uagr2")
 
 [node name="Body" type="StaticBody3D" parent="Structure/CageWallA" unique_id=441709239]
 
@@ -865,7 +876,6 @@ shape = SubResource("BoxShape3D_7jaca")
 
 [node name="CageWallB" type="MeshInstance3D" parent="Structure" unique_id=612404716]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.4, 4.8)
-mesh = SubResource("BoxMesh_sa20j")
 
 [node name="Body" type="StaticBody3D" parent="Structure/CageWallB" unique_id=468730365]
 
@@ -874,7 +884,6 @@ shape = SubResource("BoxShape3D_r5dd5")
 
 [node name="CageWallLintel" type="MeshInstance3D" parent="Structure" unique_id=747935358]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.4499998, 4.1)
-mesh = SubResource("BoxMesh_utpcc")
 
 [node name="Body" type="StaticBody3D" parent="Structure/CageWallLintel" unique_id=295636751]
 
@@ -1608,7 +1617,6 @@ verbs = PackedStringArray("open", "close")
 
 [node name="Leaf" type="MeshInstance3D" parent="Cage/Door/Hinge" unique_id=978056578]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04, -0.5)
-mesh = SubResource("BoxMesh_5soa4")
 
 [node name="Body" type="StaticBody3D" parent="Cage/Door/Hinge/Leaf" unique_id=538117918]
 
@@ -1616,30 +1624,24 @@ mesh = SubResource("BoxMesh_5soa4")
 shape = SubResource("BoxShape3D_3tl2t")
 
 [node name="Bar" type="MeshInstance3D" parent="Cage/Door/Hinge/Leaf" unique_id=602765875]
-mesh = SubResource("BoxMesh_8uksl")
 
 [node name="Maglock" type="Node3D" parent="Cage/Door" unique_id=1294980690]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 2.05, -0.85)
 script = ExtResource("12_1brxc")
-status_light = NodePath("Led")
+status_light = NodePath("../Model/maglock_led")
 display_name = "Cage maglock"
 verbs = PackedStringArray("examine")
 
 [node name="Housing" type="MeshInstance3D" parent="Cage/Door/Maglock" unique_id=1714513496]
-mesh = SubResource("BoxMesh_680in")
 
 [node name="Body" type="StaticBody3D" parent="Cage/Door/Maglock/Housing" unique_id=1102637121]
 
 [node name="Shape" type="CollisionShape3D" parent="Cage/Door/Maglock/Housing/Body" unique_id=330471008]
 shape = SubResource("BoxShape3D_eurjj")
 
-[node name="Led" type="MeshInstance3D" parent="Cage/Door/Maglock" unique_id=2102157152]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.035, 0, 0.08)
-mesh = SubResource("BoxMesh_lv7iq")
-
 [node name="Tag" type="Label3D" parent="Cage/Door/Maglock" unique_id=1342449942]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -0.031, -0.06, 0)
-pixel_size = 0.002
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.034, 0, 0)
+pixel_size = 0.0005
 double_sided = false
 text = "MAGLOCK - CTRL: INTRANET"
 font_size = 14
@@ -1653,7 +1655,6 @@ targets = Array[NodePath]([NodePath("../Door/Maglock")])
 
 [node name="ServerRack" type="MeshInstance3D" parent="Cage" unique_id=1884929345]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.9, 1, 1.8)
-mesh = SubResource("BoxMesh_ae2x8")
 
 [node name="Body" type="StaticBody3D" parent="Cage/ServerRack" unique_id=1620712405]
 
@@ -1662,22 +1663,11 @@ shape = SubResource("BoxShape3D_xlwts")
 
 [node name="UPS" type="MeshInstance3D" parent="Cage" unique_id=1549114405]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.1, 0.45, 0.65)
-mesh = SubResource("BoxMesh_etymv")
 
 [node name="Body" type="StaticBody3D" parent="Cage/UPS" unique_id=2131946395]
 
 [node name="Shape" type="CollisionShape3D" parent="Cage/UPS/Body" unique_id=972506756]
 shape = SubResource("BoxShape3D_miniw")
-
-[node name="UPSLabel" type="Label3D" parent="Cage" unique_id=1286865545]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 7.79, 0.75, 0.65)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.9, 0.9, 0.9, 1)
-text = "UPS 3kVA
-BYPASS RELAY"
-font_size = 22
-outline_size = 0
 
 [node name="PatchPanel" type="Node3D" parent="Cage" unique_id=1969586604]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 7.385, 1.25, 1.8)
@@ -1690,178 +1680,17 @@ display_name = "Patch panel P1"
 verbs = PackedStringArray("patch")
 
 [node name="Panel" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=2010716929]
-mesh = SubResource("BoxMesh_p0v6k")
 
 [node name="Body" type="StaticBody3D" parent="Cage/PatchPanel/Panel" unique_id=1352566136]
 
 [node name="Shape" type="CollisionShape3D" parent="Cage/PatchPanel/Panel/Body" unique_id=918712971]
 shape = SubResource("BoxShape3D_5biev")
 
-[node name="Title" type="Label3D" parent="Cage/PatchPanel" unique_id=783981753]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.17, 0.045, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "P1 -> UPS BYPASS"
-font_size = 14
-outline_size = 0
-
-[node name="Port1" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1301597528]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, -0.005, 0.016)
-mesh = SubResource("BoxMesh_wxun1")
-
-[node name="PortNum1" type="Label3D" parent="Cage/PatchPanel" unique_id=1545643084]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, -0.035, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "1"
-font_size = 16
-outline_size = 0
-
-[node name="Port2" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1867951288]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.005, 0.016)
-mesh = SubResource("BoxMesh_wxun1")
-
-[node name="PortNum2" type="Label3D" parent="Cage/PatchPanel" unique_id=1447089219]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.035, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "2"
-font_size = 16
-outline_size = 0
-
-[node name="Port3" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=174964886]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, -0.005, 0.016)
-mesh = SubResource("BoxMesh_wxun1")
-
-[node name="PortNum3" type="Label3D" parent="Cage/PatchPanel" unique_id=436099841]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, -0.035, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "3"
-font_size = 16
-outline_size = 0
-
-[node name="Port4" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1700579633]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, -0.005, 0.016)
-mesh = SubResource("BoxMesh_wxun1")
-
-[node name="PortNum4" type="Label3D" parent="Cage/PatchPanel" unique_id=287360229]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, -0.035, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "4"
-font_size = 16
-outline_size = 0
-
-[node name="Port5" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1708798596]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, -0.005, 0.016)
-mesh = SubResource("BoxMesh_wxun1")
-
-[node name="PortNum5" type="Label3D" parent="Cage/PatchPanel" unique_id=5562265]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, -0.035, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "5"
-font_size = 16
-outline_size = 0
-
-[node name="Port6" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=388191806]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, -0.005, 0.016)
-mesh = SubResource("BoxMesh_wxun1")
-
-[node name="PortNum6" type="Label3D" parent="Cage/PatchPanel" unique_id=2048197046]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, -0.035, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "6"
-font_size = 16
-outline_size = 0
-
-[node name="Port7" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1665074419]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.005, 0.016)
-mesh = SubResource("BoxMesh_wxun1")
-
-[node name="PortNum7" type="Label3D" parent="Cage/PatchPanel" unique_id=1735720891]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.035, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "7"
-font_size = 16
-outline_size = 0
-
-[node name="Port8" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=1277036388]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, -0.005, 0.016)
-mesh = SubResource("BoxMesh_wxun1")
-
-[node name="PortNum8" type="Label3D" parent="Cage/PatchPanel" unique_id=1332924900]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, -0.035, 0.016)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "8"
-font_size = 16
-outline_size = 0
-
-[node name="CableA" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=226077759]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18, -0.18, 0.03)
-mesh = SubResource("BoxMesh_d8jy8")
-
-[node name="Tag" type="Label3D" parent="Cage/PatchPanel/CableA" unique_id=1298513883]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.012)
-pixel_size = 0.002
-double_sided = false
-text = "A |"
-font_size = 18
-outline_size = 0
-
-[node name="CableB" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=719860563]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, -0.18, 0.03)
-mesh = SubResource("BoxMesh_ko43o")
-
-[node name="Tag" type="Label3D" parent="Cage/PatchPanel/CableB" unique_id=65509819]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.012)
-pixel_size = 0.002
-double_sided = false
-text = "B ||"
-font_size = 18
-outline_size = 0
-
-[node name="CableC" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=778247885]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, -0.18, 0.03)
-mesh = SubResource("BoxMesh_lhd2x")
-
-[node name="Tag" type="Label3D" parent="Cage/PatchPanel/CableC" unique_id=1496817896]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.012)
-pixel_size = 0.002
-double_sided = false
-text = "C |||"
-font_size = 18
-outline_size = 0
-
-[node name="CableD" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=2026786709]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, -0.18, 0.03)
-mesh = SubResource("BoxMesh_dnftt")
-
-[node name="Tag" type="Label3D" parent="Cage/PatchPanel/CableD" unique_id=901558285]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.012)
-pixel_size = 0.002
-double_sided = false
-text = "D -"
-font_size = 18
-outline_size = 0
-
 [node name="RackStencil" type="Node3D" parent="Cage" unique_id=446602374]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 7.39, 1.72, 1.8)
 script = ExtResource("4_7mnw5")
 title = "Rack stencil"
+texture = ExtResource("79_tex_stencil")
 text_md = "Stencilled on the rack frame in white paint:
 
 # RACK 062"
@@ -1869,21 +1698,13 @@ display_name = "Rack ID stencil"
 verbs = PackedStringArray("read")
 
 [node name="Plate" type="MeshInstance3D" parent="Cage/RackStencil" unique_id=1089880150]
-mesh = SubResource("BoxMesh_7pd2a")
+mesh = SubResource("QuadMesh_stencil")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.034)
 
 [node name="Body" type="StaticBody3D" parent="Cage/RackStencil/Plate" unique_id=698575908]
 
 [node name="Shape" type="CollisionShape3D" parent="Cage/RackStencil/Plate/Body" unique_id=445009776]
 shape = SubResource("BoxShape3D_hn8e6")
-
-[node name="Text" type="Label3D" parent="Cage/RackStencil" unique_id=1781124631]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.005)
-pixel_size = 0.002
-double_sided = false
-modulate = Color(0.05, 0.05, 0.05, 1)
-text = "RACK 062"
-font_size = 56
-outline_size = 0
 
 [node name="MonitorModel" parent="Office/Desk" instance=ExtResource("40_monitor")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.35, 0.76, 0.2)
@@ -2253,3 +2074,163 @@ light_size = 0.03
 shadow_enabled = true
 spot_range = 6.0
 spot_angle = 32.0
+
+[node name="Mesh0" parent="Cage" instance=ExtResource("70_partition")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6, 0, 0.6)
+
+[node name="panel_400" parent="Cage/Mesh0"]
+visible = false
+
+[node name="header_1000" parent="Cage/Mesh0"]
+visible = false
+
+[node name="Mesh1" parent="Cage" instance=ExtResource("70_partition")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6, 0, 1.8)
+
+[node name="panel_400" parent="Cage/Mesh1"]
+visible = false
+
+[node name="header_1000" parent="Cage/Mesh1"]
+visible = false
+
+[node name="Mesh2" parent="Cage" instance=ExtResource("70_partition")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6, 0, 3)
+
+[node name="panel_400" parent="Cage/Mesh2"]
+visible = false
+
+[node name="header_1000" parent="Cage/Mesh2"]
+visible = false
+
+[node name="MeshB" parent="Cage" instance=ExtResource("70_partition")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6, 0, 4.8)
+
+[node name="panel_1200" parent="Cage/MeshB"]
+visible = false
+
+[node name="header_1000" parent="Cage/MeshB"]
+visible = false
+
+[node name="MeshHeader" parent="Cage" instance=ExtResource("70_partition")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6, 2.1, 4.1)
+
+[node name="panel_1200" parent="Cage/MeshHeader"]
+visible = false
+
+[node name="panel_400" parent="Cage/MeshHeader"]
+visible = false
+
+[node name="TrayRun" parent="Cage" instance=ExtResource("75_tray")]
+transform = Transform3D(1.15, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 2.45, 1.8)
+
+[node name="tray_1m" parent="Cage/TrayRun"]
+visible = false
+
+[node name="drop_1m" parent="Cage/TrayRun"]
+visible = false
+
+[node name="TrayDrop" parent="Cage" instance=ExtResource("75_tray")]
+transform = Transform3D(1, 0, 0, 0, 0.45, 0, 0, 0, 1, 7.9, 2, 1.8)
+
+[node name="tray_1m" parent="Cage/TrayDrop"]
+visible = false
+
+[node name="tray_2m" parent="Cage/TrayDrop"]
+visible = false
+
+[node name="Model" parent="Cage/Door" instance=ExtResource("71_cagedoor")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
+
+[node name="LeafFollow" type="RemoteTransform3D" parent="Cage/Door/Hinge"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
+remote_path = NodePath("../../Model/leaf")
+update_scale = false
+
+[node name="RackModel" parent="Cage" instance=ExtResource("72_rack")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 7.9, 0, 1.8)
+
+[node name="Model" parent="Cage/PatchPanel" instance=ExtResource("73_patch")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -0.145)
+
+[node name="UPSModel" parent="Cage" instance=ExtResource("74_ups")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8.1, 0, 0.65)
+
+[node name="relay_lamp" parent="Cage/UPSModel"]
+surface_material_override/0 = ExtResource("77_amber")
+
+[node name="Floor" type="MeshInstance3D" parent="Cage"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.275, 0.002, 2.5)
+mesh = SubResource("BoxMesh_cagefloor")
+
+[node name="FixtureCageRack" parent="Cage" instance=ExtResource("30_fluoro")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 2.8, 1)
+
+[node name="FixtureCageDoor" parent="Cage" instance=ExtResource("30_fluoro")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 2.8, 3.6)
+
+[node name="mounted_fluorescent_lights_a" parent="Cage/FixtureCageRack"]
+visible = false
+
+[node name="mounted_fluorescent_lights_b" parent="Cage/FixtureCageRack"]
+visible = false
+
+[node name="mounted_fluorescent_lights_c" parent="Cage/FixtureCageRack"]
+visible = false
+
+[node name="mounted_fluorescent_lights_e" parent="Cage/FixtureCageRack"]
+visible = false
+
+[node name="mounted_fluorescent_lights_f" parent="Cage/FixtureCageRack"]
+visible = false
+
+[node name="mounted_fluorescent_lights_g" parent="Cage/FixtureCageRack"]
+visible = false
+
+[node name="mounted_fluorescent_lights_d" parent="Cage/FixtureCageRack"]
+surface_material_override/1 = ExtResource("35_tube_on")
+
+[node name="mounted_fluorescent_lights_a" parent="Cage/FixtureCageDoor"]
+visible = false
+
+[node name="mounted_fluorescent_lights_b" parent="Cage/FixtureCageDoor"]
+visible = false
+
+[node name="mounted_fluorescent_lights_c" parent="Cage/FixtureCageDoor"]
+visible = false
+
+[node name="mounted_fluorescent_lights_e" parent="Cage/FixtureCageDoor"]
+visible = false
+
+[node name="mounted_fluorescent_lights_f" parent="Cage/FixtureCageDoor"]
+visible = false
+
+[node name="mounted_fluorescent_lights_g" parent="Cage/FixtureCageDoor"]
+visible = false
+
+[node name="mounted_fluorescent_lights_d" parent="Cage/FixtureCageDoor"]
+surface_material_override/1 = ExtResource("35_tube_on")
+
+[node name="RackSpot" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(-0.87251, 0.4253, -0.24052, 0, 0.49226, 0.87045, 0.4886, 0.75947, -0.4295, 7, 2.72, 1.05)
+light_color = Color(0.86, 0.93, 1, 1)
+light_energy = 2.2
+light_size = 0.08
+shadow_enabled = true
+spot_range = 4.0
+spot_angle = 45.0
+
+[node name="CageDoorSpot" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(-0.44721, -0.85275, 0.26983, 0, 0.30168, 0.95341, -0.89443, 0.42638, -0.13492, 7.2, 2.72, 3.6)
+light_color = Color(0.86, 0.93, 1, 1)
+light_energy = 1.8
+light_size = 0.08
+shadow_enabled = true
+spot_range = 4.0
+spot_angle = 55.0
+
+[node name="RackGlow" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 1.3, 1.8)
+light_color = Color(0.4, 1, 0.55, 1)
+light_energy = 0.2
+light_specular = 0.0
+omni_range = 1.4

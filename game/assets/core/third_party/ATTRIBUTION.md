@@ -7,6 +7,7 @@ Every file under this directory is CC0 1.0 (public domain dedication) and stored
 | `ambientcg/Carpet012/` | Carpet 012, 2K JPG (colour, normal GL, roughness, AO) | https://ambientcg.com/view?id=Carpet012 | CC0 | `materials/mat_office_carpet.tres` (Night Shift office floor) |
 | `ambientcg/OfficeCeiling001/` | Office Ceiling 001, 2K JPG | https://ambientcg.com/view?id=OfficeCeiling001 | CC0 | `materials/mat_ceiling_tiles.tres` (Night Shift office ceiling) |
 | `polyhaven/painted_plaster_wall/` | Painted Plaster Wall, 2k JPG (diff, nor_gl, arm) | https://polyhaven.com/a/painted_plaster_wall | CC0 | `materials/mat_painted_plaster.tres` (Night Shift walls) |
+| `polyhaven/concrete_floor_painted/` | Concrete Floor Painted, 2k JPG (diff, nor_gl, arm) | https://polyhaven.com/a/concrete_floor_painted | CC0 | `materials/mat_painted_concrete_floor.tres` (Night Shift server cage floor) |
 | `polyhaven/desk_lamp_arm_01/` | Desk Lamp Arm 01, 1k glTF | https://polyhaven.com/a/desk_lamp_arm_01 | CC0 | Night Shift desk lamp |
 | `polyhaven/mounted_fluorescent_lights/` | Mounted Fluorescent Lights, 1k glTF (variant `d` used) | https://polyhaven.com/a/mounted_fluorescent_lights | CC0 | Night Shift ceiling battens |
 | `polyhaven/office_notepads/` | Office Notepads, 1k glTF (`a4_stack`, `sticky_stack` used) | https://polyhaven.com/a/office_notepads | CC0 | Night Shift desk décor |

@@ -40,6 +40,7 @@ DOCUMENTS = {
     'sticky_note_username': [('sticky_note_username', 1024, 1024, 'note')],
     'whiteboard_marker_layer': [('whiteboard_marker_layer', 2048, 1262, 'marker')],
     'laptop_screen_login': [('laptop_screen_login', 2048, 1283, 'screen')],
+    'rack_stencil': [('rack_stencil', 2048, 683, 'stencil')],
 }
 CRITICAL = {
     'fire_inspection_certificate': ['FIRE SAFETY INSPECTION CERTIFICATE', 'SITE 417'],
@@ -48,6 +49,7 @@ CRITICAL = {
     'whiteboard_marker_layer': ['Filing cabinet code:', 'UV pen (audit rule!)  -->'],
     'laptop_screen_login': ['Kestrel Intranet', 'Your session has expired. Please sign in again.',
                             'Username', 'Password', 'Sign in', '23:12'],
+    'rack_stencil': ['RACK 062'],
 }
 
 
@@ -187,7 +189,11 @@ def draw_text(canvas, node, text, seed):
     x, baseline, size = [float(a.get(key, default)) for key, default in (('x', '0'), ('y', '0'), ('font-size', '48'))]
     color = rgba(a.get('fill', '#222222'), float(a.get('opacity', '1')))
     maximum = float(a.get('data-width', str(canvas.w)))
-    if a.get('data-lettering') == 'stroke':
+    if a.get('data-lettering') == 'stencil':
+        from rack_stencil import draw
+        width = draw(canvas, text, x, baseline, size, maximum, color)
+        factor, cap = 1, size
+    elif a.get('data-lettering') == 'stroke':
         geometry, width = strokes(text, size, seed, float(a.get('data-slant', '.10')))
         factor = min(1, maximum / width)
         offset = width * factor / 2 if a.get('text-anchor') == 'middle' else 0
@@ -272,6 +278,8 @@ def request_strings(doc_id):
         strings = re.findall(r'^- (?:small: )?`([^`]+)`', request, re.M)
         if doc_id == 'laptop_screen_login':
             strings = re.findall(r'`([^`]+)`', request)[2:]
+        elif doc_id == 'rack_stencil':
+            strings = re.findall(r'`(RACK \d{3})`', request)
     return strings
 
 
@@ -297,6 +305,15 @@ def on_white(pixels):
     return np.rint(data * 255).astype(np.uint8)
 
 
+def on_black_plate(pixels):
+    """Review backing only; the delivered stencil contains paint and no plate."""
+    data = pixels.astype(np.float32) / 255
+    alpha = data[:, :, 3:4]
+    data[:, :, :3] = data[:, :, :3] * alpha + .035 * (1 - alpha)
+    data[:, :, 3] = 1
+    return np.rint(data * 255).astype(np.uint8)
+
+
 def source_hash():
     paths = sorted(p for p in HERE.rglob('*') if p.suffix in ('.py', '.svg', '.sh') and '__pycache__' not in p.parts)
     digest = hashlib.sha256()
@@ -312,11 +329,20 @@ def build(doc_id):
     template = ET.parse(HERE / 'templates' / (doc_id + '.svg')).getroot()
     records, all_text = [], []
     for index, (page, w, h, kind) in enumerate(DOCUMENTS[doc_id]):
-        canvas = Canvas(w, h, kind == 'marker')
+        canvas = Canvas(w, h, kind in ('marker', 'stencil'))
         render_nodes(canvas, list(template), strings, page, 417 + index)
-        surface.apply(canvas.data, kind, 2019 + index)
+        if kind == 'stencil':
+            from rack_stencil import apply_wear
+            apply_wear(canvas, 62)
+        else:
+            surface.apply(canvas.data, kind, 2019 + index)
         pixels = canvas.pixels()
-        if kind != 'marker':
+        if kind == 'stencil':
+            # Faint spray can quantize to zero alpha; remove its hidden RGB.
+            pixels[pixels[:, :, 3] == 0] = 0
+            assert np.all(pixels[:, :, :3][pixels[:, :, 3] == 0] == 0), 'Blank stencil texels must have zero RGB'
+            assert not np.any(pixels[:80, :, 3]) and not np.any(pixels[-60:, :, 3]), 'Stencil clipped'
+        elif kind != 'marker':
             assert np.all(pixels[:, :, 3] == 255), f'{page}: must be opaque'
         else:
             # Keep the whole UV placement interior mathematically empty; ink
@@ -327,17 +353,19 @@ def build(doc_id):
         out = ROOT / 'game/rooms/night_shift/assets/docs' / (page + '.png')
         small = ROOT / 'assets/previews/printables' / (page + '_25.png')
         write_png(out, pixels)
-        review_pixels = on_white(pixels) if kind == 'marker' else pixels
+        review_pixels = on_black_plate(pixels) if kind == 'stencil' else on_white(pixels) if kind == 'marker' else pixels
         write_png(small, preview(review_pixels))
         if kind == 'marker':
             write_png(ROOT / 'assets/cache/printables' / (page + '_on_white.png'), review_pixels)
+        elif kind == 'stencil':
+            write_png(ROOT / 'assets/cache/printables' / (page + '_on_black.png'), review_pixels)
         text = [t['text'] for t in canvas.text]
         all_text.extend(text)
         records.append({'path': str(out.relative_to(ROOT)), 'size': [w, h], 'color_space': 'sRGB',
-                        'rgba': True, 'opaque': kind != 'marker',
+                        'rgba': True, 'opaque': kind not in ('marker', 'stencil'),
                         'sha256': hashlib.sha256(out.read_bytes()).hexdigest(),
                         'preview': str(small.relative_to(ROOT)),
-                        'preview_background': 'white enamel for legibility' if kind == 'marker' else 'document',
+                        'preview_background': 'black blanking plate for legibility' if kind == 'stencil' else 'white enamel for legibility' if kind == 'marker' else 'document',
                         'preview_sha256': hashlib.sha256(small.read_bytes()).hexdigest(),
                         'text': canvas.text})
         print(f'BUILT {page}: {w}x{h}, {len(text)} text lines', flush=True)
@@ -348,6 +376,10 @@ def build(doc_id):
                 'renderer': 'CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA',
                 'printed_font': 'Blender 5.2 bundled Inter.woff2 (OFL-1.1)',
                 'seed': 417, 'outputs': records}
+    if doc_id == 'rack_stencil':
+        metadata.update(renderer='CPU SVG rasterizer; original polygon stencil lettering; 2x AA',
+                        printed_font='none; original drawn stencil contours', wear_seed=62,
+                        physical_size_m=[.42, .14])
     meta = ROOT / 'assets/meta/printables' / (doc_id + '.json')
     meta.parent.mkdir(parents=True, exist_ok=True)
     meta.write_text(json.dumps(metadata, indent=2, sort_keys=True) + '\n')

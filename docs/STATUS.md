@@ -54,7 +54,9 @@ Not started.
 Not started. Known blocker: the dev user is not in the `docker` group (`permission denied` on `/var/run/docker.sock`); decide rootless Docker vs group membership before M3 (PLAN.md open question 1).
 
 ## M4: Night Shift content and polish
-Not started.
+Pulled forward at the owner's request (2026-10-02), on branch `m4-cage-dressing`:
+- [x] Server cage dressed: `cage_partition_kit`, `cage_door_maglock`, `server_rack_42u`, `patch_panel_8` (replaces the planned `patch_panel_24`: the puzzle uses 8 ports), `ups_tower`, `cable_tray_kit`, `rack_stencil` printable, CC0 painted-concrete cage floor; lit battens and spots in the cage. Before/after in `docs/screenshots/m4-cage/`.
+- [ ] Everything else in M4 (audio, airlock briefing, remaining hero props such as `uv_torch`, performance pass, blind play-tests)
 
 ## M5: LAN deployment and sign-off
 Not started.
@@ -114,3 +116,9 @@ Not started.
 - Bug found: pressing Enter on an empty flag field showed "Flag rejected." (and would cost a rate-limited attempt once M3 lands). Fixed in `terminal_panel.gd` with a regression assertion in `test_hud_panels.gd`; gdUnit4 55/55. Commit 4f06bfb.
 - Owner's report: about 30 minutes, taking time to explore everything; "pretty easy"; "everything felt pretty smooth" (movement, controls, performance). Hint use not reported. The game does not log solves or hints to disk yet.
 - Caveat: the owner co-designed the room (PLAN.md section 10 lists every answer), so this is not a blind run and says little about difficulty. Difficulty is judged by the 3 blind play-tests in M4 (target par 35-45 min for a team of 3); if those also come in fast, harden the cage half.
+
+### 2026-10-02, server cage dressing (branch m4-cage-dressing)
+- Codex (unsandboxed, ADR-0013) built six cage props and the rack stencil printable; each reported two byte-identical builds. `go run ./tools/assetcheck`: 20/20 PASS (4 expected warnings: two hinge origins, keypad plate and patch-panel cables shifting bounds centres).
+- Room: greybox cage meshes stripped, colliders and node paths kept; door leaf follows the SDK hinge via RemoteTransform3D; cage maglock LED and patch panel visuals from the GLBs; RACK 062 is a textured decal on the rack's blank plate (Document text unchanged; all nine clue strings verified identical to main).
+- Ran: Godot import clean; roomcheck PASS; gdUnit4 55/55; `packroom -verify night_shift` passes from the pack; `tools/shots/cage_views.sh` rendered 7 views after and 7 "before" from a worktree of main (16d93a6), no errors.
+- Review notes: the "slab" in `05_cage_inside` is the back of the rack (solid black cabinet near the east wall), not a stray mesh. The painted-concrete floor is busy (worn patches); swap or tone down if the owner dislikes it. Patch cables stay hanging after the puzzle is solved (in-world re-patching is still deferred). Rack LEDs are static emissive (no blink yet).

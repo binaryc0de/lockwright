@@ -1,0 +1,238 @@
+{
+  "anchors_godot_m": {
+    "maglock_label_centre": [
+      0.85,
+      2.05,
+      -0.11
+    ],
+    "maglock_led": [
+      0.741,
+      2.05,
+      -0.1114
+    ]
+  },
+  "animations": [],
+  "asset_id": "cage_door_maglock",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural color/RM emission, tangent normals, ray AO packed in ORM; analytic mesh atlas",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      1.041999936,
+      2.359999895,
+      0.02
+    ],
+    "min": [
+      -0.039999999,
+      0.0,
+      -0.1127
+    ]
+  },
+  "bounds_m": [
+    1.081999935,
+    0.1327,
+    2.359999895
+  ],
+  "built_at": "2026-10-02T16:14:33+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z (office side)",
+  "glb_path": "game/assets/core/props/cage_door_maglock.glb",
+  "glb_sha256": "9dfeb70e67a928c5d677d8e8aea68aa11d43e890f864b23615666735ec56cd40",
+  "hinge_post_offset_godot_z_m": -0.035,
+  "label_clear_area_m": [
+    0.13,
+    0.037
+  ],
+  "leaf_frame_bounds_godot_m": {
+    "max": [
+      0.99,
+      2.08,
+      0.02
+    ],
+    "min": [
+      0.01,
+      0,
+      -0.02
+    ]
+  },
+  "materials": [
+    "M_cage_door_maglock_frame",
+    "M_cage_door_maglock_led",
+    "M_cage_door_maglock_mesh",
+    "M_cage_door_maglock_metal",
+    "M_cage_door_maglock_sticker"
+  ],
+  "origin": "hinge",
+  "origin_reference": "hinge vertical axis at floor level, Godot (0,0,0)",
+  "parts": [
+    "frame",
+    "leaf",
+    "maglock",
+    "maglock_led"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "59ca9be4184dd9b2d23c6faa7ce6b92442c767115702af8a6fd7e20462424872",
+  "swing_verification": {
+    "degrees": [
+      0,
+      100
+    ],
+    "direction": "into cage, Godot +Z",
+    "godot_rotation_y_degrees": -100,
+    "solid_pairs": 26331,
+    "step_degrees": 0.5
+  },
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cage_door_maglock_frame",
+      "name": "T_cage_door_maglock_frame_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cage_door_maglock_frame",
+      "name": "T_cage_door_maglock_frame_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cage_door_maglock_frame",
+      "name": "T_cage_door_maglock_frame_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cage_door_maglock_metal",
+      "name": "T_cage_door_maglock_metal_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cage_door_maglock_metal",
+      "name": "T_cage_door_maglock_metal_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cage_door_maglock_metal",
+      "name": "T_cage_door_maglock_metal_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cage_door_maglock_sticker",
+      "name": "T_cage_door_maglock_sticker_base_color",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cage_door_maglock_sticker",
+      "name": "T_cage_door_maglock_sticker_normal",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cage_door_maglock_sticker",
+      "name": "T_cage_door_maglock_sticker_orm",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cage_door_maglock_mesh",
+      "name": "T_cage_door_maglock_mesh_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cage_door_maglock_mesh",
+      "name": "T_cage_door_maglock_mesh_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cage_door_maglock_mesh",
+      "name": "T_cage_door_maglock_mesh_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    }
+  ],
+  "third_party": [],
+  "triangles": 28860,
+  "weld_mesh": {
+    "alpha_cutoff": 0.5,
+    "alpha_mode": "MASK",
+    "double_sided": true,
+    "open_fraction": 0.846454,
+    "pitch_m": 0.05,
+    "wire_diameter_m": 0.004
+  }
+}

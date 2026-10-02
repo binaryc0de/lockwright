@@ -1,0 +1,235 @@
+{
+  "anchors_godot_m": {
+    "patch_slot_centre": [
+      0,
+      1.25,
+      -0.47
+    ],
+    "rail_front_z": -0.47,
+    "stencil_plate_centre": [
+      0,
+      1.72,
+      -0.474
+    ]
+  },
+  "animations": [],
+  "asset_id": "server_rack_42u",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural color/RM emission, tangent normals, ray AO packed in ORM",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.300000012,
+      2.0,
+      0.5
+    ],
+    "min": [
+      -0.300000012,
+      0.0,
+      -0.5
+    ]
+  },
+  "bounds_m": [
+    0.600000024,
+    1.0,
+    2.0
+  ],
+  "built_at": "2026-10-02T16:47:21+00:00",
+  "collision": null,
+  "forward": "Blender +Y -> Godot -Z",
+  "front_led_count": 173,
+  "glb_path": "game/assets/core/props/server_rack_42u.glb",
+  "glb_sha256": "1c843d320b3796d92857a3a1ede5d8dcbafbc88e2b2c5a020a680b2b61c04ac5",
+  "led_color": "green/amber palette shared by albedo and emission, single emissive material, strength 0.7",
+  "materials": [
+    "M_server_rack_42u_cabinet",
+    "M_server_rack_42u_cables",
+    "M_server_rack_42u_equipment",
+    "M_server_rack_42u_led",
+    "M_server_rack_42u_metal"
+  ],
+  "origin": "base_center",
+  "parts": [
+    "cabinet",
+    "leds"
+  ],
+  "patch_slot_clear_godot_m": {
+    "max": [
+      0.22,
+      1.29445,
+      -0.27
+    ],
+    "min": [
+      -0.22,
+      1.20555,
+      -0.48
+    ]
+  },
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "rack_units": {
+    "count": 42,
+    "height_m": 0.04445,
+    "u1_start_y_m": 0.1
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "8f8ebee46733b39c80a5ff642b03e3d7a69bde0c44c75d18fd46e5c05f6db81f",
+  "stencil_flat_area_m": [
+    0.432,
+    0.11335
+  ],
+  "tangent_export": "XYZ quantized to 0.001 then normalized; removes MikkTSpace thread-order jitter",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color/emissive",
+      "material": "M_server_rack_42u_led",
+      "name": "T_server_rack_42u_led_palette",
+      "size": [
+        64,
+        64
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_server_rack_42u_cabinet",
+      "name": "T_server_rack_42u_cabinet_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_server_rack_42u_cabinet",
+      "name": "T_server_rack_42u_cabinet_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_server_rack_42u_cabinet",
+      "name": "T_server_rack_42u_cabinet_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_server_rack_42u_equipment",
+      "name": "T_server_rack_42u_equipment_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_server_rack_42u_equipment",
+      "name": "T_server_rack_42u_equipment_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_server_rack_42u_equipment",
+      "name": "T_server_rack_42u_equipment_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_server_rack_42u_metal",
+      "name": "T_server_rack_42u_metal_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_server_rack_42u_metal",
+      "name": "T_server_rack_42u_metal_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_server_rack_42u_metal",
+      "name": "T_server_rack_42u_metal_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_server_rack_42u_cables",
+      "name": "T_server_rack_42u_cables_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_server_rack_42u_cables",
+      "name": "T_server_rack_42u_cables_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_server_rack_42u_cables",
+      "name": "T_server_rack_42u_cables_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "third_party": [],
+  "triangles": 57808
+}

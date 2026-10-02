@@ -1,0 +1,39 @@
+{
+  "asset_id": "rack_stencil",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": false,
+      "path": "game/rooms/night_shift/assets/docs/rack_stencil.png",
+      "preview": "assets/previews/printables/rack_stencil_25.png",
+      "preview_background": "black blanking plate for legibility",
+      "preview_sha256": "8df22cb0e811475bbf8787d494e6e961cc29f5ff3912c1f033808212266cbcac",
+      "rgba": true,
+      "sha256": "9da20987933da7188ae42f2458f1b86ad6a4dd13905b17a0330d13b6feed7ed3",
+      "size": [
+        2048,
+        683
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 111.0,
+          "cap_height_px": 444.0,
+          "id": "rack_number",
+          "text": "RACK 062",
+          "width_px": 1753.8000000000002
+        }
+      ]
+    }
+  ],
+  "physical_size_m": [
+    0.42,
+    0.14
+  ],
+  "printed_font": "none; original drawn stencil contours",
+  "renderer": "CPU SVG rasterizer; original polygon stencil lettering; 2x AA",
+  "request_sha256": "08e34d75333cd2d036d9f1fd21094266b40791bb13b879edd1eb349ce91b17a9",
+  "seed": 417,
+  "source_sha256": "6a538d46b62167edf6cca220822c2b62f3aaa4493f04d5ee0d25e14bb7bd62a5",
+  "wear_seed": 62
+}

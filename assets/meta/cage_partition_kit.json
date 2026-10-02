@@ -1,0 +1,224 @@
+{
+  "animations": [],
+  "asset_id": "cage_partition_kit",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "frame and metal emission base/RM, tangent normal, ray AO packed ORM; analytic wire tile",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.600000024,
+      2.800000191,
+      0.045000002
+    ],
+    "min": [
+      -0.599999964,
+      -3e-08,
+      -0.045000002
+    ]
+  },
+  "bounds_m": [
+    1.199999988,
+    0.090000004,
+    2.800000221
+  ],
+  "built_at": "2026-10-02T16:23:10+00:00",
+  "collision": "none; room-owned box colliders",
+  "forward": "Blender +Y -> Godot -Z; cutout visible from both sides",
+  "glb_path": "game/assets/core/props/cage_partition_kit.glb",
+  "glb_sha256": "73cce2055e8ebfd9b2eaeae3a6abfac6a1df5e532e6218ea635d96091a11d8e3",
+  "materials": [
+    "M_cage_partition_kit_frame",
+    "M_cage_partition_kit_mesh",
+    "M_cage_partition_kit_metal"
+  ],
+  "origin": "base_center",
+  "part_bounds_godot_m": {
+    "header_1000": {
+      "max": [
+        0.5,
+        0.700000167,
+        0.021
+      ],
+      "min": [
+        -0.5,
+        -3e-08,
+        -0.0211
+      ]
+    },
+    "panel_1200": {
+      "max": [
+        0.600000024,
+        2.800000191,
+        0.045000002
+      ],
+      "min": [
+        -0.599999964,
+        0,
+        -0.045000002
+      ]
+    },
+    "panel_400": {
+      "max": [
+        0.200000018,
+        2.800000191,
+        0.045000002
+      ],
+      "min": [
+        -0.200000003,
+        0,
+        -0.045000002
+      ]
+    }
+  },
+  "part_origins_godot_m": {
+    "header_1000": [
+      0,
+      0,
+      0
+    ],
+    "panel_1200": [
+      0,
+      0,
+      0
+    ],
+    "panel_400": [
+      0,
+      0,
+      0
+    ]
+  },
+  "part_triangles": {
+    "header_1000": 3394,
+    "panel_1200": 6938,
+    "panel_400": 6938
+  },
+  "parts": [
+    "header_1000",
+    "panel_1200",
+    "panel_400"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "7273cc37617b2662adcb5f09e37fbd41fe89dd37db960ed39d76c63681d14be9",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cage_partition_kit_mesh",
+      "name": "T_cage_partition_kit_mesh_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cage_partition_kit_mesh",
+      "name": "T_cage_partition_kit_mesh_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cage_partition_kit_mesh",
+      "name": "T_cage_partition_kit_mesh_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cage_partition_kit_frame",
+      "name": "T_cage_partition_kit_frame_base_color",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cage_partition_kit_frame",
+      "name": "T_cage_partition_kit_frame_normal",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cage_partition_kit_frame",
+      "name": "T_cage_partition_kit_frame_orm",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cage_partition_kit_metal",
+      "name": "T_cage_partition_kit_metal_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cage_partition_kit_metal",
+      "name": "T_cage_partition_kit_metal_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cage_partition_kit_metal",
+      "name": "T_cage_partition_kit_metal_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "triangles": 17270,
+  "wire": {
+    "alpha_cutoff": 0.5,
+    "alpha_mode": "MASK",
+    "diameter_m": 0.004,
+    "double_sided": true,
+    "nominal_open_area_percent": 84.64,
+    "pitch_m": 0.05,
+    "texture_tile_m": 0.2
+  }
+}

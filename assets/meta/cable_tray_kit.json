@@ -1,0 +1,231 @@
+{
+  "animations": [],
+  "asset_id": "cable_tray_kit",
+  "baking": {
+    "device": "CPU",
+    "engine": "CYCLES",
+    "maps": "procedural base colour, tangent normal, ray AO packed with roughness and metallic",
+    "margin_px": 8,
+    "samples": 16
+  },
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      1.000002742,
+      1.0,
+      0.150000006
+    ],
+    "min": [
+      -1.000002146,
+      0.0,
+      -0.150000006
+    ]
+  },
+  "bounds_m": [
+    2.000004888,
+    0.300000012,
+    1.0
+  ],
+  "built_at": "2026-10-02T16:40:49+00:00",
+  "cable_runs_per_part": 12,
+  "collision": "none",
+  "forward": "Straight tray lengths along Godot X; Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/cable_tray_kit.glb",
+  "glb_sha256": "765e39b6734d2b3dec207ff181cc3827af9bb65c2a4d637b9cf4936ba1126ebf",
+  "materials": [
+    "M_cable_tray_kit_cables",
+    "M_cable_tray_kit_metal",
+    "M_cable_tray_kit_velcro"
+  ],
+  "origin": "base_center",
+  "origin_reference": "Every part at zero: tray underside y=0; drop bottom cut ends y=0",
+  "part_bounds_godot_m": {
+    "drop_1m": {
+      "max": [
+        0.0759907,
+        1.0,
+        0.025
+      ],
+      "min": [
+        -0.0759907,
+        0.0,
+        -0.025
+      ]
+    },
+    "tray_1m": {
+      "max": [
+        0.5000096,
+        0.35,
+        0.15
+      ],
+      "min": [
+        -0.500007,
+        0.0,
+        -0.15
+      ]
+    },
+    "tray_2m": {
+      "max": [
+        1.0000027,
+        0.35,
+        0.15
+      ],
+      "min": [
+        -1.0000021,
+        0.0,
+        -0.15
+      ]
+    }
+  },
+  "part_origins_godot_m": {
+    "drop_1m": [
+      0,
+      0,
+      0
+    ],
+    "tray_1m": [
+      0,
+      0,
+      0
+    ],
+    "tray_2m": [
+      0,
+      0,
+      0
+    ]
+  },
+  "parts": [
+    "drop_1m",
+    "tray_1m",
+    "tray_2m"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "preview_layout_only_godot_m": {
+    "drop_1m": [
+      1.32,
+      0.12,
+      0.15
+    ],
+    "tray_1m": [
+      0,
+      0.68,
+      0.25
+    ],
+    "tray_2m": [
+      0,
+      0.12,
+      0.25
+    ]
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "rung_pitch_m": 0.2,
+  "script_sha256": "f2a2b82dae40d0aa6925e10d86b044daa5fbdfc9e86c254ab5ca6df89a416417",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cable_tray_kit_metal",
+      "name": "T_cable_tray_kit_metal_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cable_tray_kit_metal",
+      "name": "T_cable_tray_kit_metal_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cable_tray_kit_metal",
+      "name": "T_cable_tray_kit_metal_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cable_tray_kit_cables",
+      "name": "T_cable_tray_kit_cables_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cable_tray_kit_cables",
+      "name": "T_cable_tray_kit_cables_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cable_tray_kit_cables",
+      "name": "T_cable_tray_kit_cables_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_cable_tray_kit_velcro",
+      "name": "T_cable_tray_kit_velcro_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_cable_tray_kit_velcro",
+      "name": "T_cable_tray_kit_velcro_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_cable_tray_kit_velcro",
+      "name": "T_cable_tray_kit_velcro_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "triangles": 19120
+}

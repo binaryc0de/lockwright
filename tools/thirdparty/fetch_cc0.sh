@@ -62,3 +62,4 @@ polyhaven_model clipboard 1k
 polyhaven_model cardboard_box_01 1k
 polyhaven_model fire_alarm 1k
 polyhaven_model security_camera_02 1k
+polyhaven_tex concrete_floor_painted 2k

@@ -49,3 +49,14 @@ the transparent UV rectangle. Visual review and repeat-build evidence live in
 (see `assets/requests/printables/README.md`). Roughness/emission, inspect-scale
 lighting and texture assignment remain integration work for Claude; no runtime
 or room scene is changed by the renderer.
+
+`rack_stencil` adds original polygon stencil contours, transparent counter
+bridges, seeded spray density, pinholes, fine scuffs and two short letter drips.
+Its 2048x683 RGBA output contains paint only. The 512x171 preview is composited
+over black for legibility; a full black-backed review copy lives only in ignored
+`assets/cache/printables/rack_stencil_on_black.png`. No font is used for it.
+Build it with `tools/printables/build_printables.sh rack_stencil`. Run
+`tools/printables/verify.py --record rack_stencil` using bundled Python, rebuild,
+then run `tools/printables/verify.py --compare rack_stencil` to compare only its
+output, preview and metadata. Selected verification uses a separate per-request
+checksum manifest and also checks the clear 0/6 gap and open top of the six.
