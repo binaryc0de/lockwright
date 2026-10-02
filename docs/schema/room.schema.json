@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://escapebox.local/schema/room.schema.json",
+  "title": "escapebox room manifest (room.yaml), spec_version 1",
+  "description": "Normative schema for game/rooms/<room_id>/room.yaml. See PLAN.md Section 8.3 and docs/ROOM_AUTHORING.md. Growth is additive only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "id", "title", "version", "authors", "requires", "mode", "entry_scene", "briefing", "puzzles", "exit"],
+  "properties": {
+    "spec_version": { "const": 1 },
+    "id": { "$ref": "#/$defs/ident" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?$" },
+    "authors": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "sdk"],
+      "properties": {
+        "platform": { "$ref": "#/$defs/version_range" },
+        "sdk": { "$ref": "#/$defs/version_range" }
+      }
+    },
+    "mode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration_minutes", "players"],
+      "properties": {
+        "duration_minutes": { "type": "integer", "minimum": 5, "maximum": 10080 },
+        "players": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max"],
+          "properties": {
+            "min": { "type": "integer", "minimum": 1, "maximum": 6 },
+            "max": { "type": "integer", "minimum": 1, "maximum": 6 }
+          }
+        },
+        "auto_nudge_minutes": { "type": "integer", "minimum": 0, "description": "0 disables the automatic intercom nudge. Default 6." },
+        "hint_time_penalty_s": { "type": "integer", "minimum": 0, "description": "Optional seconds added to the final time per hint revealed. Default 0." }
+      }
+    },
+    "entry_scene": { "type": "string", "pattern": "^res://rooms/[a-z0-9_]+/.+\\.tscn$" },
+    "briefing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intro_md", "win_md", "timeout_md"],
+      "properties": {
+        "intro_md": { "$ref": "#/$defs/rel_path" },
+        "win_md": { "$ref": "#/$defs/rel_path" },
+        "timeout_md": { "$ref": "#/$defs/rel_path" },
+        "gm_notes_md": { "$ref": "#/$defs/rel_path" }
+      }
+    },
+    "variables": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/ident" },
+      "additionalProperties": { "$ref": "#/$defs/variable" }
+    },
+    "puzzles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/puzzle" }
+    },
+    "exit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["puzzle"],
+      "properties": { "puzzle": { "$ref": "#/$defs/ident" } }
+    },
+    "ctf": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["challenges"],
+      "properties": {
+        "challenges": { "type": "array", "items": { "$ref": "#/$defs/challenge" } }
+      }
+    },
+    "solution": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/solution_step" }
+    }
+  },
+  "$defs": {
+    "ident": { "type": "string", "pattern": "^[a-z0-9_]+$", "maxLength": 64 },
+    "version_range": { "type": "string", "pattern": "^(>=|>|<=|<|=)?[0-9]+(\\.[0-9]+){0,2}( (>=|>|<=|<)[0-9]+(\\.[0-9]+){0,2})?$" },
+    "rel_path": { "type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]*$", "description": "Relative to the room directory. roomcheck additionally rejects any .. segment." },
+    "node_path": { "type": "string", "pattern": "^[A-Za-z0-9_]+(/[A-Za-z0-9_]+)*$", "description": "Path relative to the room scene root, e.g. Cabinet/Keypad." },
+    "hints": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 1, "maxLength": 400 },
+      "description": "Ordered tiers, gentlest first. The last tier gives the answer."
+    },
+    "variable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["digits", "letters", "choice"] },
+        "length": { "type": "integer", "minimum": 1, "maximum": 16 },
+        "choices": { "type": "array", "minItems": 2, "items": { "type": "string" } }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "enum": ["digits", "letters"] } } }, "then": { "required": ["length"] } },
+        { "if": { "properties": { "type": { "const": "choice" } } }, "then": { "required": ["choices"] } }
+      ]
+    },
+    "puzzle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "requires", "solved_when", "hints"],
+      "properties": {
+        "id": { "$ref": "#/$defs/ident" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "requires": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/ident" } },
+        "solved_when": { "$ref": "#/$defs/condition" },
+        "hints": { "$ref": "#/$defs/hints" },
+        "gm_notes": { "type": "string" }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "item_picked_up": { "$ref": "#/$defs/ident" },
+        "node_state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "state"],
+          "properties": {
+            "path": { "$ref": "#/$defs/node_path" },
+            "state": { "type": "string", "minLength": 1 }
+          }
+        },
+        "flag_accepted": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["challenge"],
+          "properties": { "challenge": { "$ref": "#/$defs/ident" } }
+        },
+        "all_of": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } },
+        "any_of": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } }
+      }
+    },
+    "challenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "kind", "difficulty", "flag", "hints"],
+      "properties": {
+        "id": { "$ref": "#/$defs/ident" },
+        "title": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["file", "service", "terminal"] },
+        "difficulty": { "enum": ["easy", "medium", "hard"] },
+        "build": { "$ref": "#/$defs/rel_path", "description": "Docker build context inside the room dir, e.g. ctf/intranet." },
+        "ports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["container", "protocol"],
+            "properties": {
+              "container": { "type": "integer", "minimum": 1, "maximum": 65535 },
+              "protocol": { "enum": ["http", "tcp"] }
+            }
+          }
+        },
+        "flag": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "enum": ["per_instance", "static"] },
+            "format": { "type": "string", "description": "per_instance template; must contain {{nonce}}." },
+            "inject_env": { "type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$" },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "static flags are stored only as a hash, never as a literal." }
+          },
+          "allOf": [
+            { "if": { "properties": { "type": { "const": "per_instance" } } }, "then": { "required": ["format", "inject_env"], "properties": { "format": { "pattern": "\\{\\{nonce\\}\\}" } } } },
+            { "if": { "properties": { "type": { "const": "static" } } }, "then": { "required": ["sha256"] } }
+          ]
+        },
+        "healthcheck": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["timeout_s"],
+          "properties": {
+            "path": { "type": "string", "pattern": "^/" },
+            "timeout_s": { "type": "integer", "minimum": 1, "maximum": 300 }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cpu": { "type": "number", "exclusiveMinimum": 0, "maximum": 4 },
+            "memory_mb": { "type": "integer", "minimum": 16, "maximum": 4096 }
+          }
+        },
+        "hints": { "$ref": "#/$defs/hints" },
+        "unlocks": { "type": "string", "description": "Documentation only; the FlagGate node does the work." }
+      },
+      "allOf": [
+        { "if": { "properties": { "kind": { "enum": ["service", "terminal"] } } }, "then": { "required": ["build", "ports", "healthcheck"] } }
+      ]
+    },
+    "solution_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["act"],
+      "properties": {
+        "act": { "enum": ["examine", "pick_up", "use", "use_on", "combine", "input_code", "interact", "submit_flag"] },
+        "item": { "$ref": "#/$defs/ident" },
+        "target": { "$ref": "#/$defs/node_path" },
+        "lock": { "$ref": "#/$defs/node_path" },
+        "node": { "$ref": "#/$defs/node_path" },
+        "verb": { "type": "string" },
+        "value": { "type": "string" },
+        "challenge": { "$ref": "#/$defs/ident" }
+      }
+    }
+  }
+}
