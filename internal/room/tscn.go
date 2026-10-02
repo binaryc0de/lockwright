@@ -58,9 +58,11 @@ func collectPaths(scenePath, resRoot, prefix string, out map[string]bool, depth 
 		}
 		parent, hasParent := attrs["parent"]
 		if !hasParent {
-			// Scene root: its children are addressed without a prefix.
-			if inst := instRe.FindStringSubmatch(attrs["instance"]); inst != nil && prefix == "" {
-				if err := descend(ext[inst[1]], resRoot, "", out, depth); err != nil {
+			// Scene root. An inherited scene's root instances its base scene;
+			// the base's children sit at the same level as this scene's own
+			// children, so they keep the current prefix.
+			if inst := instRe.FindStringSubmatch(attrs["instance"]); inst != nil {
+				if err := descend(ext[inst[1]], resRoot, prefix, out, depth); err != nil {
 					return err
 				}
 			}

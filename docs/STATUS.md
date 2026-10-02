@@ -2,7 +2,7 @@
 
 Milestone checklist from PLAN.md Section 11. Check an item only when it was actually run; each milestone ends with a verification note saying what ran, where, and with which command. Untested things are listed as untested.
 
-**Current milestone: M0 (repo and specs)**
+**Current milestone: M1 (single-player room core).** M0 closed 2026-10-01.
 
 ## M0: Repo and specs
 
@@ -24,7 +24,7 @@ Milestone checklist from PLAN.md Section 11. Check an item only when it was actu
 - [x] `docs/ASSET_PIPELINE.md` finalised after the smoke test (press direction, `-colonly`, texture refresh, process hygiene)
 - [x] First Codex handoff: `keypad_4` built by Codex (`gpt-6.1-sol`, high), passes assetcheck, imports in Godot with per-button meshes (headless test). Windowed screenshot deferred (ADR-0003); showcase scene ready at `game/tests/scenes/keypad_showcase.tscn`
 - [x] Acceptance (local): `tools/test.sh` green; roomcheck rejects a cyclic graph (`TestRejectsCycle`); keypad_4 loads in a Godot test scene with per-button meshes. GitHub CI not yet run (no remote).
-- [ ] Independent `codex:review` of M0 triaged (running)
+- [x] Independent `codex:review` of M0 triaged: 1 finding (P2, inherited prefab children skipped under an instance prefix in `internal/room/tscn.go`), fixed with regression test `TestResolvesInheritedPrefabUnderInstance`
 
 ## M1: Single-player room core
 Not started.
@@ -58,3 +58,4 @@ Not started.
 - Godot import after deleting stale extracted textures, then again with `.godot/` removed (fresh-clone case): no errors; extracted textures are 1024 px.
 - `tools/test.sh` (gofmt, vet, go test, roomcheck, assetcheck, Godot import, gdUnit4): exit 0, gdUnit4 9/9 (5 AppArgs + 4 keypad_4).
 - Untested: Windows/Linux binary exports (no export templates installed), GitHub Actions run, any windowed rendering.
+- `codex review --base 098f3e2` (all M0 code): one P2 finding, fixed; the new test fails on the old code and passes on the fix. `go test ./internal/room/`: 15 tests pass.

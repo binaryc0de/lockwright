@@ -262,3 +262,25 @@ func TestWarnsOnForbiddenAPIInRoomScript(t *testing.T) {
 		t.Fatalf("expected forbidden api warning, got %v", r.Issues)
 	}
 }
+
+// An inherited prefab (root node instancing a base scene) placed under an
+// instanced node must expose the base scene's children under that prefix.
+func TestResolvesInheritedPrefabUnderInstance(t *testing.T) {
+	dir, res := writeRoom(t, goodYAML)
+	base := "[gd_scene format=3]\n\n[node name=\"Base\" type=\"Node3D\"]\n\n[node name=\"Keypad\" type=\"Node3D\" parent=\".\"]\n"
+	inherited := "[gd_scene format=3]\n\n[ext_resource type=\"PackedScene\" path=\"res://rooms/test_room/scenes/base.tscn\" id=\"1_b\"]\n\n[node name=\"Cabinet\" instance=ExtResource(\"1_b\")]\n\n[node name=\"Drawer\" type=\"Node3D\" parent=\".\"]\n"
+	for name, body := range map[string]string{"scenes/base.tscn": base, "scenes/cabinet.tscn": inherited} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	paths, err := ScenePaths(filepath.Join(dir, "room.tscn"), res)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"Cabinet", "Cabinet/Keypad", "Cabinet/Drawer", "ExitDoor"} {
+		if !paths[want] {
+			t.Errorf("missing %q in %v", want, paths)
+		}
+	}
+}
