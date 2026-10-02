@@ -14,64 +14,94 @@
 [ext_resource type="Script" path="res://addons/escapebox_sdk/maglock_gate.gd" id="12_1brxc"]
 [ext_resource type="Script" path="res://addons/escapebox_sdk/flag_gate.gd" id="13_h0p10"]
 [ext_resource type="Script" path="res://addons/escapebox_sdk/patch_panel.gd" id="14_fnm6y"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_office_carpet.tres" id="20_carpet"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_ceiling_tiles.tres" id="21_ceiling"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_painted_plaster.tres" id="22_plaster"]
+
+[ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/mounted_fluorescent_lights/mounted_fluorescent_lights_1k.gltf" id="30_fluoro"]
+[ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/desk_lamp_arm_01/desk_lamp_arm_01_1k.gltf" id="31_lamp"]
+[ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/office_notepads/office_notepads_1k.gltf" id="32_notepads"]
+[ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/clipboard/clipboard_1k.gltf" id="33_clipboard"]
+[ext_resource type="PackedScene" path="res://assets/core/third_party/polyhaven/cardboard_box_01/cardboard_box_01_1k.gltf" id="34_box"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_fluorescent_tube_on.tres" id="35_tube_on"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_fluorescent_tube_off.tres" id="36_tube_off"]
+[ext_resource type="PackedScene" path="res://assets/core/props/monitor_24.glb" id="40_monitor"]
+[ext_resource type="PackedScene" path="res://assets/core/props/laptop_open.glb" id="41_laptop"]
+[ext_resource type="PackedScene" path="res://assets/core/props/whiteboard_wall.glb" id="42_whiteboard"]
+[ext_resource type="PackedScene" path="res://assets/core/props/filing_cabinet_keypad.glb" id="43_cabinet"]
+[ext_resource type="PackedScene" path="res://assets/core/props/keypad_4.glb" id="44_keypad"]
+[ext_resource type="PackedScene" path="res://assets/core/props/office_chair.glb" id="45_chair"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_screen_laptop.tres" id="46_scr_laptop"]
+[ext_resource type="Material" path="res://assets/core/materials/mat_screen_monitor.tres" id="47_scr_monitor"]
+[ext_resource type="PackedScene" path="res://assets/core/props/desk_3drawer.glb" id="48_desk"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
+size = Vector3(0.39, 0.34, 0.52)
 
 [sub_resource type="Environment" id="Environment_vrwxm"]
 background_mode = 1
-background_color = Color(0.02, 0.02, 0.03, 1)
+background_color = Color(0.01, 0.01, 0.015, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.55, 0.58, 0.7, 1)
-ambient_light_energy = 0.35
-tonemap_mode = 2
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3yv7q"]
-resource_name = "floor"
-albedo_color = Color(0.3, 0.3, 0.32, 1)
-roughness = 0.85
+ambient_light_color = Color(0.45, 0.5, 0.62, 1)
+ambient_light_energy = 0.06
+tonemap_mode = 4
+tonemap_exposure = 1.1
+ssao_enabled = true
+ssao_radius = 1.2
+ssao_intensity = 1.6
+ssil_enabled = true
+ssil_intensity = 0.8
+sdfgi_enabled = true
+sdfgi_use_occlusion = true
+sdfgi_min_cell_size = 0.05
+sdfgi_cascades = 3
+sdfgi_y_scale = 2
+sdfgi_energy = 1.2
+glow_enabled = true
+glow_normalized = true
+glow_intensity = 0.7
+glow_bloom = 0.04
+glow_hdr_threshold = 0.9
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.018
+volumetric_fog_albedo = Color(0.9, 0.92, 1, 1)
+volumetric_fog_anisotropy = 0.45
+volumetric_fog_length = 16.0
+volumetric_fog_ambient_inject = 0.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_pa7wy"]
-material = SubResource("StandardMaterial3D_3yv7q")
+material = ExtResource("20_carpet")
 size = Vector3(8.700001, 0.1, 5.2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_pq31a"]
 size = Vector3(8.700001, 0.1, 5.2)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ypvdp"]
-resource_name = "ceiling"
-albedo_color = Color(0.55, 0.55, 0.56, 1)
-roughness = 0.85
-
 [sub_resource type="BoxMesh" id="BoxMesh_u7yku"]
-material = SubResource("StandardMaterial3D_ypvdp")
+material = ExtResource("21_ceiling")
 size = Vector3(8.700001, 0.10000014, 5.2)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_linl0"]
-resource_name = "wall"
-albedo_color = Color(0.72, 0.72, 0.7, 1)
-roughness = 0.85
-
 [sub_resource type="BoxMesh" id="BoxMesh_ymtj8"]
-material = SubResource("StandardMaterial3D_linl0")
+material = ExtResource("22_plaster")
 size = Vector3(8.700001, 2.8, 0.1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5ylps"]
 size = Vector3(8.700001, 2.8, 0.1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_js24t"]
-material = SubResource("StandardMaterial3D_linl0")
+material = ExtResource("22_plaster")
 size = Vector3(0.10000038, 2.8, 5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ekyhm"]
 size = Vector3(0.10000038, 2.8, 5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_a6248"]
-material = SubResource("StandardMaterial3D_linl0")
+material = ExtResource("22_plaster")
 size = Vector3(0.1, 2.8, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_181u7"]
 size = Vector3(0.1, 2.8, 2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_i6i25"]
-material = SubResource("StandardMaterial3D_linl0")
+material = ExtResource("22_plaster")
 size = Vector3(0.1, 0.70000005, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wkci7"]
@@ -103,14 +133,14 @@ material = SubResource("StandardMaterial3D_wbsem")
 size = Vector3(0.10000038, 0.70000005, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_u6x2m"]
-material = SubResource("StandardMaterial3D_3yv7q")
+material = ExtResource("20_carpet")
 size = Vector3(1.6, 0.1, 1.1999999)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2763j"]
 size = Vector3(1.6, 0.1, 1.1999999)
 
 [sub_resource type="BoxMesh" id="BoxMesh_px6lo"]
-material = SubResource("StandardMaterial3D_ypvdp")
+material = ExtResource("21_ceiling")
 size = Vector3(1.6, 0.099999905, 1.1999999)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wfkr1"]
@@ -649,25 +679,13 @@ environment = SubResource("Environment_vrwxm")
 [node name="OfficeCeiling" type="OmniLight3D" parent="Lights" unique_id=816336112]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.6, 2.5)
 light_color = Color(0.85, 0.9, 1, 1)
-light_energy = 0.7
+light_energy = 0.15
 omni_range = 6.0
-
-[node name="DeskLamp" type="OmniLight3D" parent="Lights" unique_id=1557967856]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 1.35, 0.5)
-light_color = Color(1, 0.85, 0.6, 1)
-light_energy = 1.2
-omni_range = 2.2
-
-[node name="CabinetCorner" type="OmniLight3D" parent="Lights" unique_id=860659840]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.3, 4.3)
-light_color = Color(1, 0.95, 0.85, 1)
-light_energy = 0.8
-omni_range = 3.5
 
 [node name="ExitDoorLight" type="OmniLight3D" parent="Lights" unique_id=1977985672]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 2.4, 2.7)
 light_color = Color(1, 0.55, 0.45, 1)
-light_energy = 0.7
+light_energy = 0.35
 omni_range = 2.8
 
 [node name="CageLight" type="OmniLight3D" parent="Lights" unique_id=78556901]
@@ -689,10 +707,45 @@ light_energy = 0.6
 omni_range = 2.5
 
 [node name="WhiteboardSpot" type="SpotLight3D" parent="Lights" unique_id=310523839]
-transform = Transform3D(1, 0, 0, 0, 0.49999997, 0.86602545, 0, -0.86602545, 0.49999997, 4.1, 2.6, 1.2)
-light_energy = 1.2
-spot_range = 3.5
+transform = Transform3D(1, 0, 0, 0, 0.5177, 0.85556, 0, -0.85556, 0.5177, 4.1, 2.72, 0.95)
+light_energy = 2.6
+spot_range = 4.5
+spot_angle = 42.0
+light_color = Color(0.86, 0.93, 1, 1)
+shadow_enabled = true
+light_size = 0.08
+
+[node name="CabinetSpot" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(-0.99906, -0.0375, 0.02191, 0, 0.5045, 0.86341, -0.04344, 0.8626, -0.50402, 1.3, 2.72, 3.3)
+light_color = Color(0.86, 0.93, 1, 1)
+light_energy = 2.8
+light_size = 0.08
+shadow_enabled = true
+spot_range = 4.0
 spot_angle = 40.0
+
+[node name="DeskLampSpot" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(0.3534, 0.7391, -0.57345, 0, 0.613, 0.79008, 0.93547, -0.27922, 0.21664, 1.2, 1.38, 0.52)
+light_color = Color(1, 0.74, 0.46, 1)
+light_energy = 3.5
+light_size = 0.04
+shadow_enabled = true
+spot_range = 2.6
+spot_angle = 58.0
+
+[node name="MonitorGlow" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 1.05, 0.42)
+light_color = Color(0.55, 0.7, 1, 1)
+light_energy = 0.3
+omni_range = 1.3
+light_specular = 0.0
+
+[node name="LaptopGlow" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.15, 0.92, 0.48)
+light_color = Color(0.55, 0.72, 1, 1)
+light_energy = 0.35
+omni_range = 1.1
+light_specular = 0.0
 
 [node name="Structure" type="Node3D" parent="." unique_id=907547806]
 
@@ -858,12 +911,169 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 2.6)
 
 [node name="Office" type="Node3D" parent="." unique_id=1979274450]
 
+[node name="Decor" type="Node3D" parent="Office"]
+
+[node name="FixtureWhiteboard" parent="Office/Decor" instance=ExtResource("30_fluoro")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 2.8, 0.9)
+
+[node name="mounted_fluorescent_lights_a" parent="Office/Decor/FixtureWhiteboard"]
+visible = false
+
+[node name="mounted_fluorescent_lights_b" parent="Office/Decor/FixtureWhiteboard"]
+visible = false
+
+[node name="mounted_fluorescent_lights_c" parent="Office/Decor/FixtureWhiteboard"]
+visible = false
+
+[node name="mounted_fluorescent_lights_e" parent="Office/Decor/FixtureWhiteboard"]
+visible = false
+
+[node name="mounted_fluorescent_lights_f" parent="Office/Decor/FixtureWhiteboard"]
+visible = false
+
+[node name="mounted_fluorescent_lights_g" parent="Office/Decor/FixtureWhiteboard"]
+visible = false
+
+[node name="mounted_fluorescent_lights_d" parent="Office/Decor/FixtureWhiteboard"]
+surface_material_override/1 = ExtResource("35_tube_on")
+
+[node name="FixtureCabinet" parent="Office/Decor" instance=ExtResource("30_fluoro")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 2.8, 3.9)
+
+[node name="mounted_fluorescent_lights_a" parent="Office/Decor/FixtureCabinet"]
+visible = false
+
+[node name="mounted_fluorescent_lights_b" parent="Office/Decor/FixtureCabinet"]
+visible = false
+
+[node name="mounted_fluorescent_lights_c" parent="Office/Decor/FixtureCabinet"]
+visible = false
+
+[node name="mounted_fluorescent_lights_e" parent="Office/Decor/FixtureCabinet"]
+visible = false
+
+[node name="mounted_fluorescent_lights_f" parent="Office/Decor/FixtureCabinet"]
+visible = false
+
+[node name="mounted_fluorescent_lights_g" parent="Office/Decor/FixtureCabinet"]
+visible = false
+
+[node name="mounted_fluorescent_lights_d" parent="Office/Decor/FixtureCabinet"]
+surface_material_override/1 = ExtResource("35_tube_on")
+
+[node name="FixtureDead" parent="Office/Decor" instance=ExtResource("30_fluoro")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.8, 2.5)
+
+[node name="mounted_fluorescent_lights_a" parent="Office/Decor/FixtureDead"]
+visible = false
+
+[node name="mounted_fluorescent_lights_b" parent="Office/Decor/FixtureDead"]
+visible = false
+
+[node name="mounted_fluorescent_lights_c" parent="Office/Decor/FixtureDead"]
+visible = false
+
+[node name="mounted_fluorescent_lights_e" parent="Office/Decor/FixtureDead"]
+visible = false
+
+[node name="mounted_fluorescent_lights_f" parent="Office/Decor/FixtureDead"]
+visible = false
+
+[node name="mounted_fluorescent_lights_g" parent="Office/Decor/FixtureDead"]
+visible = false
+
+[node name="mounted_fluorescent_lights_d" parent="Office/Decor/FixtureDead"]
+surface_material_override/1 = ExtResource("36_tube_off")
+
+[node name="DeskLamp" parent="Office/Decor" instance=ExtResource("31_lamp")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.18, 0.76, 0.33)
+
+[node name="NotesA4" parent="Office/Decor" instance=ExtResource("32_notepads")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 0.762, 0.675)
+
+[node name="office_notepads_yellow_sheet" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="office_notepads_yellow_pad" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="office_notepads_note_stack" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="office_notepads_sticky_stack" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="office_notepads_sticky_sheet" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="office_notepads_note_sheet" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="office_notepads_a4_a" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="office_notepads_a4_b" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="office_notepads_a4_c" parent="Office/Decor/NotesA4"]
+visible = false
+
+[node name="StickyPad" parent="Office/Decor" instance=ExtResource("32_notepads")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.17, 0.762, 0.335)
+
+[node name="office_notepads_yellow_sheet" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="office_notepads_yellow_pad" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="office_notepads_note_stack" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="office_notepads_sticky_sheet" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="office_notepads_note_sheet" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="office_notepads_a4_stack" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="office_notepads_a4_a" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="office_notepads_a4_b" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="office_notepads_a4_c" parent="Office/Decor/StickyPad"]
+visible = false
+
+[node name="Clipboard" parent="Office/Decor" instance=ExtResource("33_clipboard")]
+transform = Transform3D(0.96593, 0, 0.25882, 0, 1, 0, -0.25882, 0, 0.96593, 1.25, 1.2025, 4.72)
+
+[node name="BoxLower" parent="Office/Decor" instance=ExtResource("34_box")]
+transform = Transform3D(0.99452, 0, 0.10453, 0, 1, 0, -0.10453, 0, 0.99452, 0.25, 0.007, 0.32)
+
+[node name="Body" type="StaticBody3D" parent="Office/Decor/BoxLower"]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Decor/BoxLower/Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0.03)
+shape = SubResource("BoxShape3D_mbox")
+
+[node name="BoxUpper" parent="Office/Decor" instance=ExtResource("34_box")]
+transform = Transform3D(0.98163, 0, -0.19081, 0, 1, 0, 0.19081, 0, 0.98163, 0.27, 0.349, 0.33)
+
+[node name="Body" type="StaticBody3D" parent="Office/Decor/BoxUpper"]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Decor/BoxUpper/Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0.03)
+shape = SubResource("BoxShape3D_mbox")
+
 [node name="Desk" type="Node3D" parent="Office" unique_id=301479544]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0, 0)
 
 [node name="Top" type="MeshInstance3D" parent="Office/Desk" unique_id=1272285634]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, 0.375)
-mesh = SubResource("BoxMesh_nxbe4")
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/Top" unique_id=1774952892]
 
@@ -872,7 +1082,6 @@ shape = SubResource("BoxShape3D_t8m7l")
 
 [node name="LegLeft" type="MeshInstance3D" parent="Office/Desk" unique_id=2082097719]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.78, 0.36, 0.375)
-mesh = SubResource("BoxMesh_p25ph")
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/LegLeft" unique_id=217803682]
 
@@ -881,7 +1090,6 @@ shape = SubResource("BoxShape3D_ol2bh")
 
 [node name="LegRight" type="MeshInstance3D" parent="Office/Desk" unique_id=800548866]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 0.36, 0.375)
-mesh = SubResource("BoxMesh_p25ph")
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/LegRight" unique_id=6621821]
 
@@ -890,7 +1098,6 @@ shape = SubResource("BoxShape3D_ol2bh")
 
 [node name="Modesty" type="MeshInstance3D" parent="Office/Desk" unique_id=1665143148]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.05)
-mesh = SubResource("BoxMesh_uts3r")
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/Modesty" unique_id=564529911]
 
@@ -899,7 +1106,6 @@ shape = SubResource("BoxShape3D_higau")
 
 [node name="Monitor" type="MeshInstance3D" parent="Office/Desk" unique_id=1103431246]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 1.05, 0.2)
-mesh = SubResource("BoxMesh_xqeq4")
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/Monitor" unique_id=629969102]
 
@@ -908,7 +1114,6 @@ shape = SubResource("BoxShape3D_05elm")
 
 [node name="MonitorStand" type="MeshInstance3D" parent="Office/Desk" unique_id=823107704]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 0.86, 0.2)
-mesh = SubResource("BoxMesh_w1eqn")
 
 [node name="Drawer" type="Node3D" parent="Office/Desk" unique_id=2128899347]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.62, 0.75)
@@ -923,7 +1128,6 @@ verbs = PackedStringArray("open", "close")
 
 [node name="Front" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=1146872968]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.01)
-mesh = SubResource("BoxMesh_brntq")
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/Drawer/Slide/Front" unique_id=1905155372]
 
@@ -932,23 +1136,18 @@ shape = SubResource("BoxShape3D_vvu0o")
 
 [node name="Handle" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide/Front" unique_id=1275550765]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.02)
-mesh = SubResource("BoxMesh_w3ntq")
 
 [node name="TrayBottom" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=1281891614]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, -0.23)
-mesh = SubResource("BoxMesh_l1u0l")
 
 [node name="TraySideL" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=1018606846]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0, -0.23)
-mesh = SubResource("BoxMesh_ugstm")
 
 [node name="TraySideR" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=1843883511]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0, -0.23)
-mesh = SubResource("BoxMesh_ugstm")
 
 [node name="TrayBack" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide" unique_id=125718942]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.455)
-mesh = SubResource("BoxMesh_gxwv2")
 
 [node name="Contents" type="Node3D" parent="Office/Desk/Drawer/Slide" unique_id=1752680531]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, -0.2)
@@ -979,7 +1178,7 @@ mesh = SubResource("BoxMesh_ysuod")
 shape = SubResource("BoxShape3D_y40hg")
 
 [node name="StickyNote" type="Node3D" parent="Office/Desk" unique_id=1621984435]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.17, 0.93, 0.225)
+transform = Transform3D(0.99756, 0, 0.06976, 0, 1, 0, -0.06976, 0, 0.99756, -0.115, 0.915, 0.233)
 script = ExtResource("4_7mnw5")
 title = "Sticky note (monitor)"
 text_md = "intranet login
@@ -1000,7 +1199,7 @@ shape = SubResource("BoxShape3D_jn5ad")
 
 [node name="Text" type="Label3D" parent="Office/Desk/StickyNote" unique_id=347367048]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.004)
-pixel_size = 0.002
+pixel_size = 0.0014
 double_sided = false
 modulate = Color(0.1, 0.1, 0.3, 1)
 text = "user:
@@ -1020,7 +1219,6 @@ verbs = PackedStringArray("terminal")
 
 [node name="Base" type="MeshInstance3D" parent="Office/Desk/Laptop" unique_id=1991148932]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
-mesh = SubResource("BoxMesh_ky2ry")
 
 [node name="Body" type="StaticBody3D" parent="Office/Desk/Laptop" unique_id=509526670]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, -0.02)
@@ -1029,21 +1227,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, -0.02)
 shape = SubResource("BoxShape3D_apddg")
 
 [node name="Screen" type="MeshInstance3D" parent="Office/Desk/Laptop" unique_id=1789977912]
-transform = Transform3D(1, 0, 0, 0, 0.9781476, 0.2079117, 0, -0.2079117, 0.9781476, 0, 0.13, -0.12)
-mesh = SubResource("BoxMesh_xk2hm")
+transform = Transform3D(1, 0, 0, 0, 0.96593, 0.25882, 0, -0.25882, 0.96593, 0, 0.12592, -0.10761)
 
 [node name="ScreenText" type="Label3D" parent="Office/Desk/Laptop/Screen" unique_id=597984028]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.008)
-pixel_size = 0.002
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.002)
+pixel_size = 0.0015
 double_sided = false
 text = "KESTREL INTRANET
 session expired"
 font_size = 20
 outline_size = 0
+modulate = Color(0.85, 0.92, 1, 1)
 
 [node name="Chair" type="MeshInstance3D" parent="Office" unique_id=325948358]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.225, 1.25)
-mesh = SubResource("BoxMesh_l7cjs")
 
 [node name="Body" type="StaticBody3D" parent="Office/Chair" unique_id=1002814082]
 
@@ -1052,7 +1249,6 @@ shape = SubResource("BoxShape3D_u2pa4")
 
 [node name="ChairBack" type="MeshInstance3D" parent="Office" unique_id=63404338]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.7, 1.47)
-mesh = SubResource("BoxMesh_t5n06")
 
 [node name="Body" type="StaticBody3D" parent="Office/ChairBack" unique_id=1237595540]
 
@@ -1064,7 +1260,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0, 0)
 
 [node name="Board" type="MeshInstance3D" parent="Office/Whiteboard" unique_id=859323062]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.015)
-mesh = SubResource("BoxMesh_xuf78")
 
 [node name="Body" type="StaticBody3D" parent="Office/Whiteboard/Board" unique_id=1925917952]
 
@@ -1073,10 +1268,9 @@ shape = SubResource("BoxShape3D_2u681")
 
 [node name="Tray" type="MeshInstance3D" parent="Office/Whiteboard" unique_id=1579540655]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.935, 0.04)
-mesh = SubResource("BoxMesh_5ftxi")
 
 [node name="Marker" type="Label3D" parent="Office/Whiteboard" unique_id=1514679596]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 1.5, 0.035)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 1.5, 0.024)
 pixel_size = 0.002
 double_sided = false
 modulate = Color(0.1, 0.15, 0.45, 1)
@@ -1091,7 +1285,7 @@ font_size = 30
 outline_size = 0
 
 [node name="UVInk" type="Node3D" parent="Office/Whiteboard" unique_id=453137812]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.3, 0.035)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.3, 0.024)
 script = ExtResource("6_bwsy5")
 label = NodePath("Text")
 text = "{{cabinet_code}}"
@@ -1116,7 +1310,6 @@ verbs = PackedStringArray("open", "close")
 
 [node name="Carcass" type="MeshInstance3D" parent="Office/FilingCabinet" unique_id=1922231185]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0.3)
-mesh = SubResource("BoxMesh_o04mf")
 
 [node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Carcass" unique_id=1276003154]
 
@@ -1125,13 +1318,12 @@ shape = SubResource("BoxShape3D_mkjtw")
 
 [node name="LowerFront" type="MeshInstance3D" parent="Office/FilingCabinet" unique_id=925754255]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37, 0.605)
-mesh = SubResource("BoxMesh_61mn6")
 
 [node name="Tag" type="Label3D" parent="Office/FilingCabinet" unique_id=1083478888]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.632)
-pixel_size = 0.002
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.892, 0.6235)
+pixel_size = 0.0007
 double_sided = false
-modulate = Color(0.1, 0.1, 0.1, 1)
+modulate = Color(0.08, 0.08, 0.1, 1)
 text = "IT - NETWORK"
 font_size = 20
 outline_size = 0
@@ -1140,7 +1332,6 @@ outline_size = 0
 
 [node name="Front" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer" unique_id=944837219]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0.61)
-mesh = SubResource("BoxMesh_63s2m")
 
 [node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Drawer/Front" unique_id=596637029]
 
@@ -1149,19 +1340,15 @@ shape = SubResource("BoxShape3D_aa7sk")
 
 [node name="Handle" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Front" unique_id=361756172]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0.02)
-mesh = SubResource("BoxMesh_tlcvk")
 
 [node name="TrayBottom" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer" unique_id=1981353022]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76, 0.35)
-mesh = SubResource("BoxMesh_7in5u")
 
 [node name="TraySideL" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer" unique_id=51112101]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, 0.83, 0.35)
-mesh = SubResource("BoxMesh_mijbg")
 
 [node name="TraySideR" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer" unique_id=1540245907]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, 0.83, 0.35)
-mesh = SubResource("BoxMesh_mijbg")
 
 [node name="Contents" type="Node3D" parent="Office/FilingCabinet/Drawer" unique_id=1093235128]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.77, 0.4)
@@ -1219,30 +1406,25 @@ mesh = SubResource("BoxMesh_pnt3d")
 shape = SubResource("BoxShape3D_nkjm4")
 
 [node name="Keypad" type="Node3D" parent="Office/FilingCabinet" unique_id=1345321480]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.12, 0.61)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.12, 0.6)
 script = ExtResource("8_pl6hf")
 code = "{{cabinet_code}}"
-status_light = NodePath("Led")
+status_light = NodePath("Model/led_status")
 status_label = NodePath("Status")
 display_name = "Cabinet keypad"
 verbs = PackedStringArray("enter_code")
 
 [node name="Pad" type="MeshInstance3D" parent="Office/FilingCabinet/Keypad" unique_id=1670299549]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.01)
-mesh = SubResource("BoxMesh_yvjyg")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.011)
 
 [node name="Body" type="StaticBody3D" parent="Office/FilingCabinet/Keypad/Pad" unique_id=1880870396]
 
 [node name="Shape" type="CollisionShape3D" parent="Office/FilingCabinet/Keypad/Pad/Body" unique_id=832431955]
 shape = SubResource("BoxShape3D_l0lni")
 
-[node name="Led" type="MeshInstance3D" parent="Office/FilingCabinet/Keypad" unique_id=172644608]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.03, 0.022)
-mesh = SubResource("BoxMesh_uyhg4")
-
 [node name="Status" type="Label3D" parent="Office/FilingCabinet/Keypad" unique_id=1206101191]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.03, 0.022)
-pixel_size = 0.002
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032, 0.016)
+pixel_size = 0.0005
 double_sided = false
 font_size = 16
 outline_size = 0
@@ -1769,3 +1951,43 @@ modulate = Color(0.05, 0.05, 0.05, 1)
 text = "RACK 062"
 font_size = 56
 outline_size = 0
+
+[node name="MonitorModel" parent="Office/Desk" instance=ExtResource("40_monitor")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.35, 0.76, 0.2)
+
+[node name="screen" parent="Office/Desk/MonitorModel"]
+surface_material_override/0 = ExtResource("47_scr_monitor")
+
+[node name="Model" parent="Office/Desk/Laptop" instance=ExtResource("41_laptop")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="screen" parent="Office/Desk/Laptop/Model"]
+surface_material_override/0 = ExtResource("46_scr_laptop")
+
+[node name="Model" parent="Office/Whiteboard" instance=ExtResource("42_whiteboard")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.45, 0)
+
+[node name="Model" parent="Office/FilingCabinet" instance=ExtResource("43_cabinet")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.336)
+
+[node name="DrawerFollow" type="RemoteTransform3D" parent="Office/FilingCabinet/Drawer"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.85, 0.62)
+remote_path = NodePath("../../Model/drawer_top")
+update_scale = false
+
+[node name="Model" parent="Office/FilingCabinet/Keypad" instance=ExtResource("44_keypad")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="ChairModel" parent="Office" instance=ExtResource("45_chair")]
+transform = Transform3D(0.9703, 0, -0.24192, 0, 1, 0, 0.24192, 0, 0.9703, 1.52, 0, 1.32)
+
+[node name="body-col" parent="Office/FilingCabinet/Keypad/Model"]
+visible = false
+
+[node name="Model" parent="Office/Desk" instance=ExtResource("48_desk")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.4005)
+
+[node name="DrawerFollow" type="RemoteTransform3D" parent="Office/Desk/Drawer/Slide"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.02)
+remote_path = NodePath("../../../Model/drawer_top")
+update_scale = false

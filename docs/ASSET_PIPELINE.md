@@ -49,6 +49,15 @@ node ".../codex-companion.mjs" status --all
 node ".../codex-companion.mjs" result <job-id>
 ```
 
+On the Alienware (Ubuntu 24.04) Codex's sandbox cannot start from inside Claude Code (ADR-0013); run the same prompt unsandboxed and in the background instead:
+
+```bash
+codex exec --dangerously-bypass-approvals-and-sandbox -m gpt-6.1-sol -c model_reasoning_effort=high \
+  -o assets/cache/<asset_id>.last.md "<same prompt as above>" > assets/cache/<asset_id>.log 2>&1 &
+```
+
+Wait for the `-o` file to appear (do not poll with `pgrep -f "codex exec"`, which matches the waiting shell itself).
+
 The owner can also run `codex` interactively in the repo root for exploratory art sessions; anything kept must end up in a headless script.
 
 ## 4. Asset request template (`assets/requests/<asset_id>.md`)

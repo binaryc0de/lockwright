@@ -214,6 +214,25 @@ func test_cabinet_contents_hidden_until_unlocked_and_opened() -> void:
 	assert_dict(act(diagram, "read")).contains_key_value("ok", true)
 
 
+## The hero GLB drawers are visual children that follow the SDK's moving part
+## through a RemoteTransform3D (ADR-0012); opening must carry them 0.4 m out.
+func test_drawer_models_follow_their_containers() -> void:
+	var desk_model := room.get_node("Office/Desk/Model/drawer_top") as Node3D
+	var cab_model := room.get_node("Office/FilingCabinet/Model/drawer_top") as Node3D
+	await get_tree().process_frame
+	var desk_closed := desk_model.global_position
+	var cab_closed := cab_model.global_position
+	solve_cabinet_thread()
+	await get_tree().process_frame
+	assert_vector(desk_model.global_position - desk_closed).is_equal_approx(Vector3(0, 0, 0.4), Vector3.ONE * 0.001)
+	assert_vector(cab_model.global_position - cab_closed).is_equal_approx(Vector3(0, 0, -0.4), Vector3.ONE * 0.001)
+
+
+func test_cabinet_keypad_status_light_is_the_model_led() -> void:
+	var lock := room.get_node("Office/FilingCabinet/Keypad") as Lock
+	assert_object(lock.get_node_or_null(lock.status_light)).is_instanceof(GeometryInstance3D)
+
+
 # --- Scene sanity -----------------------------------------------------------
 
 ## CollisionShape3Ds owned by `n` (not by a nested Interactable).

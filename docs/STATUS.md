@@ -2,7 +2,7 @@
 
 Milestone checklist from PLAN.md Section 11. Check an item only when it was actually run; each milestone ends with a verification note saying what ran, where, and with which command. Untested things are listed as untested.
 
-**Current milestone: M1 (single-player room core).** M0 closed 2026-10-01. M1 code complete and reviewed; waiting on the owner play-test.
+**Current milestone: M1 (single-player room core).** M0 closed 2026-10-01. M1 code complete and reviewed; look test rendered 2026-10-02; waiting on the owner's verdict on the look and the owner play-test.
 
 ## M0: Repo and specs
 
@@ -38,6 +38,7 @@ Milestone checklist from PLAN.md Section 11. Check an item only when it was actu
 - [x] Greybox Night Shift (office + cage, 5 puzzles, 3 hint tiers each, no room scripts)
 - [x] `tools/packroom` (export, sha256, catalog entry, `-verify` replays room tests from the pack alone)
 - [x] Codex adversarial review of the authority: 4 findings, all fixed with regression tests (ADR-0010)
+- [x] Look test (owner request after the greybox review): office corner (desk, whiteboard, filing cabinet) dressed with CC0 PBR materials, six Codex hero props, SDFGI lighting, fog and glow (ADR-0012). Before/after in `docs/screenshots/m1-looktest/` (`compare.png`); owner sign-off on the visual bar pending
 - [ ] Owner play-test: walk greybox Night Shift solo to the win screen in a window (not possible headless here, ADR-0003)
 - [x] Codex milestone review of M1 triaged: 3 findings (P2 clock started behind the briefing, P2 image-only documents blank on the evidence board, P3 keypad result overwritten), all fixed with tests; gdUnit4 now 53/53
 
@@ -86,3 +87,12 @@ Not started.
 - `tools/test.sh` on the Alienware: exit 0; gdUnit4 53/53; `packroom -verify night_shift` 11/11 from the pack alone.
 - `room_shots.tscn` rendered 6 viewpoints with `forward_plus on NVIDIA GeForce RTX 3080 Ti Laptop GPU`, no errors, GPU at 49 C. Baseline greybox shots in `docs/screenshots/m1-greybox/`.
 - Owner feedback on the greybox: "the graphics are way way too simple". Agreed next step: a look test (dress one office corner with CC0 PBR materials, Codex hero props, proper lighting) before closing M1, to prove the visual bar early.
+
+### 2026-10-02, M1 look test (Alienware, RTX 3080 Ti, Godot 4.7.2, Blender 5.2.2, Codex 0.160 gpt-6.1-sol)
+- Codex's sandbox could not start from Claude Code here (`bwrap: loopback: Failed RTM_NEWADDR`); per the owner, asset tasks now run unsandboxed via `codex exec --dangerously-bypass-approvals-and-sandbox` (ADR-0013).
+- Six asset requests (`desk_3drawer`, `filing_cabinet_keypad`, `laptop_open`, `monitor_24`, `whiteboard_wall`, `office_chair`) built by six parallel Codex tasks in about 40 minutes; each reported two byte-identical builds. `desk_3drawer` failed assetcheck once because the request contradicted the base-centre rule; the request was revised and Codex rebuilt it.
+- `go run ./tools/assetcheck`: 7/7 PASS (desk 17,884 tris, cabinet 13,720, laptop 28,130, monitor 9,314, whiteboard 12,154, chair 16,256, keypad_4 5,674).
+- CC0 downloads via `tools/thirdparty/fetch_cc0.sh` (ambientCG Carpet012, OfficeCeiling001; Poly Haven painted_plaster_wall, desk_lamp_arm_01, mounted_fluorescent_lights, office_notepads, clipboard, cardboard_box_01, stationery_supplies), about 55 MB, listed in `game/assets/core/third_party/ATTRIBUTION.md`.
+- gdUnit4: 55/55 (two new: GLB drawers follow their SDK containers by exactly 0.4 m; cabinet status light is the keypad model's LED). `go run ./tools/roomcheck game/rooms/night_shift`: PASS. `go run ./tools/packroom -verify night_shift`: room tests pass from the pack alone.
+- `tools/shots/looktest_views.sh` rendered the same six viewpoints before and after, `forward_plus on NVIDIA GeForce RTX 3080 Ti Laptop GPU`, no errors, GPU 52 C.
+- Not done / untested: frame rate (SDFGI + volumetric fog not measured on a GTX 1660-class GPU, PLAN.md 4.6); the rest of the office (exit door, pinboard, certificate, intercom, clock) and the cage are still greybox; documents and whiteboard writing are still Label3D in the default font (printables are M4); the keypad `LOCKED` label is too small to read except in the focused view; `keypad_4`'s `-col` helper is hidden by a scene override until its revision (request file); `desk_lamp_arm_01` is over the 20k prop budget; the UV torch and the papers in the desk drawer are still greybox.
