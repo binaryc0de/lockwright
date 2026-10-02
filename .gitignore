@@ -16,3 +16,4 @@ assets/cache/
 *.sqlite
 *.sqlite-*
 .env
+game/reports/

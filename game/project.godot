@@ -1,0 +1,29 @@
+; Engine configuration file.
+; Godot 4.7.2 (ADR-0002). Client and dedicated server share this project.
+
+config_version=5
+
+[application]
+
+config/name="escapebox"
+config/description="Virtual escape rooms with pluggable room packs and real CTF challenges."
+run/main_scene="res://core/main.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="forward_plus"

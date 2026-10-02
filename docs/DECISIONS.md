@@ -31,3 +31,15 @@ Short records: context, decision, consequences. Newest at the bottom. Never edit
 **Context.** PLAN.md Section 8.3 defines `room.yaml` v1 by example.
 **Decision.** `docs/schema/room.schema.json` is the normative definition. Unknown top-level keys are rejected (`additionalProperties: false`) so typos fail loudly; growth is additive by bumping the schema in place while `spec_version` stays 1. `solved_when` is a closed vocabulary: `item_picked_up`, `node_state`, `flag_accepted`, `all_of`, `any_of`.
 **Consequences.** Every room-format change touches the schema, `roomcheck` tests, and `ROOM_AUTHORING.md` in the same commit.
+
+## ADR-0006: Runtime reads a generated room.json; room.yaml stays the source (2026-10-01)
+
+**Context.** Godot has no built-in YAML parser, and PLAN.md forbids adding dependencies casually. The server and client both need the manifest at runtime.
+**Decision.** Authors edit `room.yaml`. `go run ./tools/roomcheck -write-json <room_dir>` writes `room.json` next to it (same document, sorted keys). Both files are committed and both ship in the pack. `roomcheck` fails if `room.json` is missing or stale. The Godot `RoomLoader` reads `room.json` and verifies its `id` (PLAN.md 8.1 says room.yaml; read this as "the manifest").
+**Consequences.** One extra command for authors, enforced by CI. No YAML code in GDScript.
+
+## ADR-0007: What a room pack contains, and class_name in rooms (2026-10-01)
+
+**Context.** Exporting the `room-pack-night_shift` preset (only `res://rooms/night_shift/**`) on Godot 4.7.2 showed the PCK always also contains `project.binary`, `.godot/global_script_class_cache.cfg` and `.godot/uid_cache.bin`.
+**Decision.** Packs are loaded with `load_resource_pack(path, false)` (already a non-negotiable), so those engine files never override the base game's. Because the pack's class cache is therefore ignored, **room scripts must not declare `class_name`**; they reference SDK classes (which live in the base game) and their own scripts by path. `roomcheck` will warn on `class_name` in room scripts from M1. The room pack preset excludes `res://core`, `res://addons`, `res://assets` (shipped in the client and server builds).
+**Consequences.** Room-specific shared types use `preload("res://rooms/<id>/scripts/x.gd")`. Revisit if Godot gains per-pack class registration.
