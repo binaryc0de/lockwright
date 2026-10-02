@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -160,5 +162,34 @@ func TestSessionByInvite(t *testing.T) {
 	}
 	if _, err := s.SessionByInvite(ctx, "ZZZZZZ"); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("unknown code err %v", err)
+	}
+}
+
+func TestConcurrentJoinsOnAFileDatabase(t *testing.T) {
+	ctx := context.Background()
+	s, err := Open(ctx, filepath.Join(t.TempDir(), "p.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	sess, _ := s.CreateSession(ctx, "r")
+	var wg sync.WaitGroup
+	errs := make(chan error, 16)
+	for i := 0; i < 16; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			if _, _, err := s.MintJoinToken(ctx, sess.ID, "player"+strconv.Itoa(i%4)); err != nil {
+				errs <- err
+			}
+		}(i)
+	}
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		t.Fatalf("concurrent join failed: %v", err)
+	}
+	if names, _ := s.Players(ctx, sess.ID); len(names) != 4 {
+		t.Fatalf("players %v", names)
 	}
 }

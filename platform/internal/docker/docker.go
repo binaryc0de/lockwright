@@ -22,7 +22,8 @@ import (
 	"time"
 )
 
-// APIVersion is the Engine API version used in request paths (Docker 24+).
+// APIVersion is used until the daemon tells us its own (Ping negotiates:
+// Docker 29 rejects anything below 1.44, older daemons below their maximum).
 const APIVersion = "v1.43"
 
 // ErrNotFound is returned for 404s from the Engine.
@@ -30,8 +31,9 @@ var ErrNotFound = errors.New("docker: not found")
 
 // Client talks to one Docker Engine.
 type Client struct {
-	http *http.Client
-	base string // "http://docker" for unix sockets, "http://host:port" for tcp
+	http    *http.Client
+	base    string // "http://docker" for unix sockets, "http://host:port" for tcp
+	version string // "v1.47" after Ping; APIVersion before
 }
 
 // FromEnv builds a client from DOCKER_HOST (default unix:///var/run/docker.sock).
@@ -56,15 +58,15 @@ func New(host string) (*Client, error) {
 			var d net.Dialer
 			return d.DialContext(ctx, "unix", sock)
 		}}
-		return &Client{http: &http.Client{Transport: tr}, base: "http://docker"}, nil
+		return &Client{http: &http.Client{Transport: tr}, base: "http://docker", version: APIVersion}, nil
 	case "tcp", "http":
-		return &Client{http: &http.Client{}, base: "http://" + u.Host}, nil
+		return &Client{http: &http.Client{}, base: "http://" + u.Host, version: APIVersion}, nil
 	}
 	return nil, fmt.Errorf("docker host %q: unsupported scheme", host)
 }
 
 func (c *Client) do(ctx context.Context, method, path string, query url.Values, body io.Reader, contentType string) (*http.Response, error) {
-	u := c.base + "/" + APIVersion + path
+	u := c.base + "/" + c.version + path
 	if len(query) > 0 {
 		u += "?" + query.Encode()
 	}
@@ -121,15 +123,29 @@ func (c *Client) doJSON(ctx context.Context, method, path string, query url.Valu
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
-// Ping checks the Engine is reachable.
+// Ping checks the Engine is reachable and adopts its API version (the
+// unversioned /_ping is accepted by every daemon).
 func (c *Client) Ping(ctx context.Context) error {
-	resp, err := c.do(ctx, http.MethodGet, "/_ping", nil, nil, "")
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.base+"/_ping", nil)
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return fmt.Errorf("docker ping: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("docker ping: %d", resp.StatusCode)
+	}
+	if v := resp.Header.Get("Api-Version"); v != "" {
+		c.version = "v" + strings.TrimPrefix(v, "v")
+	}
 	return nil
 }
+
+// Version is the API version requests use.
+func (c *Client) Version() string { return c.version }
 
 // ImageExists reports whether an image reference is present locally.
 func (c *Client) ImageExists(ctx context.Context, ref string) (bool, error) {
@@ -209,6 +225,12 @@ func (c *Client) RemoveNetwork(ctx context.Context, id string) error {
 	return err
 }
 
+// Limits applied when a challenge does not declare its own.
+const (
+	DefaultMemoryMB = 256
+	DefaultCPUs     = 0.5
+)
+
 // ContainerSpec is a hardened challenge container (ADR-0018).
 type ContainerSpec struct {
 	Name     string
@@ -216,8 +238,8 @@ type ContainerSpec struct {
 	Env      map[string]string
 	Labels   map[string]string
 	Network  string
-	CPUs     float64 // 0 = no limit
-	MemoryMB int     // 0 = no limit
+	CPUs     float64 // 0 = DefaultCPUs
+	MemoryMB int     // 0 = DefaultMemoryMB
 	PidsMax  int     // 0 = 128
 }
 
@@ -241,13 +263,19 @@ func containerBody(s ContainerSpec) map[string]any {
 		"RestartPolicy":  map[string]string{"Name": "no"},
 		"Privileged":     false,
 	}
-	if s.MemoryMB > 0 {
-		host["Memory"] = int64(s.MemoryMB) << 20
-		host["MemorySwap"] = int64(s.MemoryMB) << 20
+	// Always limited: a room that omits `resources` gets the defaults
+	// (ADR-0018; review M3-P1).
+	mem := s.MemoryMB
+	if mem <= 0 {
+		mem = DefaultMemoryMB
 	}
-	if s.CPUs > 0 {
-		host["NanoCpus"] = int64(s.CPUs * 1e9)
+	cpus := s.CPUs
+	if cpus <= 0 {
+		cpus = DefaultCPUs
 	}
+	host["Memory"] = int64(mem) << 20
+	host["MemorySwap"] = int64(mem) << 20
+	host["NanoCpus"] = int64(cpus * 1e9)
 	return map[string]any{
 		"Image":           s.Image,
 		"Env":             env,

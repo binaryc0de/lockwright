@@ -91,6 +91,7 @@ func run() error {
 		slog.Warn("TEST MODE: game servers accept teleporting positions (--test-trust-positions)")
 		extra = append(extra, "--trust-positions")
 	}
+	deps := &api.Deps{Store: st, Rooms: cat, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host}
 	mgr := sessions.New(sessions.Config{
 		Command:     []string{*godot, "--headless", "--path", gameAbs, "--"},
 		PortMin:     gmin,
@@ -98,10 +99,19 @@ func run() error {
 		PlatformURL: *platformURL,
 		Transport:   *transport,
 		ExtraArgs:   extra,
+		OnStopped: func(id string) {
+			if orch := deps.Orchestrator; orch != nil {
+				c, cancel := context.WithTimeout(context.Background(), time.Minute)
+				defer cancel()
+				if err := orch.Stop(c, id); err != nil {
+					slog.Warn("challenge teardown after the game server stopped", "session", id, "err", err)
+				}
+			}
+		},
 	}, st)
 	defer mgr.Close()
 
-	deps := &api.Deps{Store: st, Rooms: cat, Servers: mgr, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host}
+	deps.Servers = mgr
 	if orch, err := startOrchestrator(ctx, host, cmin, cmax, secret, st); err != nil {
 		slog.Warn("challenge containers disabled: Docker is not reachable", "err", err)
 	} else {

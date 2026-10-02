@@ -100,6 +100,18 @@ type Orchestrator struct {
 	mu       sync.Mutex
 	sessions map[string]*running
 	ports    map[int]bool
+	// One lock per session held across a whole Start or Stop, so overlapping
+	// requests (a game server restarting mid-build) cannot interleave.
+	locks map[string]*sync.Mutex
+}
+
+func (o *Orchestrator) sessionLock(id string) *sync.Mutex {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	if o.locks[id] == nil {
+		o.locks[id] = &sync.Mutex{}
+	}
+	return o.locks[id]
 }
 
 type running struct {
@@ -114,7 +126,7 @@ func New(cfg Config, eng Engine, st *store.Store) *Orchestrator {
 	if cfg.BindAddr == "" {
 		cfg.BindAddr = "0.0.0.0"
 	}
-	return &Orchestrator{cfg: cfg, eng: eng, store: st, Probe: httpProbe, sessions: map[string]*running{}, ports: map[int]bool{}}
+	return &Orchestrator{cfg: cfg, eng: eng, store: st, Probe: httpProbe, sessions: map[string]*running{}, ports: map[int]bool{}, locks: map[string]*sync.Mutex{}}
 }
 
 // ImageTag is the image name for a challenge: room, challenge, room version
@@ -129,6 +141,9 @@ func ImageTag(roomID, challengeID, version, contextHash string) string {
 // Start brings up every challenge for a session and returns their handles.
 // Idempotent: a session that is already running returns its handles.
 func (o *Orchestrator) Start(ctx context.Context, sessionID, roomID, roomVersion, roomDir string, chs []Challenge) (map[string]Handle, error) {
+	l := o.sessionLock(sessionID)
+	l.Lock()
+	defer l.Unlock()
 	o.mu.Lock()
 	if r, ok := o.sessions[sessionID]; ok {
 		o.mu.Unlock()
@@ -237,6 +252,9 @@ func (o *Orchestrator) startOne(ctx context.Context, sessionID, roomID, roomVers
 // Stop tears a session's challenges down. Flags stay derivable, so a later
 // Start gives players the same flags.
 func (o *Orchestrator) Stop(ctx context.Context, sessionID string) error {
+	l := o.sessionLock(sessionID)
+	l.Lock()
+	defer l.Unlock()
 	o.mu.Lock()
 	r := o.sessions[sessionID]
 	delete(o.sessions, sessionID)

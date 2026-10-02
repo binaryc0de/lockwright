@@ -256,3 +256,33 @@ func TestCleanupRemovesLeftovers(t *testing.T) {
 		t.Fatal("unmanaged container removed")
 	}
 }
+
+func TestConcurrentStartsAndStopDoNotInterleave(t *testing.T) {
+	ctx := context.Background()
+	o, f, _ := setup(t)
+	ch, _ := fakeChallenge(t, true)
+	dir := roomDir(t)
+	var wg sync.WaitGroup
+	for i := 0; i < 4; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if _, err := o.Start(ctx, "s9", "room", "0.1.0", dir, []Challenge{ch}); err != nil {
+				t.Error(err)
+			}
+		}()
+	}
+	wg.Wait()
+	f.mu.Lock()
+	nets, ctrs, builds := len(f.nets), len(f.containers), f.builds
+	f.mu.Unlock()
+	if nets != 1 || ctrs != 1 || builds != 1 {
+		t.Fatalf("concurrent starts created nets=%d containers=%d builds=%d", nets, ctrs, builds)
+	}
+	if err := o.Stop(ctx, "s9"); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.nets) != 0 || len(f.containers) != 0 || o.Handles("s9") != nil {
+		t.Fatal("stop after concurrent starts left resources")
+	}
+}

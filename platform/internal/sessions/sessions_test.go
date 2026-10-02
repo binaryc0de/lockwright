@@ -143,3 +143,32 @@ func TestPortsAreDistinctPerSession(t *testing.T) {
 		t.Fatal("Stop left the session running")
 	}
 }
+
+func TestFinishedSessionStaysFinishedAndTeardownHookRuns(t *testing.T) {
+	ctx := context.Background()
+	st, _ := store.Open(ctx, ":memory:")
+	defer st.Close()
+	sess, _ := st.CreateSession(ctx, "night_shift")
+	l := &launches{}
+	stopped := make(chan string, 4)
+	m := NewWithLauncher(Config{Command: []string{"godot"}, PortMin: 27791, PortMax: 27799,
+		OnStopped: func(id string) { stopped <- id }}, st, l.launcher)
+	defer m.Close()
+	st.Finish(ctx, sess.ID, true, 100, 0)
+	m.EnsureRunning(ctx, sess)
+	if s, _ := st.Session(ctx, sess.ID); s.Status != store.StatusFinished {
+		t.Fatalf("restart for viewing changed status to %s", s.Status)
+	}
+	l.last().end(0)
+	select {
+	case id := <-stopped:
+		if id != sess.ID {
+			t.Fatalf("hook for %s", id)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("OnStopped not called after idle exit")
+	}
+	if s, _ := st.Session(ctx, sess.ID); s.Status != store.StatusFinished {
+		t.Fatalf("idle exit changed a finished session to %s", s.Status)
+	}
+}

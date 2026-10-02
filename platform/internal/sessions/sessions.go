@@ -38,6 +38,10 @@ type Config struct {
 	PackFor func(roomID string) string
 	// ExtraArgs are appended to every game server's arguments (tests only).
 	ExtraArgs []string
+	// OnStopped runs (in its own goroutine) when a session's game server is
+	// gone for good: idle exit or crash limit. The platform tears the
+	// session's challenge containers down there (review M3-P2).
+	OnStopped func(sessionID string)
 }
 
 // Process is a running game server (os/exec in production, fakes in tests).
@@ -128,7 +132,10 @@ func (m *Manager) startLocked(ctx context.Context, sess store.Session) (int, err
 	pr := &proc{port: port, p: p, done: make(chan struct{})}
 	m.running[sess.ID] = pr
 	if m.store != nil {
-		_ = m.store.SetStatus(ctx, sess.ID, store.StatusRunning)
+		// A finished session reopened for post-game viewing stays finished.
+		if cur, err := m.store.Session(ctx, sess.ID); err == nil && cur.Status != store.StatusFinished {
+			_ = m.store.SetStatus(ctx, sess.ID, store.StatusRunning)
+		}
 	}
 	slog.Info("game server started", "session", sess.ID, "room", sess.RoomID, "port", port)
 	go m.watch(sess, pr)
@@ -155,6 +162,7 @@ func (m *Manager) watch(sess store.Session, pr *proc) {
 				_ = m.store.SetStatus(ctx, sess.ID, store.StatusIdle)
 			}
 		}
+		m.stopped(sess.ID)
 		return
 	}
 	now := m.now()
@@ -169,13 +177,22 @@ func (m *Manager) watch(sess store.Session, pr *proc) {
 	if len(recent) > MaxCrashes {
 		slog.Error("game server keeps crashing; giving up until the next join", "session", sess.ID, "code", code, "err", err)
 		if m.store != nil {
-			_ = m.store.SetStatus(ctx, sess.ID, store.StatusIdle)
+			if cur, e := m.store.Session(ctx, sess.ID); e == nil && cur.Status != store.StatusFinished {
+				_ = m.store.SetStatus(ctx, sess.ID, store.StatusIdle)
+			}
 		}
+		m.stopped(sess.ID)
 		return
 	}
 	slog.Warn("game server crashed; restarting from the last snapshot", "session", sess.ID, "code", code, "err", err)
 	if _, e := m.startLocked(ctx, sess); e != nil {
 		slog.Error("restart failed", "session", sess.ID, "err", e)
+	}
+}
+
+func (m *Manager) stopped(sessionID string) {
+	if m.cfg.OnStopped != nil {
+		go m.cfg.OnStopped(sessionID)
 	}
 }
 

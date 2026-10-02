@@ -256,3 +256,73 @@ func test_room_load_failure_after_join_returns_to_menu() -> void:
 	assert_array(left).has_size(1)
 	assert_str(session.error).contains("cannot load")
 	assert_object(Game.net.client).is_null()
+
+
+# --- Codex M3 review regressions ------------------------------------------
+
+class FakePlatform:
+	extends PlatformClient
+	var calls: Array[String] = []
+	var codes: Array[int] = []   # answers in order; then 204
+
+	func request_async(_method: int, path: String, _body: Variant, on_done: Callable, _t: float = 15.0) -> void:
+		calls.append(path.get_file() if not path.ends_with("/start") else "challenges/start")
+		var code: int = codes.pop_front() if not codes.is_empty() else 204
+		if on_done.is_valid():
+			on_done.call(code, {"handles": {}} if code == 200 else null)
+
+
+func _platform_server(room: RoomRoot) -> Array:
+	Game.start_local_session(TestRoom.manifest(), room, "plat")
+	var srv := auto_free(SessionServer.new()) as SessionServer
+	add_child(srv)
+	var fake := auto_free(FakePlatform.new("http://127.0.0.1:1", "plat", "tok")) as FakePlatform
+	add_child(fake)
+	srv._auth = Game.authority
+	srv.platform = fake
+	return [srv, fake]
+
+
+func test_finished_world_does_not_restart_challenges() -> void:
+	var room := auto_free(TestRoom.build()) as RoomRoot
+	add_child(room)
+	var pair := _platform_server(room)
+	var srv: SessionServer = pair[0]
+	var fake: FakePlatform = pair[1]
+	srv._platform_on_start()
+	assert_array(fake.calls).contains_exactly(["challenges/start"])
+	fake.calls.clear()
+	Game.world().finished = true
+	Game.world().won = true
+	srv._platform_on_start()
+	assert_array(fake.calls).contains_exactly(["finished"])
+
+
+func test_finish_report_retries_until_acknowledged() -> void:
+	var room := auto_free(TestRoom.build()) as RoomRoot
+	add_child(room)
+	var pair := _platform_server(room)
+	var srv: SessionServer = pair[0]
+	var fake: FakePlatform = pair[1]
+	srv.finish_retry_s = 0.05
+	fake.codes = [0, 500]
+	srv._report_finished(true)
+	await get_tree().create_timer(0.4).timeout
+	assert_array(fake.calls).contains_exactly(["finished", "finished", "finished"])
+
+
+func test_join_code_is_per_session() -> void:
+	Game.join_code = "ABC123"
+	Game.end_session()
+	assert_str(Game.join_code).is_empty()
+	var manifest := TestRoom.manifest()
+	var server_room := auto_free(TestRoom.build()) as RoomRoot
+	add_child(server_room)
+	var auth := auto_free(RoomAuthority.new()) as RoomAuthority
+	add_child(auth)
+	auth.setup(manifest, server_room, "jc")
+	var client_room := auto_free(TestRoom.build()) as RoomRoot
+	add_child(client_room)
+	Game.join_code = "XYZ789"
+	Game.start_client_session(manifest, client_room, "p1", auth.snapshot(), Time.get_unix_time_from_system())
+	assert_str(Game.join_code).is_equal("XYZ789")

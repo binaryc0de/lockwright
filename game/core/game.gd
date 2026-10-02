@@ -90,7 +90,9 @@ func start_server_session(p_manifest: RoomManifest, room_instance: RoomRoot, ses
 
 ## CLIENT: binds the loaded room to a server snapshot (called by NetBridge on join).
 func start_client_session(p_manifest: RoomManifest, room_instance: RoomRoot, player_id: String, snapshot: Dictionary, server_now: float) -> void:
+	var code := join_code  # set for this game before the welcome arrived
 	end_session()
+	join_code = code
 	mode = Mode.CLIENT
 	manifest = p_manifest
 	room = room_instance
@@ -140,6 +142,7 @@ func end_session() -> void:
 	_mirror = null
 	_clock_offset = 0.0
 	selected_item = ""
+	join_code = ""
 	if mode == Mode.CLIENT:
 		net.disconnect_client()
 	mode = Mode.NONE

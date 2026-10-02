@@ -132,9 +132,10 @@ func Open(ctx context.Context, path string) (*Store, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open %s: %w", path, err)
 	}
-	if path == ":memory:" {
-		db.SetMaxOpenConns(1) // one connection = one in-memory database
-	}
+	// One connection: SQLite has a single writer anyway, and deferred
+	// transactions racing for the write lock fail with SQLITE_BUSY under
+	// concurrent joins (review M3-P2). Also keeps :memory: one database.
+	db.SetMaxOpenConns(1)
 	s := &Store{db: db, now: time.Now}
 	if err := s.migrate(ctx); err != nil {
 		db.Close()

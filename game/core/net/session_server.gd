@@ -83,7 +83,7 @@ func start(port: int, transport: String, p_verifier: JoinVerifier, p_store: Snap
 	if platform:
 		_auth.event_logged.connect(_on_event_logged)
 		_auth.session_finished.connect(_report_finished)
-		_start_challenges()
+		_platform_on_start()
 	print("escapebox server: session %s room %s listening on %s:%d" % [session_id, room_id, transport, port])
 	return OK
 
@@ -282,6 +282,19 @@ func _process(delta: float) -> void:
 
 # --- Platform (M3) ------------------------------------------------------------
 
+## Seconds between retries of the finish report.
+var finish_retry_s := 5.0
+
+
+## A restored world that is already over must not bring its containers back
+## (they were torn down on finish); it re-sends the result instead, in case the
+## first report never reached the platform (review M3-P2).
+func _platform_on_start() -> void:
+	if _auth.state.finished:
+		_report_finished(_auth.state.won)
+	else:
+		_start_challenges()
+
 func _start_challenges() -> void:
 	platform.request_async(HTTPClient.METHOD_POST, platform.internal_path("challenges/start"), {}, func(code: int, data: Variant) -> void:
 		if code == 200 and data is Dictionary and data.get("handles") is Dictionary:
@@ -311,10 +324,18 @@ func _flush_events() -> void:
 			push_warning("event upload failed (HTTP %d)" % code))
 
 
+## Retries until the platform acknowledges (HTTP 204); the result matters.
 func _report_finished(won: bool) -> void:
 	var s := _auth.state
 	platform.request_async(HTTPClient.METHOD_POST, platform.internal_path("finished"),
-		{"win": won, "elapsed_s": int(maxf(0.0, s.finished_at - s.started_at)), "hints_used": s.hints_used()}, Callable())
+		{"win": won, "elapsed_s": int(maxf(0.0, s.finished_at - s.started_at)), "hints_used": s.hints_used()},
+		func(code: int, _d: Variant) -> void:
+			if code == 204:
+				print("result reported to the platform (won=%s)" % won)
+				return
+			push_warning("finish report failed (HTTP %d); retrying in %.0f s" % [code, finish_retry_s])
+			if is_inside_tree():
+				get_tree().create_timer(finish_retry_s).timeout.connect(_report_finished.bind(won)))
 
 
 func _idle_exit() -> void:

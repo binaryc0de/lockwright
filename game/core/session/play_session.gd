@@ -60,6 +60,7 @@ func start_remote(args: AppArgs) -> bool:
 		Game.join_code = args.join_code
 		err = client.open_platform(args.join_url, args.join_code, Game.display_name)
 	else:
+		Game.join_code = ""
 		err = client.open(args.connect_host, args.port, args.transport, args.server_token, Game.display_name)
 	if err != OK:
 		error = "Cannot connect to %s:%d (%s)." % [args.connect_host, args.port, error_string(err)]

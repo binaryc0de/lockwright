@@ -22,12 +22,18 @@ type fakeEngine struct {
 	mu       sync.Mutex
 	requests []string
 	bodies   map[string][]byte
+	versions []string
 }
 
 func (f *fakeEngine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.mu.Lock()
 	b, _ := io.ReadAll(r.Body)
-	key := r.Method + " " + strings.TrimPrefix(r.URL.Path, "/"+APIVersion)
+	path := r.URL.Path
+	if strings.HasPrefix(path, "/v1.") {
+		path = path[strings.Index(path[1:], "/")+1:]
+	}
+	key := r.Method + " " + path
+	f.versions = append(f.versions, strings.SplitN(strings.TrimPrefix(r.URL.Path, "/"), "/", 2)[0])
 	f.requests = append(f.requests, key+"?"+r.URL.RawQuery)
 	if f.bodies == nil {
 		f.bodies = map[string][]byte{}
@@ -36,6 +42,7 @@ func (f *fakeEngine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.mu.Unlock()
 	switch {
 	case key == "GET /_ping":
+		w.Header().Set("Api-Version", "1.51")
 		w.Write([]byte("OK"))
 	case key == "GET /images/present:1/json":
 		w.Write([]byte(`{}`))
@@ -226,5 +233,29 @@ func TestTarDirIsDeterministicAndSkipsLinks(t *testing.T) {
 	}
 	if strings.Join(names, ",") != "Dockerfile,templates/,templates/a.html" {
 		t.Fatalf("tar entries %v", names)
+	}
+}
+
+func TestPingNegotiatesTheDaemonVersion(t *testing.T) {
+	c, f := client(t)
+	if c.Version() != APIVersion {
+		t.Fatalf("initial version %s", c.Version())
+	}
+	if err := c.Ping(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if c.Version() != "v1.51" {
+		t.Fatalf("negotiated %s, want v1.51", c.Version())
+	}
+	c.StartContainer(context.Background(), "ctr123")
+	if last := f.versions[len(f.versions)-1]; last != "v1.51" {
+		t.Fatalf("request used %s after negotiation", last)
+	}
+}
+
+func TestMissingResourcesGetDefaultLimits(t *testing.T) {
+	h := containerBody(ContainerSpec{Name: "x", Image: "i", Network: "n"})["HostConfig"].(map[string]any)
+	if h["Memory"] != int64(DefaultMemoryMB)<<20 || h["NanoCpus"] != int64(DefaultCPUs*1e9) || h["PidsLimit"] != 128 {
+		t.Fatalf("defaults not applied: %v", h)
 	}
 }

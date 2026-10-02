@@ -78,9 +78,9 @@ Started 2026-10-02 on branch `m3-platform` (design: ADR-0018; Docker access: ADR
 - [x] Kestrel Intranet challenge (Go, stdlib, scratch image, uid 65534): login with room credentials, IDOR on `?id=`, flag from `$FLAG`
 - [x] `tools/m3_smoke.sh` (in `tools/test.sh`): platform + spawned game servers + join-code bots + flag + game-server crash/restore + recorded win + bad code
 - [ ] Real Docker run: build the intranet image, attack it with curl, end-to-end with containers (waiting on the owner's `sudo usermod -aG docker $USER` + re-login)
-- [ ] `docker compose up` (platform + challenge images) per PLAN.md M3 acceptance
+- [~] `docker compose up` moved to M5 (ADR-0019, owner's choice)
 - [x] Main menu: platform address + join code joins through the platform; "Host the selected room on the platform" creates a game and joins it; the join code shows on joining and in the pause menu (`tests/ui/test_join_flow.gd` 5 tests; layout checked in a windowed capture)
-- [ ] Codex review of the branch
+- [x] Codex review of `m3-platform` (`codex review --base main`): 9 findings, all fixed with regression tests: P1 challenges without `resources` ran unlimited (now 0.5 CPU / 256 MB defaults); P2 concurrent joins hit SQLITE_BUSY (single connection); idle exit left containers running (session manager `OnStopped` tears them down); overlapping start/stop per session (per-session lock); Docker 29 rejects API 1.43 (version negotiated from `/_ping`); restarting a finished session flipped it to running (kept finished); a finished world restarted its containers (re-reports the result instead); a lost finish report was never retried (retries until 204); stale join code after leaving (cleared per session)
 
 ## M4: Night Shift content and polish
 Pulled forward at the owner's request (2026-10-02), on branch `m4-cage-dressing`:
@@ -88,7 +88,7 @@ Pulled forward at the owner's request (2026-10-02), on branch `m4-cage-dressing`
 - [ ] Everything else in M4 (audio, airlock briefing, remaining hero props such as `uv_torch`, performance pass, blind play-tests)
 
 ## M5: LAN deployment and sign-off
-Not started.
+Not started. Includes `docker compose up` for the platform and challenge images (moved from M3, ADR-0019).
 
 ## Verification log
 
@@ -166,3 +166,4 @@ Not started.
 - `tools/m3_smoke.sh` PASS without Docker: platform spawned the game server, Alice joined by code (platform-issued player id), server killed with -9 and restarted by the platform from its stored snapshot, Bob joined and won with the flag (computed from the platform secret because no container could run), platform recorded the win, flag value absent from the platform log, a wrong code returned exit 3.
 - `tools/test.sh` exit 0: gdUnit4 70/70, pack replay, m2 and m3 smoke.
 - Not verified: anything involving real containers (image build, internal network reachability from the host, proxy to a container, rootless Docker), Windows clients, a second machine against the platform.
+- Review fixes (2026-10-02): `go test -race ./platform/...` 7 packages pass (new: version negotiation, default limits, 16 concurrent joins on a file DB, concurrent start/stop, finished status + teardown hook); gdUnit4 75/75 (new: finished world does not restart challenges, finish report retries, join code per session); `tools/test.sh` exit 0 incl. m2 and m3 smoke.
