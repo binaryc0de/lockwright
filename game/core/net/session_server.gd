@@ -80,6 +80,7 @@ func start(port: int, transport: String, p_verifier: JoinVerifier, p_store: Snap
 	_auth.narrated.connect(func(t: String) -> void: _queue_event(0, "narrated", {"text": t}))
 	_auth.time_up.connect(func() -> void: _queue_event(0, "time_up", {}))
 	_auth.session_finished.connect(func(won: bool) -> void: _queue_event(0, "session_finished", {"won": won}))
+	_auth.player_placed.connect(_on_player_placed)
 	if platform:
 		_auth.event_logged.connect(_on_event_logged)
 		_auth.session_finished.connect(_report_finished)
@@ -206,9 +207,17 @@ func _now() -> float:
 	return Time.get_ticks_msec() / 1000.0
 
 
+func _on_player_placed(pid: String, eye: Vector3) -> void:
+	_last_move[pid] = {"pos": eye, "t": _now()}
+	_known_pos[pid] = eye
+	for peer: int in players:
+		if players[peer]["id"] == pid:
+			_net.rpc_place.rpc_id(peer, eye)
+
+
 func _spawn_eye() -> Vector3:
 	var room := Game.room
-	var origin: Vector3 = room.spawn_transform().origin if room else Vector3.ZERO
+	var origin: Vector3 = room.join_spawn_transform().origin if room else Vector3.ZERO
 	return origin + Vector3.UP * FirstPersonPlayer.EYE_HEIGHT
 
 

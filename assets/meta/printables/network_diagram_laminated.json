@@ -1,0 +1,153 @@
+{
+  "asset_id": "network_diagram_laminated",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": true,
+      "path": "game/rooms/night_shift/assets/docs/network_diagram_laminated.png",
+      "preview": "assets/previews/printables/network_diagram_laminated_25.png",
+      "preview_background": "document",
+      "preview_sha256": "16d6a38823920427b04f2d880eee96f9dcfa44f96116c25b05f300913e38a813",
+      "rgba": true,
+      "sha256": "0d05badd422f875a5cd318380c884b299d10bad27fdf4226929373d84b72bf07",
+      "size": [
+        2048,
+        1448
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 13.5,
+          "cap_height_px": 54.0,
+          "id": "title",
+          "text": "Kestrel Logistics - site network (rev 7)",
+          "width_px": 1337.7867664728963
+        },
+        {
+          "cap_height_25_px": 7.75,
+          "cap_height_px": 31.0,
+          "id": "cabinet_notice",
+          "text": "Laminated. Do not remove from the cabinet.",
+          "width_px": 872.3485069313158
+        },
+        {
+          "cap_height_25_px": 10.0,
+          "cap_height_px": 40.0,
+          "id": "firewall",
+          "text": "Firewall",
+          "width_px": 201.74496240101112
+        },
+        {
+          "cap_height_25_px": 10.0,
+          "cap_height_px": 40.0,
+          "id": "switch",
+          "text": "Core switch",
+          "width_px": 303.1141469893802
+        },
+        {
+          "cap_height_25_px": 9.5,
+          "cap_height_px": 38.0,
+          "id": "rack",
+          "text": "Server rack 062",
+          "width_px": 330.0
+        },
+        {
+          "cap_height_25_px": 12.0,
+          "cap_height_px": 48.0,
+          "id": "ups",
+          "text": "UPS",
+          "width_px": 129.27785218668652
+        },
+        {
+          "cap_height_25_px": 10.5,
+          "cap_height_px": 42.0,
+          "id": "mapping_title",
+          "text": "Cage rack: patch panel P1 -> UPS bypass relay",
+          "width_px": 1295.2349343050248
+        },
+        {
+          "cap_height_25_px": 7.0,
+          "cap_height_px": 28.0,
+          "id": "cable_label",
+          "text": "CABLE",
+          "width_px": 121.8657759625415
+        },
+        {
+          "cap_height_25_px": 7.0,
+          "cap_height_px": 28.0,
+          "id": "port_label",
+          "text": "P1 PORT",
+          "width_px": 161.21611436457246
+        },
+        {
+          "cap_height_25_px": 18.0,
+          "cap_height_px": 72.0,
+          "id": "cable_A",
+          "text": "A",
+          "width_px": 65.52483300176421
+        },
+        {
+          "cap_height_25_px": 21.75,
+          "cap_height_px": 87.0,
+          "id": "port_A",
+          "text": "3",
+          "width_px": 67.20604385336001
+        },
+        {
+          "cap_height_25_px": 18.0,
+          "cap_height_px": 72.0,
+          "id": "cable_B",
+          "text": "B",
+          "width_px": 59.14631085369313
+        },
+        {
+          "cap_height_25_px": 21.75,
+          "cap_height_px": 87.0,
+          "id": "port_B",
+          "text": "7",
+          "width_px": 66.79731667453848
+        },
+        {
+          "cap_height_25_px": 18.0,
+          "cap_height_px": 72.0,
+          "id": "cable_C",
+          "text": "C",
+          "width_px": 66.92617489297479
+        },
+        {
+          "cap_height_25_px": 21.75,
+          "cap_height_px": 87.0,
+          "id": "port_C",
+          "text": "1",
+          "width_px": 66.85570627151299
+        },
+        {
+          "cap_height_25_px": 18.0,
+          "cap_height_px": 72.0,
+          "id": "cable_D",
+          "text": "D",
+          "width_px": 65.3315475195236
+        },
+        {
+          "cap_height_25_px": 21.75,
+          "cap_height_px": 87.0,
+          "id": "port_D",
+          "text": "5",
+          "width_px": 66.85570627151299
+        },
+        {
+          "cap_height_25_px": 8.25,
+          "cap_height_px": 33.0,
+          "id": "mains_instruction",
+          "text": "If the mains fail, patching P1 as above hands the door panels to the UPS.",
+          "width_px": 1546.5485401839155
+        }
+      ]
+    }
+  ],
+  "printed_font": "Blender 5.2 bundled Inter.woff2 (OFL-1.1)",
+  "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
+  "request_sha256": "7f1eb60f41acb4ade2795ed5888b1b1b08e57989d166c4f2aedb8672ada26f6b",
+  "seed": 417,
+  "source_sha256": "2390d2c34deca6eca47231b7f33ef19a2082ce0e34adb97f07642be98474268b"
+}

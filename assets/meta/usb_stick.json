@@ -1,0 +1,156 @@
+{
+  "animations": [],
+  "asset_id": "usb_stick",
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.010500001,
+      0.009706471,
+      0.035049997
+    ],
+    "min": [
+      -0.010500001,
+      0.0,
+      -0.035049997
+    ]
+  },
+  "bounds_m": [
+    0.021000002,
+    0.070099995,
+    0.009706471
+  ],
+  "built_at": "2026-10-02T21:11:46+00:00",
+  "collision": "none",
+  "connector_forward_godot": [
+    0,
+    0,
+    -1
+  ],
+  "geometry_shift_blender_m": [
+    -0.0,
+    -0.006049999967217445,
+    4.656612873077393e-10
+  ],
+  "glb_sha256": "d8dc1231fc76ed816e6d3e4c13c4fc71c66c2deec40b34f03acb8003a81f39ad",
+  "label_text": "MR - backups",
+  "materials": [
+    "M_usb_stick_label",
+    "M_usb_stick_metal",
+    "M_usb_stick_plastic"
+  ],
+  "origin": "base_center",
+  "parts": [
+    "body"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "plastic_body_dimensions_m": [
+    0.019,
+    0.058,
+    0.009
+  ],
+  "preview_renderer": "Cycles CPU; 32 samples; 4 threads",
+  "script_sha256": "d431784d8561a6564581041dbfed9e277dcc38e03c0cf1c446019d67e83e9e47",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_usb_stick_plastic",
+      "name": "T_usb_stick_plastic_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_usb_stick_plastic",
+      "name": "T_usb_stick_plastic_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_usb_stick_plastic",
+      "name": "T_usb_stick_plastic_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_usb_stick_metal",
+      "name": "T_usb_stick_metal_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_usb_stick_metal",
+      "name": "T_usb_stick_metal_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_usb_stick_metal",
+      "name": "T_usb_stick_metal_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_usb_stick_label",
+      "name": "T_usb_stick_label_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_usb_stick_label",
+      "name": "T_usb_stick_label_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_usb_stick_label",
+      "name": "T_usb_stick_label_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "third_party_assets": [],
+  "triangles": 5408
+}

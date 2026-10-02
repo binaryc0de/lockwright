@@ -1,0 +1,115 @@
+{
+  "anchors_godot_m": {
+    "charge_led": [
+      -0.091,
+      -0.07435,
+      -0.031
+    ],
+    "face_size": [
+      0.33,
+      0.12
+    ],
+    "face_surface_centre": [
+      0,
+      0,
+      -0.0485
+    ],
+    "test_button": [
+      -0.111,
+      -0.0745,
+      -0.031
+    ]
+  },
+  "animations": [],
+  "asset_id": "exit_sign_lightbox",
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.180000007,
+      0.075000003,
+      -0.0
+    ],
+    "min": [
+      -0.180000007,
+      -0.075000003,
+      -0.049999997
+    ]
+  },
+  "bounds_m": [
+    0.360000014,
+    0.049999997,
+    0.150000006
+  ],
+  "built_at": "2026-10-02T21:10:04+00:00",
+  "emission_strength": {
+    "face": 0.85,
+    "led": 0.4
+  },
+  "glb_sha256": "2bf9561333dd3af15b5173ff16673c1debb5a05886e5e91daae93013afadb994",
+  "materials": [
+    "M_exit_sign_lightbox_face",
+    "M_exit_sign_lightbox_housing",
+    "M_exit_sign_lightbox_led"
+  ],
+  "origin": "mount_plane_center",
+  "parts": [
+    "face",
+    "housing"
+  ],
+  "pictogram": "original left arrow, left doorway, left-running figure",
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "preview_renderer": "Cycles CPU; 32 samples; 4 threads",
+  "script_sha256": "a3d78ba586d21c14cf53daaca0b653f6db1c634a501d67fa0af0670dc4717d7c",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_exit_sign_lightbox_housing",
+      "name": "T_exit_sign_lightbox_housing_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_exit_sign_lightbox_housing",
+      "name": "T_exit_sign_lightbox_housing_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_exit_sign_lightbox_housing",
+      "name": "T_exit_sign_lightbox_housing_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color_and_emission",
+      "material": "M_exit_sign_lightbox_face",
+      "name": "T_exit_sign_lightbox_face_pictogram",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "triangles": 2586
+}

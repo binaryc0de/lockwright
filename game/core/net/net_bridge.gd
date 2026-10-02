@@ -197,6 +197,12 @@ func rpc_result(req_id: int, result: Dictionary) -> void:
 		cb.call(result)
 
 
+@rpc("authority", "call_remote", "reliable")
+func rpc_place(eye_position: Vector3) -> void:
+	_last_pos = eye_position
+	Game.local_player_placed.emit(eye_position)
+
+
 @rpc("authority", "call_remote", "unreliable_ordered")
 func rpc_roster(roster: Dictionary) -> void:
 	roster_updated.emit(roster)

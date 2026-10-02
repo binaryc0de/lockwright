@@ -188,7 +188,18 @@ func open_terminal(term: Terminal) -> void:
 	(_open(TerminalPanel.new()) as TerminalPanel).setup(term)
 
 
+var tutorial: TutorialOverlay = null
+
+
 func open_briefing() -> void:
+	# Rooms with an airlock teach the controls in-world instead (ADR-0020).
+	var gate := Game.room.airlock() if Game.room else null
+	if gate:
+		if not gate.is_sealed():
+			tutorial = TutorialOverlay.new()
+			add_child(tutorial)
+			tutorial.setup(player, gate)
+		return
 	var p := _open(ModalPanel.new())
 	p.add_title(Game.manifest.title)
 	var text := RichTextLabel.new()
@@ -234,6 +245,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	var handled := true
 	if event.is_action_pressed("evidence_board"):
 		(_open(EvidenceBoard.new()) as EvidenceBoard).setup()
+		if is_instance_valid(tutorial):
+			tutorial.on_evidence_board_opened()
 	elif event.is_action_pressed("hints"):
 		(_open(HintsPanel.new()) as HintsPanel).setup()
 	elif event.is_action_pressed("pause"):

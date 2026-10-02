@@ -41,6 +41,8 @@ DOCUMENTS = {
     'whiteboard_marker_layer': [('whiteboard_marker_layer', 2048, 1262, 'marker')],
     'laptop_screen_login': [('laptop_screen_login', 2048, 1283, 'screen')],
     'rack_stencil': [('rack_stencil', 2048, 683, 'stencil')],
+    'network_diagram_laminated': [('network_diagram_laminated', 2048, 1448, 'laminate')],
+    'work_order': [('work_order', 1448, 2048, 'paper')],
 }
 CRITICAL = {
     'fire_inspection_certificate': ['FIRE SAFETY INSPECTION CERTIFICATE', 'SITE 417'],
@@ -50,6 +52,11 @@ CRITICAL = {
     'laptop_screen_login': ['Kestrel Intranet', 'Your session has expired. Please sign in again.',
                             'Username', 'Password', 'Sign in', '23:12'],
     'rack_stencil': ['RACK 062'],
+    'network_diagram_laminated': ['Kestrel Logistics - site network (rev 7)',
+                                 'Cage rack: patch panel P1 -> UPS bypass relay',
+                                 'A', '3', 'B', '7', 'C', '1', 'D', '5'],
+    'work_order': ['KESTREL LOGISTICS', 'CONTRACTOR WORK ORDER  KL-WO-2026-0417',
+                   "Laptop + creds on Mark's desk - good luck! - J."],
 }
 
 
@@ -186,6 +193,42 @@ def font_mesh(text):
 
 def draw_text(canvas, node, text, seed):
     a = node.attrib
+    if a.get('data-wrap') == 'words':
+        # Opt-in wrapping preserves request strings and cap height, rather
+        # than squeezing long briefing paragraphs into an unreadable line.
+        size = float(a.get('font-size', '48'))
+        maximum = float(a['data-width'])
+        def measure(value):
+            if a.get('data-lettering') == 'stroke':
+                return strokes(value, size, seed)[1]
+            vertices, _ = font_mesh(value)
+            caps, _ = font_mesh('H')
+            return (vertices[:, 0].max() - min(0, vertices[:, 0].min())) * size / caps[:, 1].max()
+        lines, current = [], ''
+        for token in re.findall(r'\S+\s*', text):
+            candidate = current + token
+            if current and measure(candidate.rstrip()) > maximum:
+                lines.append(current.rstrip())
+                current = token
+            else:
+                current = candidate
+        if current:
+            lines.append(current.rstrip())
+        start = len(canvas.text)
+        leading = float(a.get('data-leading', str(size * 1.5)))
+        for index, line in enumerate(lines):
+            assert measure(line) <= maximum, f'Unbreakable text: {line}'
+            copy = ET.fromstring(ET.tostring(node))
+            del copy.attrib['data-wrap']
+            copy.attrib['y'] = str(float(a['y']) + index * leading)
+            draw_text(canvas, copy, line, seed + index * 97)
+        records = canvas.text[start:]
+        if a.get('data-height'):
+            assert size + (len(lines)-1)*leading <= float(a['data-height']), f'Text exceeds reserved field: {text}'
+        canvas.text[start:] = [{**records[0], 'text': text, 'lines': lines,
+                               'width_px': max(r['width_px'] for r in records),
+                               'line_baselines_px': [float(a['y'])+i*leading for i in range(len(lines))]}]
+        return
     x, baseline, size = [float(a.get(key, default)) for key, default in (('x', '0'), ('y', '0'), ('font-size', '48'))]
     color = rgba(a.get('fill', '#222222'), float(a.get('opacity', '1')))
     maximum = float(a.get('data-width', str(canvas.w)))
@@ -280,6 +323,10 @@ def request_strings(doc_id):
             strings = re.findall(r'`([^`]+)`', request)[2:]
         elif doc_id == 'rack_stencil':
             strings = re.findall(r'`(RACK \d{3})`', request)
+        elif doc_id == 'network_diagram_laminated':
+            strings = re.findall(r'`([^`]+)`', request.split('A laminated A4 network diagram', 1)[1])
+        elif doc_id == 'work_order':
+            strings = re.findall(r'`([^`]+)`', request.split('Exact text', 1)[1])
     return strings
 
 

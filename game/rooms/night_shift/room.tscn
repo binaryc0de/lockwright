@@ -65,6 +65,7 @@
 [ext_resource type="Material" path="res://assets/core/materials/mat_led_amber.tres" id="77_amber"]
 [ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_rack_stencil.tres" id="78_doc_stencil"]
 [ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/rack_stencil.png" id="79_tex_stencil"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/airlock_gate.gd" id="80_airlock"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
 size = Vector3(0.39, 0.34, 0.52)
 
@@ -87,6 +88,12 @@ size = Vector2(0.42, 0.14)
 [sub_resource type="BoxMesh" id="BoxMesh_cagefloor"]
 material = ExtResource("76_concrete")
 size = Vector3(2.45, 0.004, 5.0)
+
+[sub_resource type="QuadMesh" id="QuadMesh_workorder"]
+size = Vector2(0.21, 0.297)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_workorder"]
+size = Vector3(0.22, 0.31, 0.01)
 
 [sub_resource type="Environment" id="Environment_vrwxm"]
 background_mode = 1
@@ -746,9 +753,9 @@ light_energy = 0.25
 omni_range = 4.5
 
 [node name="CorridorLight" type="OmniLight3D" parent="Lights" unique_id=13626691]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 2.3, 2.5)
-light_color = Color(0.6, 1, 0.6, 1)
-light_energy = 0.6
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 2.3, 2.5)
+light_color = Color(1, 0.93, 0.8, 1)
+light_energy = 0.45
 omni_range = 2.5
 
 [node name="WhiteboardSpot" type="SpotLight3D" parent="Lights" unique_id=310523839]
@@ -893,6 +900,7 @@ shape = SubResource("BoxShape3D_wkci7")
 [node name="CorridorFloor" type="MeshInstance3D" parent="Structure" unique_id=1865642203]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, -0.05, 2.5)
 mesh = SubResource("BoxMesh_u6x2m")
+material_override = ExtResource("20_carpet")
 
 [node name="Body" type="StaticBody3D" parent="Structure/CorridorFloor" unique_id=1091517350]
 
@@ -902,6 +910,7 @@ shape = SubResource("BoxShape3D_2763j")
 [node name="CorridorCeiling" type="MeshInstance3D" parent="Structure" unique_id=473017157]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, 2.45, 2.5)
 mesh = SubResource("BoxMesh_px6lo")
+material_override = ExtResource("21_ceiling")
 
 [node name="Body" type="StaticBody3D" parent="Structure/CorridorCeiling" unique_id=237785562]
 
@@ -911,6 +920,7 @@ shape = SubResource("BoxShape3D_2763j")
 [node name="CorridorWallN" type="MeshInstance3D" parent="Structure" unique_id=569140633]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, 1.2, 1.95)
 mesh = SubResource("BoxMesh_ps8ym")
+material_override = ExtResource("22_plaster")
 
 [node name="Body" type="StaticBody3D" parent="Structure/CorridorWallN" unique_id=1404420345]
 
@@ -920,6 +930,7 @@ shape = SubResource("BoxShape3D_e42ee")
 [node name="CorridorWallS" type="MeshInstance3D" parent="Structure" unique_id=1954240198]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, 1.2, 3.05)
 mesh = SubResource("BoxMesh_ps8ym")
+material_override = ExtResource("22_plaster")
 
 [node name="Body" type="StaticBody3D" parent="Structure/CorridorWallS" unique_id=2076646205]
 
@@ -929,6 +940,7 @@ shape = SubResource("BoxShape3D_e42ee")
 [node name="CorridorEnd" type="MeshInstance3D" parent="Structure" unique_id=1712616876]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 1.2, 2.5)
 mesh = SubResource("BoxMesh_puieo")
+material_override = ExtResource("22_plaster")
 
 [node name="Body" type="StaticBody3D" parent="Structure/CorridorEnd" unique_id=2037548792]
 
@@ -938,6 +950,7 @@ shape = SubResource("BoxShape3D_wijf2")
 [node name="CorridorLintel" type="MeshInstance3D" parent="Structure" unique_id=1378074676]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90000004, 2.25, 1.925)
 mesh = SubResource("BoxMesh_v4tdi")
+material_override = ExtResource("22_plaster")
 
 [node name="ExitSign" type="Label3D" parent="Structure" unique_id=926420341]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.69, 1.9, 2.5)
@@ -949,7 +962,7 @@ font_size = 48
 outline_size = 0
 
 [node name="SpawnPoint" type="Marker3D" parent="." unique_id=417192878]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 2.6)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.35, 0, 2.5)
 
 [node name="Office" type="Node3D" parent="." unique_id=1979274450]
 
@@ -1509,6 +1522,7 @@ moving_part = NodePath("Hinge")
 open_rotation_deg = Vector3(0, -90, 0)
 display_name = "Exit door"
 verbs = PackedStringArray("open", "close")
+start_open = true
 
 [node name="Hinge" type="Node3D" parent="Office/ExitDoor" unique_id=1120518406]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0, 0)
@@ -2234,3 +2248,37 @@ light_color = Color(0.4, 1, 0.55, 1)
 light_energy = 0.2
 light_specular = 0.0
 omni_range = 1.4
+
+[node name="LateSpawn" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 2.6)
+
+[node name="Airlock" type="Node3D" parent="Office"]
+script = ExtResource("80_airlock")
+door = NodePath("../ExitDoor")
+inside_min = Vector3(0.15, 0, 0.1)
+inside_max = Vector3(5.9, 2.8, 4.9)
+late_spawn = NodePath("../../LateSpawn")
+seal_text = "That bang was the maglock. The badge system just crashed and took the mains with it, and I'm stuck on the far side of the building. The UPS keeps the door panels alive for about an hour. Find the override before it dies - I'll help where I can."
+
+[node name="WorkOrder" type="Node3D" parent="Office"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.95, 1.45, 2.994)
+script = ExtResource("4_7mnw5")
+title = "Contractor work order"
+text_md = "# Kestrel Logistics - contractor work order KL-WO-2026-0417\n\n**Site:** regional office, Unit 4 Harbour Road - sysadmin office\n\n**Window:** 22:30 - 02:00. **Task:** core switch migration, night 2 of 2; cutover at 23:30.\n\nSysadmin **M. Reyes is off site tonight**; his notes are on the office whiteboard.\n\n**Security:** Dale (night guard) - use the office intercom.\n\nBadge doors run on the maglock system. If the mains fail, the UPS keeps the door panels alive for about an hour."
+display_name = "Work order"
+verbs = PackedStringArray("read")
+
+[node name="Paper" type="MeshInstance3D" parent="Office/WorkOrder"]
+mesh = SubResource("QuadMesh_workorder")
+
+[node name="Body" type="StaticBody3D" parent="Office/WorkOrder/Paper"]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/WorkOrder/Paper/Body"]
+shape = SubResource("BoxShape3D_workorder")
+
+[node name="ExitSignGlow" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 1.9, 2.5)
+light_color = Color(0.4, 1, 0.5, 1)
+light_energy = 0.12
+light_specular = 0.0
+omni_range = 1.0

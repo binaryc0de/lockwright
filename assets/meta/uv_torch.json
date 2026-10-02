@@ -1,0 +1,147 @@
+{
+  "anchors_godot_m": {
+    "lens_surface_centre": [
+      -0.0,
+      0.013,
+      -0.05491497801542282
+    ]
+  },
+  "animations": [],
+  "asset_id": "uv_torch",
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.013,
+      0.026000001,
+      0.056614976
+    ],
+    "min": [
+      -0.013,
+      0.0,
+      -0.056614976
+    ]
+  },
+  "bounds_m": [
+    0.026000001,
+    0.113229953,
+    0.026000001
+  ],
+  "built_at": "2026-10-02T21:12:42+00:00",
+  "collision": null,
+  "dimensions_nominal_m": {
+    "body_diameter": 0.022,
+    "body_length": 0.105,
+    "head_diameter": 0.026,
+    "lens_diameter": 0.018
+  },
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_sha256": "e4d5349eede0bf4425d45bd1fef87b8de50c8f9c572e2d920a83d6a91c36787b",
+  "label_strings": [
+    "UV 365nm",
+    "KL-IT-0118"
+  ],
+  "lens_emission": {
+    "linear_rgb": [
+      0.22,
+      0.012,
+      0.85
+    ],
+    "strength": 0.32
+  },
+  "materials": [
+    "M_uv_torch_body",
+    "M_uv_torch_label",
+    "M_uv_torch_lens",
+    "M_uv_torch_rubber"
+  ],
+  "origin": "base_center",
+  "parts": [
+    "body",
+    "lens"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "script_sha256": "a7c7dc8a212b228023749c419685196addcb9e13f3d52c92db7d2d92f9edc0b4",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_uv_torch_label",
+      "name": "T_uv_torch_label_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_uv_torch_body",
+      "name": "T_uv_torch_body_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_uv_torch_body",
+      "name": "T_uv_torch_body_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_uv_torch_body",
+      "name": "T_uv_torch_body_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "base_color",
+      "material": "M_uv_torch_rubber",
+      "name": "T_uv_torch_rubber_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "normal",
+      "material": "M_uv_torch_rubber",
+      "name": "T_uv_torch_rubber_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "orm",
+      "material": "M_uv_torch_rubber",
+      "name": "T_uv_torch_rubber_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "third_party": [],
+  "triangles": 12384
+}

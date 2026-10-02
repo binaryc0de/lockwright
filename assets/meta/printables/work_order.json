@@ -1,0 +1,147 @@
+{
+  "asset_id": "work_order",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": true,
+      "path": "game/rooms/night_shift/assets/docs/work_order.png",
+      "preview": "assets/previews/printables/work_order_25.png",
+      "preview_background": "document",
+      "preview_sha256": "3a919c9e6e5e0d907b0f30dbe141d56d2381ab040436c7e39dc2c08ed7d908db",
+      "rgba": true,
+      "sha256": "141a0f3e4e63dcb2ec4edab3efe757c7c89c90d5c603d2494cc7770b8242f584",
+      "size": [
+        1448,
+        2048
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 14.25,
+          "cap_height_px": 57.0,
+          "id": "company",
+          "text": "KESTREL LOGISTICS",
+          "width_px": 794.4040462719652
+        },
+        {
+          "cap_height_25_px": 9.0,
+          "cap_height_px": 36.0,
+          "id": "order_id",
+          "text": "CONTRACTOR WORK ORDER  KL-WO-2026-0417",
+          "width_px": 1211.7987310817252
+        },
+        {
+          "cap_height_25_px": 10.0,
+          "cap_height_px": 40.0,
+          "id": "site",
+          "line_baselines_px": [
+            410.0,
+            471.0
+          ],
+          "lines": [
+            "Site: Regional office, Unit 4 Harbour Road -",
+            "sysadmin office (ground floor, east)"
+          ],
+          "text": "Site: Regional office, Unit 4 Harbour Road - sysadmin office (ground floor, east)",
+          "width_px": 1111.3289405063183
+        },
+        {
+          "cap_height_25_px": 9.5,
+          "cap_height_px": 38.0,
+          "id": "date_window",
+          "text": "Date: 2 October 2026   Window: 22:30 - 02:00",
+          "width_px": 1164.3302608852762
+        },
+        {
+          "cap_height_25_px": 10.5,
+          "cap_height_px": 42.0,
+          "id": "task",
+          "line_baselines_px": [
+            699.0,
+            763.0
+          ],
+          "lines": [
+            "Task: Core switch migration, night 2 of 2.",
+            "Cutover at 23:30."
+          ],
+          "text": "Task: Core switch migration, night 2 of 2. Cutover at 23:30.",
+          "width_px": 1107.7289985753405
+        },
+        {
+          "cap_height_25_px": 10.5,
+          "cap_height_px": 42.0,
+          "id": "on_site",
+          "line_baselines_px": [
+            908.0,
+            974.0,
+            1040.0
+          ],
+          "lines": [
+            "On site: contractor team (you). Sysadmin M.",
+            "Reyes is OFF SITE tonight; his notes are on",
+            "the office whiteboard."
+          ],
+          "text": "On site: contractor team (you). Sysadmin M. Reyes is OFF SITE tonight; his notes are on the office whiteboard.",
+          "width_px": 1185.7811657883472
+        },
+        {
+          "cap_height_25_px": 10.0,
+          "cap_height_px": 40.0,
+          "id": "security",
+          "line_baselines_px": [
+            1182.0,
+            1246.0
+          ],
+          "lines": [
+            "Security: Dale (night guard) - use the office",
+            "intercom."
+          ],
+          "text": "Security: Dale (night guard) - use the office intercom.",
+          "width_px": 1124.9933734996932
+        },
+        {
+          "cap_height_25_px": 10.5,
+          "cap_height_px": 42.0,
+          "id": "maglocks_ups",
+          "line_baselines_px": [
+            1375.0,
+            1441.0,
+            1507.0
+          ],
+          "lines": [
+            "Badge doors run on the maglock system. If",
+            "the mains fail, the UPS keeps the door",
+            "panels alive for about an hour."
+          ],
+          "text": "Badge doors run on the maglock system. If the mains fail, the UPS keeps the door panels alive for about an hour.",
+          "width_px": 1166.8392475820099
+        },
+        {
+          "cap_height_25_px": 10.5,
+          "cap_height_px": 42.0,
+          "id": "sign_in",
+          "text": "Sign in at the door, then go straight in.",
+          "width_px": 1020.8256950970928
+        },
+        {
+          "cap_height_25_px": 10.5,
+          "cap_height_px": 42.0,
+          "id": "handwritten_message",
+          "line_baselines_px": [
+            1852.0
+          ],
+          "lines": [
+            "Laptop + creds on Mark's desk - good luck! - J."
+          ],
+          "text": "Laptop + creds on Mark's desk - good luck! - J.",
+          "width_px": 1175.1599999999999
+        }
+      ]
+    }
+  ],
+  "printed_font": "Blender 5.2 bundled Inter.woff2 (OFL-1.1)",
+  "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
+  "request_sha256": "dc8f2e4d24e26413350ce1d0c724a59e1673462ba54292bd1448efe8167c02a7",
+  "seed": 417,
+  "source_sha256": "2390d2c34deca6eca47231b7f33ef19a2082ce0e34adb97f07642be98474268b"
+}

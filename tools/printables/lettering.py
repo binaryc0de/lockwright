@@ -91,6 +91,8 @@ RAW = {
 }
 GLYPHS = {key: paths(value) for key, value in RAW.items()}
 GLYPHS['o'] = [loop(.26, .69, .26, .31)]
+GLYPHS['+'] = paths('0,.53 .60,.53|.30,.23 .30,.83')
+GLYPHS["'"] = paths('.14,0 .05,.22')
 
 
 def width(character):

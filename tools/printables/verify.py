@@ -39,6 +39,42 @@ def read_png(path):
     return raw[:, 1:].reshape(h, w, 4)
 
 
+def verify_briefing(record, request, png, small):
+    """Extra request and pixel checks for the two briefing documents."""
+    doc_id = record['asset_id']
+    if doc_id not in ('network_diagram_laminated', 'work_order'):
+        return
+    assert record['request_sha256'] == hashlib.sha256(request.encode()).hexdigest(), 'Stale request metadata'
+    text = record['outputs'][0]['text']
+    section = 'A laminated A4 network diagram' if doc_id == 'network_diagram_laminated' else 'Exact text'
+    required = re.findall(r'`([^`]+)`', request.split(section, 1)[1])
+    assert set(required).issubset(t['text'] for t in text), 'Missing exact request text'
+    for item in text:
+        if 'lines' in item:
+            assert re.sub(r'\s+', ' ', ' '.join(item['lines'])) == re.sub(r'\s+', ' ', item['text']), 'Wrapped text lost words'
+        assert item['cap_height_25_px'] >= 7, 'Undersized text'
+    if doc_id == 'network_diagram_laminated':
+        by_id = {t['id']: t['text'] for t in text}
+        for letter, port in zip('ABCD', ('3', '7', '1', '5')):
+            assert by_id['cable_' + letter] == letter and by_id['port_' + letter] == port, 'Incorrect cable mapping'
+        # Count actual white runs on each cable, independently of metadata.
+        # Test both delivered pixels and the final quarter-size preview.
+        for pixels, divisor in ((png, 1), (small, 4)):
+            for row, expected in enumerate((1, 2, 3, 0)):
+                y = (782 + row * 121) // divisor
+                scan = pixels[y, 382//divisor:900//divisor, :3]
+                white = np.all(scan > 235, axis=1)
+                changes = np.diff(np.pad(white.astype(np.int8), (1, 1)))
+                starts, ends = np.flatnonzero(changes == 1), np.flatnonzero(changes == -1)
+                assert len(starts) == expected, f'Cable {"ABCD"[row]} stripe count at 1/{divisor}'
+                assert np.all(ends-starts >= 24//divisor), 'Stripe too narrow to count'
+                assert np.all(starts[1:]-ends[:-1] >= 28//divisor), 'Stripes merged'
+        print('PASS exact text/mappings/pixel stripe counts: A=1, B=2, C=3, D=0 at full and 25% size')
+    else:
+        assert len(text) == len(required) == 10, 'Work order must contain all ten exact strings'
+        print('PASS exact text/word wrapping/cap sizes: all ten work-order strings')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
@@ -86,6 +122,7 @@ def main():
             preview = ROOT / output['preview']
             small = read_png(preview)
             assert small.shape[:2] == (round(h/4), round(w/4)), preview
+            verify_briefing(record, request, png, small)
             for artifact, key in ((path, 'sha256'), (preview, 'preview_sha256')):
                 digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
                 assert digest == output[key], artifact

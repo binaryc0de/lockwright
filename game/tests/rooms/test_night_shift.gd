@@ -9,7 +9,7 @@ const EXIT_KEYPAD := "Office/ExitDoor/Keypad"
 const CAGE_DOOR := "Cage/Door"
 const CAGE_LOCK := "Cage/Door/Maglock"
 ## Walkable floor: office + cage interior, plus the exit corridor stub.
-const ROOM_MIN := Vector3(0.0, 0.0, 0.0)
+const ROOM_MIN := Vector3(-1.7, 0.0, 0.0)
 const ROOM_MAX := Vector3(8.5, 2.8, 5.0)
 const MAX_INTERACT_HEIGHT := 2.15
 const PLAYER_RADIUS := 0.3
@@ -293,12 +293,21 @@ func test_interactables_lie_inside_the_room_and_within_reach() -> void:
 			.is_between(0.2, MAX_INTERACT_HEIGHT)
 
 
-func test_spawn_point_is_on_the_office_floor_and_clear() -> void:
-	var t := room.spawn_transform()
-	var p := t.origin
-	assert_float(p.y).is_equal_approx(0.0, 0.01)
-	assert_bool(p.x > 0.5 and p.x < 5.5 and p.z > 0.5 and p.z < 4.5) \
-		.override_failure_message("spawn %s not inside the office" % p).is_true()
+func test_spawns_are_clear_corridor_first_then_office() -> void:
+	var start := room.spawn_transform().origin
+	assert_bool(start.x > -1.7 and start.x < -0.1 and start.z > 2.0 and start.z < 3.0) \
+		.override_failure_message("start %s not in the airlock corridor" % start).is_true()
+	var late := room.airlock().late_spawn_transform().origin
+	assert_bool(late.x > 0.5 and late.x < 5.5 and late.z > 0.5 and late.z < 4.5) \
+		.override_failure_message("late spawn %s not inside the office" % late).is_true()
+	assert_bool(room.airlock().is_inside(late)).is_true()
+	assert_bool(room.airlock().is_inside(start)).is_false()
+	for p: Vector3 in [start, late]:
+		assert_float(p.y).is_equal_approx(0.0, 0.01)
+		_assert_clear(p)
+
+
+func _assert_clear(p: Vector3) -> void:
 	# The player's capsule (as a box) must not overlap any collider but the floor.
 	var player := AABB(p + Vector3(-PLAYER_RADIUS, 0.05, -PLAYER_RADIUS), Vector3(PLAYER_RADIUS * 2, PLAYER_HEIGHT, PLAYER_RADIUS * 2))
 	for cs in own_shapes(room):
@@ -316,6 +325,7 @@ func test_open_doors_clear_their_doorways() -> void:
 		"Office/ExitDoor": AABB(Vector3(-0.1, 0.1, 2.1), Vector3(0.1, 1.9, 0.8)),
 		CAGE_DOOR: AABB(Vector3(5.95, 0.1, 3.7), Vector3(0.1, 1.9, 0.8)),
 	}
+	room.airlock().seal()  # the exit door starts open for the airlock
 	solve_cabinet_thread()
 	accept_flag()
 	assert_dict(act("Cage/PatchPanel", "patch", {"value": "A:3,B:7,C:1,D:5"})).contains_key_value("ok", true)
@@ -336,3 +346,51 @@ func test_open_doors_clear_their_doorways() -> void:
 		for cs in own_shapes(door):
 			assert_bool(shape_aabb(cs).intersects(gap)) \
 				.override_failure_message("%s still blocks its doorway when open" % path).is_false()
+
+
+
+# --- Airlock (ADR-0020) -------------------------------------------------------
+
+func test_airlock_seals_when_everyone_is_inside() -> void:
+	var gate := room.airlock()
+	var narrated: Array = []
+	auth.narrated.connect(func(t: String) -> void: narrated.append(t))
+	assert_str(auth.state.node_state("Office/ExitDoor").get("state")).is_equal("open")
+	assert_bool(auth.state.clock_started()).is_false()
+	auth.update_player_position("p1", Vector3(-1.3, 1.6, 2.5))
+	auth.update_player_position("p2", Vector3(3.0, 1.6, 2.5))
+	gate._physics_process(0.1)
+	assert_bool(gate.is_sealed()).is_false()
+	auth.update_player_position("p1", Vector3(1.0, 1.6, 2.5))
+	gate._physics_process(0.1)
+	assert_bool(gate.is_sealed()).is_true()
+	assert_str(auth.state.node_state("Office/ExitDoor").get("state")).is_equal("closed")
+	assert_bool(auth.state.clock_started()).is_true()
+	assert_array(narrated).has_size(1)
+	assert_str(narrated[0]).contains("maglock")
+	# Sealed rooms spawn joiners inside.
+	assert_vector(room.join_spawn_transform().origin).is_equal(gate.late_spawn_transform().origin)
+
+
+func test_airlock_moves_stragglers_after_the_timeout() -> void:
+	var gate := room.airlock()
+	var placed: Array = []
+	auth.player_placed.connect(func(pid: String, eye: Vector3) -> void: placed.append([pid, eye]))
+	auth.update_player_position("in", Vector3(2.0, 1.6, 2.0))
+	auth.update_player_position("late", Vector3(-1.3, 1.6, 2.5))
+	gate._physics_process(gate.seal_after_s - 1.0)
+	assert_bool(gate.is_sealed()).is_false()
+	gate._physics_process(1.5)
+	assert_bool(gate.is_sealed()).is_true()
+	assert_array(placed).has_size(1)
+	assert_str(placed[0][0]).is_equal("late")
+	assert_bool(gate.is_inside(placed[0][1])).is_true()
+	assert_bool(gate.is_inside(auth.player_positions["late"])).is_true()
+
+
+func test_airlock_waits_while_nobody_is_inside() -> void:
+	var gate := room.airlock()
+	auth.update_player_position("p1", Vector3(-1.3, 1.6, 2.5))
+	gate._physics_process(gate.seal_after_s + 5.0)
+	assert_bool(gate.is_sealed()).is_false()
+	assert_vector(room.join_spawn_transform().origin).is_equal(room.spawn_transform().origin)

@@ -16,6 +16,23 @@ func spawn_transform() -> Transform3D:
 	return s.global_transform if s else global_transform
 
 
+## The room's AirlockGate, if it has one (onboarding, ADR-0020).
+func airlock() -> AirlockGate:
+	for n in EBNode.find_all(self):
+		if n is AirlockGate:
+			return n
+	return null
+
+
+## Where a player who joins now should appear: inside, once the airlock has
+## sealed; the normal spawn otherwise.
+func join_spawn_transform() -> Transform3D:
+	var a := airlock()
+	if a and a.is_sealed():
+		return a.late_spawn_transform()
+	return spawn_transform()
+
+
 ## Per-session room variables (room.yaml `variables`).
 func vars() -> Dictionary:
 	return Game.vars()

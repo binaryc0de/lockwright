@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1448" height="2048" viewBox="0 0 1448 2048">
+  <rect x="0" y="0" width="1448" height="2048" fill="#e8e1cf"/>
+  <rect x="28" y="24" width="1392" height="2000" fill="#f4f0e3" stroke="#c2bca9" stroke-width="3"/>
+  <!-- Printed clipboard-form styling; no separate 3D clipboard is delivered. -->
+  <rect x="424" y="29" width="600" height="59" rx="12" fill="#c3c7c1" stroke="#6e7774" stroke-width="3"/>
+  <rect x="533" y="36" width="382" height="17" rx="7" fill="#edf0e8"/>
+  <circle cx="451" cy="58" r="9" fill="#777f7c"/>
+  <circle cx="997" cy="58" r="9" fill="#777f7c"/>
+  <rect x="101" y="126" width="1246" height="113" fill="#253e44"/>
+  <text x="140" y="208" font-size="57" font-weight="bold" fill="#f7f6eb"><tspan id="company">{{0}}</tspan></text>
+  <text x="106" y="298" font-size="36" data-width="1234" font-weight="bold" fill="#253e44"><tspan id="order_id">{{1}}</tspan></text>
+  <line x1="104" y1="329" x2="1344" y2="329" stroke="#253e44" stroke-width="4"/>
+  <text x="110" y="410" font-size="40" data-width="1225" data-wrap="words" data-leading="61" data-height="112" fill="#272f30"><tspan id="site">{{2}}</tspan></text>
+  <text x="110" y="574" font-size="38" data-width="1225" fill="#272f30"><tspan id="date_window">{{3}}</tspan></text>
+  <rect x="104" y="626" width="1240" height="185" fill="#e3e8df" stroke="#a5b4ad" stroke-width="2"/>
+  <text x="140" y="699" font-size="42" data-width="1167" data-wrap="words" data-leading="64" data-height="113" fill="#253e44"><tspan id="task">{{4}}</tspan></text>
+  <text x="110" y="908" font-size="42" data-width="1225" data-wrap="words" data-leading="66" data-height="179" fill="#272f30"><tspan id="on_site">{{5}}</tspan></text>
+  <line x1="104" y1="1102" x2="1344" y2="1102" stroke="#b1b9ac" stroke-width="2"/>
+  <text x="110" y="1182" font-size="40" data-width="1225" data-wrap="words" data-leading="64" data-height="110" fill="#272f30"><tspan id="security">{{6}}</tspan></text>
+  <rect x="104" y="1296" width="1240" height="271" fill="#eee7cf" stroke="#b6ad86" stroke-width="2"/>
+  <text x="140" y="1375" font-size="42" data-width="1167" data-wrap="words" data-leading="66" data-height="183" fill="#30372f"><tspan id="maglocks_ups">{{7}}</tspan></text>
+  <rect x="108" y="1626" width="27" height="27" fill="none" stroke="#6a7c74" stroke-width="3"/>
+  <polyline points="105,1637 118,1650 145,1613" fill="none" stroke="#2c4e63" stroke-width="5"/>
+  <text x="161" y="1651" font-size="42" data-width="1170" fill="#253e44"><tspan id="sign_in">{{8}}</tspan></text>
+  <!-- Coffee residue occupies an unused corner above the penned message. -->
+  <ellipse cx="1251" cy="1750" rx="72" ry="55" fill="none" stroke="#9b7852" stroke-width="9" opacity="0.16"/>
+  <ellipse cx="1255" cy="1751" rx="77" ry="59" fill="none" stroke="#987650" stroke-width="3" opacity="0.12"/>
+  <ellipse cx="1310" cy="1796" rx="8" ry="5" fill="#9b7852" opacity="0.16"/>
+  <line x1="110" y1="1790" x2="1070" y2="1790" stroke="#c8c3b2" stroke-width="2"/>
+  <text x="117" y="1852" font-size="42" data-width="1195" data-lettering="stroke" data-wrap="words" data-leading="65" data-height="119" stroke-width="3" fill="#294f68"><tspan id="handwritten_message">{{9}}</tspan></text>
+  <!-- Original signature scrawl and a second quick pen tick. -->
+  <polyline points="153,1980 172,1936 166,1974 197,1949 179,1981 216,1962 206,1980 245,1963 260,1979 296,1967 337,1974" fill="none" stroke="#294f68" stroke-width="3"/>
+  <polyline points="1260,1936 1277,1951 1310,1913" fill="none" stroke="#294f68" stroke-width="4"/>
+  <line x1="1387" y1="604" x2="1390" y2="915" stroke="#c8c0ab" stroke-width="2" opacity="0.45"/>
+</svg>

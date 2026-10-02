@@ -60,3 +60,19 @@ Build it with `tools/printables/build_printables.sh rack_stencil`. Run
 then run `tools/printables/verify.py --compare rack_stencil` to compare only its
 output, preview and metadata. Selected verification uses a separate per-request
 checksum manifest and also checks the clear 0/6 gap and open top of the six.
+
+`network_diagram_laminated` (2048x1448) and `work_order` (1448x2048)
+are built with `tools/printables/build_printables.sh network_diagram_laminated work_order`.
+Their SVG templates use the same CPU pipeline and seeded laminate/paper overlays.
+The diagram includes cable lettering, white bands and port numerals; verification
+counts the actual white pixel runs at full and quarter size (A=1, B=2, C=3, D=0)
+and checks the A→3, B→7, C→1, D→5 mapping. The work order adds original plus
+and apostrophe pen strokes and opt-in `data-wrap="words"` text layout. Wrapped
+fields retain the exact request string in metadata, with individual lines and
+baselines recorded; `data-leading` and `data-height` define field spacing and
+prevent overflow. All ten work-order strings are checked, including the double
+space in the order title and three spaces before `Window:`. Coffee residue,
+pen ticks/signature and corner laminate reflections are original SVG geometry.
+For a selected two-build check, run bundled Python on `verify.py --record
+network_diagram_laminated work_order`, rebuild, then use the same IDs with
+`--compare`. Existing templates and outputs are unchanged.

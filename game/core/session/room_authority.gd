@@ -14,6 +14,8 @@ signal hint_revealed(puzzle_id: String, tier: int, text: String, automatic: bool
 signal narrated(text: String)
 signal flag_accepted(challenge_id: String)
 signal time_up
+## A player must be moved (AirlockGate stragglers); position is the eye point.
+signal player_placed(player_id: String, eye_position: Vector3)
 signal session_finished(won: bool)
 ## Coarse session log for the platform (M3 posts these to /internal/.../events).
 ## Never contains flag values.
@@ -183,6 +185,14 @@ func remove_note(_player_id: String, note_id: int) -> Dictionary:
 
 func update_player_position(player_id: String, pos: Vector3) -> void:
 	player_positions[player_id] = pos
+
+
+## Moves a player (server decision): `pos` is a floor point; the player's
+## eye ends up EYE_HEIGHT above it.
+func place_player(player_id: String, pos: Vector3) -> void:
+	var eye := pos + Vector3.UP * FirstPersonPlayer.EYE_HEIGHT
+	player_positions[player_id] = eye
+	player_placed.emit(player_id, eye)
 
 
 func _in_reach(player_id: String, n: EBNode) -> bool:

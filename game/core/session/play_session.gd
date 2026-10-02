@@ -102,6 +102,11 @@ func _on_welcomed(info: Dictionary) -> void:
 			hud.toast("Join code for friends: %s" % Game.join_code)
 
 
+func _on_placed(eye: Vector3) -> void:
+	if player:
+		_place_from_welcome({"position": eye})
+
+
 ## Stand where the server says (rejoin keeps your place; the server rejects
 ## positions that jump, so the client must start from the server's view).
 func _place_from_welcome(info: Dictionary) -> void:
@@ -165,7 +170,9 @@ func _spawn_player_and_hud() -> void:
 	player = FirstPersonPlayer.new()
 	player.name = "LocalPlayer"
 	add_child(player)
-	player.place_at(room.spawn_transform())
+	player.place_at(room.join_spawn_transform())
+	if not Game.local_player_placed.is_connected(_on_placed):
+		Game.local_player_placed.connect(_on_placed)
 	hud = Hud.new()
 	add_child(hud)
 	hud.setup(player)
@@ -205,6 +212,11 @@ func _hide_overlay() -> void:
 		_overlay.queue_free()
 	_overlay = null
 	_overlay_label = null
+
+
+func _exit_tree() -> void:
+	if Game.local_player_placed.is_connected(_on_placed):
+		Game.local_player_placed.disconnect(_on_placed)
 
 
 func leave() -> void:

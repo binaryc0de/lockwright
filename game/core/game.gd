@@ -24,6 +24,9 @@ signal session_finished(won: bool)
 signal selected_item_changed(item_path: String)
 ## The requesting player's result for an intent.
 signal intent_result(path: String, verb: String, result: Dictionary)
+## The server moved the local player (eye position), e.g. into the room when
+## the airlock sealed.
+signal local_player_placed(eye_position: Vector3)
 ## CLIENT: connection status for the HUD ("connecting", "connected", "lost", "rejected").
 signal connection_changed(status: String, detail: String)
 
@@ -130,6 +133,9 @@ func _start_authority(p_manifest: RoomManifest, room_instance: RoomRoot, session
 	authority.narrated.connect(func(t: String) -> void: narrated.emit(t))
 	authority.time_up.connect(func() -> void: time_up.emit())
 	authority.session_finished.connect(_on_session_finished)
+	authority.player_placed.connect(func(pid: String, eye: Vector3) -> void:
+		if pid == local_player_id:
+			local_player_placed.emit(eye))
 
 
 func end_session() -> void:
