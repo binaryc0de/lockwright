@@ -93,3 +93,13 @@ func _apply_state(state: Dictionary) -> void:
 		unlocked.emit()
 	elif state.get("attempts", 0) > 0 and not state.get("last_ok", false):
 		attempt_failed.emit()
+
+
+func _state_sound(old: Dictionary, new: Dictionary) -> Variant:
+	if new.get("state") == "unlocked" and old.get("state") != "unlocked":
+		return "accept"
+	if int(new.get("attempts", 0)) > int(old.get("attempts", 0)) and not new.get("last_ok", false):
+		return "deny"
+	if new.get("powered", false) and not old.get("powered", false):
+		return "relay"
+	return ""

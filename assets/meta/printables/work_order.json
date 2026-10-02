@@ -143,5 +143,5 @@
   "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
   "request_sha256": "dc8f2e4d24e26413350ce1d0c724a59e1673462ba54292bd1448efe8167c02a7",
   "seed": 417,
-  "source_sha256": "2390d2c34deca6eca47231b7f33ef19a2082ce0e34adb97f07642be98474268b"
+  "source_sha256": "a472efcf7edd49c8691e298aa0246f59d29147990f37d9616252b35721d9455a"
 }

@@ -326,3 +326,45 @@ func test_join_code_is_per_session() -> void:
 	Game.join_code = "XYZ789"
 	Game.start_client_session(manifest, client_room, "p1", auth.snapshot(), Time.get_unix_time_from_system())
 	assert_str(Game.join_code).is_equal("XYZ789")
+
+
+# --- Audio (M4) -----------------------------------------------------------------
+
+func test_every_library_sound_exists() -> void:
+	for key: String in EBSound.LIBRARY:
+		assert_object(EBSound.stream(key)).override_failure_message("missing sound %s" % key).is_not_null()
+	for path: String in EBSound.FOOTSTEPS:
+		assert_object(EBSound.stream(path)).is_not_null()
+	assert_object(EBSound.stream("no_such_sound")).is_null()
+
+
+func test_state_changes_pick_sounds() -> void:
+	var door := auto_free(Door.new()) as Door
+	assert_str(door._state_sound({"state": "closed"}, {"state": "open"})).is_equal("door_open")
+	assert_str(door._state_sound({"state": "open"}, {"state": "closed"})).is_equal("door_close")
+	var drawer := auto_free(ContainerProp.new()) as ContainerProp
+	assert_str(drawer._state_sound({"state": "closed"}, {"state": "open"})).is_equal("drawer_open")
+	var lock := auto_free(KeypadLock.new()) as KeypadLock
+	assert_str(lock._state_sound({"state": "locked", "attempts": 0}, {"state": "locked", "attempts": 1, "last_ok": false})).is_equal("deny")
+	assert_str(lock._state_sound({"state": "locked", "attempts": 1}, {"state": "unlocked", "attempts": 2, "last_ok": true})).is_equal("accept")
+	assert_str(lock._state_sound({"state": "locked", "powered": false}, {"state": "locked", "powered": true})).is_equal("relay")
+	var mag := auto_free(MaglockGate.new()) as MaglockGate
+	assert_str(mag._state_sound({"state": "locked"}, {"state": "unlocked"})).is_equal("maglock_release")
+	var item := auto_free(Item.new()) as Item
+	assert_str(item._state_sound({"state": "world"}, {"state": "inventory"})).is_equal("pick_up")
+	assert_str(item._state_sound({"state": "inventory"}, {"state": "consumed"})).is_empty()
+
+
+func test_ambient_loop_is_seamless_length() -> void:
+	var z := auto_free(AmbientZone.new()) as AmbientZone
+	z.noise_level = 0.5
+	z.buzz = 0.3
+	var w := z.make_loop()
+	assert_int(w.data.size()).is_equal(int(AmbientZone.RATE * AmbientZone.SECONDS) * 2)
+	assert_int(w.loop_mode).is_equal(AudioStreamWAV.LOOP_FORWARD)
+	# The loop point is no bigger a jump than any step inside the loop (whole hum
+	# cycles + cross-faded noise), so it does not click.
+	var biggest := 0
+	for i in range(0, w.data.size() - 2, 2):
+		biggest = maxi(biggest, absi(w.data.decode_s16(i + 2) - w.data.decode_s16(i)))
+	assert_int(absi(w.data.decode_s16(0) - w.data.decode_s16(w.data.size() - 2))).is_less_equal(biggest)

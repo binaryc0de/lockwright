@@ -11,3 +11,7 @@ func prompt(item_name: String = "") -> String:
 	if is_exit and is_locked() and item_name.is_empty():
 		return "%s (sealed)" % display_name
 	return super(item_name)
+
+
+func _default_sound(opening: bool) -> String:
+	return "door_open" if opening else "door_close"

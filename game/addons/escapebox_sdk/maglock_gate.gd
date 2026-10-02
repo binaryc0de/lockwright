@@ -19,3 +19,9 @@ func _server_available() -> bool:
 
 func _server_intent(_player_id: String, _verb: String, _payload: Dictionary) -> Dictionary:
 	return {"ok": false, "error": "no_input", "message": "The maglock is holding."}
+
+
+func _state_sound(old: Dictionary, new: Dictionary) -> Variant:
+	if new.get("state") == "unlocked" and old.get("state") != "unlocked":
+		return "maglock_release"
+	return ""

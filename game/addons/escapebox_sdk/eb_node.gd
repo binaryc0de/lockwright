@@ -113,9 +113,21 @@ static func register_all(room: Node, p_authority: RoomAuthority) -> Dictionary:
 
 ## Called by the session layer; not for room scripts.
 func receive_state(state: Dictionary) -> void:
+	var old := current_state
 	current_state = state
 	_apply_state(state)
 	state_applied.emit(state)
+	# Sound only for real changes, never for the first state (join/restore).
+	if not old.is_empty() and old != state:
+		var s: Variant = _state_sound(old, state)
+		if s != null and not (s is String and s.is_empty()):
+			EBSound.play_at(self, s)
+
+
+## The sound for a state change: an EBSound key, an AudioStream, or "" for
+## none. Plays on every client, positioned at this node.
+func _state_sound(_old: Dictionary, _new: Dictionary) -> Variant:
+	return ""
 
 
 ## Enables or disables every CollisionShape3D under `n` (hidden things must

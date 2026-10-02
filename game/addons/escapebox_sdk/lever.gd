@@ -47,3 +47,7 @@ func _apply_state(state: Dictionary) -> void:
 	if p:
 		p.rotation_degrees = _off_rot + (on_rotation_deg if state.get("state") == "on" else Vector3.ZERO)
 	changed.emit(state.get("state", "off"))
+
+
+func _state_sound(old: Dictionary, new: Dictionary) -> Variant:
+	return "relay" if old.get("state") != new.get("state") else ""

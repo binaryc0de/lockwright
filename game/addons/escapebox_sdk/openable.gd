@@ -18,6 +18,9 @@ signal closed
 @export var start_open: bool = false
 ## Seconds the open/close animation takes.
 @export var anim_time: float = 0.4
+## Override the default open/close sounds (EBSound).
+@export var open_sound: AudioStream
+@export var close_sound: AudioStream
 
 var _closed_pos: Vector3
 var _closed_rot: Vector3
@@ -99,3 +102,16 @@ func _apply_state(state: Dictionary) -> void:
 		opened.emit()
 	else:
 		closed.emit()
+
+
+func _state_sound(old: Dictionary, new: Dictionary) -> Variant:
+	if old.get("state") == new.get("state"):
+		return ""
+	if new.get("state") == "open":
+		return open_sound if open_sound else _default_sound(true)
+	return close_sound if close_sound else _default_sound(false)
+
+
+## Doors and drawers sound different; subclasses pick.
+func _default_sound(opening: bool) -> String:
+	return "drawer_open" if opening else "drawer_close"

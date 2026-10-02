@@ -81,3 +81,10 @@ func seal() -> void:
 	authority.start_clock("airlock")
 	if not seal_text.is_empty():
 		authority.narrate(authority.resolve(seal_text))
+
+
+## The slam comes from the door, not from this marker.
+func _state_sound(old: Dictionary, new: Dictionary) -> Variant:
+	if new.get("state") == "sealed" and old.get("state") != "sealed":
+		EBSound.play_at(get_node_or_null(door) as Node3D, "maglock_slam", 2.0, 0.0)
+	return ""

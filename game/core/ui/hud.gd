@@ -169,6 +169,7 @@ func _set_free_mouse(free: bool) -> void:
 
 
 func open_document(doc: Document) -> void:
+	EBSound.play_ui(self, "paper", -6.0)
 	(_open(InspectPanel.new()) as InspectPanel).show_document(doc)
 
 
@@ -218,6 +219,7 @@ func show_end(won: bool) -> void:
 		return
 	_ended_shown = true
 	_ended_won = won
+	EBSound.play_ui(self, "win" if won else "deny", 0.0)
 	var p := _open(EndScreen.new()) as EndScreen
 	p.setup(won)
 	p.quit_requested.connect(func() -> void: leave_requested.emit())

@@ -198,7 +198,7 @@ def surfaces():
     dz = body.math('SUBTRACT', z, CENTRE)
     radius = body.math('SQRT', body.math('ADD', body.math('MULTIPLY', x, x),
                                        body.math('MULTIPLY', dz, dz)))
-    knurl = body.math('MULTIPLY', body.math('GREATER_THAN', radius, .01095),
+    knurl = body.math('MULTIPLY', body.math('GREATER_THAN', radius, .01101),
                      body.math('MULTIPLY', body.math('GREATER_THAN', y, -.047),
                                body.math('LESS_THAN', y, -.029)))
     worn = body.math('MULTIPLY', knurl, body.math('GREATER_THAN', body.noise((2700, 900, 2700)), .52))
@@ -397,7 +397,7 @@ def band(name, y0, y1, half_angle, mat, uvrect, angle_centre=0):
         for loop in poly.loop_indices:
             vertex=obj.data.loops[loop].vertex_index
             row,i=divmod(vertex,steps+1)
-            uv.data[loop].uv=(u0+(u1-u0)*row,v0+(v1-v0)*i/steps)
+            uv.data[loop].uv=(u0+(u1-u0)*row,v1-(v1-v0)*i/steps)
     return obj
 
 
@@ -425,18 +425,18 @@ def geometry(mats,label):
                      (-.05255,r+.00012),(-.05240,r+.00012),(-.05240,r-.00012),
                      (-.05255,r-.00012)],rubber,48))
     eyelet=[(0,-.0514+.0021*math.sin(a),.022+.0021*math.cos(a))
-            for a in [2*math.pi*i/40 for i in range(41)]]
+            for a in [2*math.pi*i/32 for i in range(33)]]
     parts.append(tube('lanyard_eyelet',eyelet,.0007,aluminium))
     # Two nearly complete helical turns make a real split ring, including gaps.
     points=[]
-    for i in range(100):
-        a=-.15+i/99*(4*math.pi-.25)
-        points.append((.0037*math.sin(a),-.0566+.0037*math.cos(a),.0222+.00065*i/99))
+    for i in range(80):
+        a=-.15+i/79*(4*math.pi-.25)
+        points.append((.0037*math.sin(a),-.0566+.0037*math.cos(a),.0222+.00065*i/79))
     parts.append(tube('split_ring',points,.00043,aluminium))
     parts.append(band('uv_identification_band',-.022,.018,.51,label,(32/1024,32/1024,992/1024,460/1024)))
     parts.append(band('asset_sticker',.004,.0250,.34,label,(32/1024,544/1024,992/1024,992/1024),angle_centre=.90))
     lensmat=material(ASSET_ID,'lens',(.72,.67,.84),roughness=.19,
-                     metallic=.05,emission=((.22,.012,.85),.32))
+                     metallic=.05,emission=((.28,.008,1.0),.75))
     # A small die behind the frosted 18 mm lens; the glass/filter and LED
     # share the SDK-controlled optical material and remain a single part.
     led=lathe('uv_led_die',[(.0475,0),(.0475,.0016),(.0480,.0016),(.0480,0)],lensmat,16)
@@ -479,16 +479,21 @@ def build(out_dir):
         'forward':'Blender +Y -> Godot -Z','collision':None,'third_party':[],
         'dimensions_nominal_m':{'body_length':.105,'body_diameter':.022,'head_diameter':.026,'lens_diameter':.018},
         'label_strings':['UV 365nm','KL-IT-0118'],
-        'lens_emission':{'linear_rgb':[.22,.012,.85],'strength':.32},
+        'lens_emission':{'linear_rgb':[.28,.008,1.0],'strength':.75},
         'anchors_godot_m':{'lens_surface_centre':[shift.x,CENTRE+shift.z,-(.0508+shift.y)]},
     })
     if metadata['triangles']>60000 or metadata['parts']!=['body','lens'] or len(metadata['materials'])!=4:
         raise RuntimeError('Export contract failed')
-    centre=Vector((0,shift.y,CENTRE+shift.z))
+    # Preview-only quarter turn presents both printed strings left-to-right.
+    # Applied export transforms above remain identity.
+    for obj in objects:
+        obj.rotation_euler.z=-math.pi/2
+    bpy.context.view_layer.update()
+    centre=Vector((shift.y,0,CENTRE+shift.z))
     views={
-        'front':{'position':tuple(centre+Vector((0,.015,.24))),'target':tuple(centre),'scale':.132},
-        'iso':{'position':tuple(centre+Vector((.13,.16,.17))),'target':tuple(centre),'scale':.127},
-        'detail':{'position':tuple(centre+Vector((.08,.13,.13))),'target':tuple(centre+Vector((0,.025,0))),'scale':.088},
+        'front':{'position':tuple(centre+Vector((0,-.015,.24))),'target':tuple(centre),'scale':.132},
+        'iso':{'position':tuple(centre+Vector((.16,-.13,.17))),'target':tuple(centre),'scale':.127},
+        'detail':{'position':tuple(centre+Vector((.13,-.08,.13))),'target':tuple(centre+Vector((.025,0,0))),'scale':.088},
     }
     render_previews(ASSET_ID,ROOT/'assets/previews',objects,views,seed=SEED)
     print(f'ASSET BUILT: {path}; {metadata["triangles"]} triangles; {len(metadata["materials"])} materials',flush=True)

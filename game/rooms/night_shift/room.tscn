@@ -66,6 +66,7 @@
 [ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_rack_stencil.tres" id="78_doc_stencil"]
 [ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/rack_stencil.png" id="79_tex_stencil"]
 [ext_resource type="Script" path="res://addons/escapebox_sdk/airlock_gate.gd" id="80_airlock"]
+[ext_resource type="Script" path="res://addons/escapebox_sdk/ambient_zone.gd" id="81_ambient"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
 size = Vector3(0.39, 0.34, 0.52)
 
@@ -2282,3 +2283,77 @@ light_color = Color(0.4, 1, 0.5, 1)
 light_energy = 0.12
 light_specular = 0.0
 omni_range = 1.0
+
+[node name="Ambience" type="Node3D" parent="."]
+
+[node name="ServerFans" type="Node3D" parent="Ambience"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.9, 1.2, 1.8)
+script = ExtResource("81_ambient")
+hum_hz = 50.0
+hum_level = 0.15
+harmonics = 2
+noise_level = 0.6
+noise_cutoff_hz = 1400.0
+volume_db = -12.0
+unit_size = 2.5
+max_distance = 12.0
+
+[node name="TubeBuzz1" type="Node3D" parent="Ambience"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 2.75, 0.9)
+script = ExtResource("81_ambient")
+hum_hz = 100.0
+hum_level = 0.35
+harmonics = 5
+noise_level = 0.04
+buzz = 0.3
+volume_db = -30.0
+unit_size = 1.2
+max_distance = 6.0
+
+[node name="TubeBuzz2" type="Node3D" parent="Ambience"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 2.75, 3.9)
+script = ExtResource("81_ambient")
+hum_hz = 100.0
+hum_level = 0.35
+harmonics = 5
+noise_level = 0.04
+buzz = 0.3
+volume_db = -30.0
+unit_size = 1.2
+max_distance = 6.0
+
+[node name="TubeBuzz3" type="Node3D" parent="Ambience"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 2.75, 4.3)
+script = ExtResource("81_ambient")
+hum_hz = 100.0
+hum_level = 0.35
+harmonics = 5
+noise_level = 0.04
+buzz = 0.3
+volume_db = -30.0
+unit_size = 1.2
+max_distance = 6.0
+
+[node name="TubeBuzz4" type="Node3D" parent="Ambience"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 2.75, 1.0)
+script = ExtResource("81_ambient")
+hum_hz = 100.0
+hum_level = 0.35
+harmonics = 5
+noise_level = 0.04
+buzz = 0.3
+volume_db = -30.0
+unit_size = 1.2
+max_distance = 6.0
+
+[node name="TubeBuzz5" type="Node3D" parent="Ambience"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 2.75, 3.6)
+script = ExtResource("81_ambient")
+hum_hz = 100.0
+hum_level = 0.35
+harmonics = 5
+noise_level = 0.04
+buzz = 0.3
+volume_db = -30.0
+unit_size = 1.2
+max_distance = 6.0

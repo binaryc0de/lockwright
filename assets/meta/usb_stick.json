@@ -19,7 +19,7 @@
     0.070099995,
     0.009706471
   ],
-  "built_at": "2026-10-02T21:11:46+00:00",
+  "built_at": "2026-10-02T21:15:44+00:00",
   "collision": "none",
   "connector_forward_godot": [
     0,
@@ -31,7 +31,7 @@
     -0.006049999967217445,
     4.656612873077393e-10
   ],
-  "glb_sha256": "d8dc1231fc76ed816e6d3e4c13c4fc71c66c2deec40b34f03acb8003a81f39ad",
+  "glb_sha256": "e4b6f033d75e1d3406004bb0260fbc9f2be6b0da44c6cc72e2596bd25196cb2e",
   "label_text": "MR - backups",
   "materials": [
     "M_usb_stick_label",
@@ -58,7 +58,7 @@
     0.009
   ],
   "preview_renderer": "Cycles CPU; 32 samples; 4 threads",
-  "script_sha256": "d431784d8561a6564581041dbfed9e277dcc38e03c0cf1c446019d67e83e9e47",
+  "script_sha256": "248475b5e2bdf33bde272b519024e9162800b32d2c7e004103ffab43339faaea",
   "textures": [
     {
       "embedded": true,

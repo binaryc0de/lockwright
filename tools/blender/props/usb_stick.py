@@ -81,18 +81,6 @@ class Surface:
             ramp.elements.new(position).color = color
         return node.outputs['Color']
 
-    def ring(self, x, y, radius):
-        dx = self.math('SUBTRACT', self.axes.outputs['X'], x)
-        dy = self.math('SUBTRACT', self.axes.outputs['Y'], y)
-        r = self.math('SQRT', self.math('ADD', self.math('MULTIPLY', dx, dx),
-                                      self.math('MULTIPLY', dy, dy)))
-        distance = self.math('ABSOLUTE', self.math('SUBTRACT', r, radius))
-        ring = self.math('MAXIMUM', 0, self.math('SUBTRACT', 1, self.math('DIVIDE', distance, .0017)))
-        # Broken, nearly invisible evaporation mark, only on the top face.
-        broken = self.math('MULTIPLY', ring, self.noise((120, 120, 10)))
-        return self.math('MULTIPLY', broken,
-                         self.math('GREATER_THAN', self.axes.outputs['Z'], .755))
-
     def finish(self, color, roughness, height, strength, distance):
         self.color, self.roughness = color, roughness
         self.set(self.bsdf.inputs['Base Color'], color)
@@ -287,7 +275,7 @@ def geometry(surfs):
     for shell in groups['plastic']:
         cut(shell, cylinder('keyring_cut-noimp', .00205, .014, None, (0, -.0237, .0045), count=48))
     # Local missing edge flake, not uniformly distressed plastic.
-    chip = box('edge_chip-noimp', (.00125, .00195, .0011), None, (.0093, -.0112, .0085), bevel=.0003)
+    chip = box('edge_chip-noimp', (.00125, .00195, .0011), None, (.0093, .0252, .0085), bevel=.0003)
     cut(upper, chip)
     # U-shaped swivel folded 180 degrees back: side cheeks and narrow windowed plates.
     for z in (.00048, .00930):
@@ -319,7 +307,7 @@ def geometry(surfs):
     groups['plastic'].append(box('contact_tongue', (.0106, .0107, .0014), p, (0, .0349, .00292), bevel=.0002, segments=3))
     for x in (-.0035, -.00117, .00117, .0035):
         groups['metal'].append(box('gold_contact', (.00105, .0072, .00014), m, (x, .03555, .00369), bevel=.00005, segments=2))
-    # Thin tape strip with cut corners and a slightly lifted rear corner.
+    # Thin tape strip with irregular cut corners.
     outline = [(-.0044, -.0191), (.0038, -.0191), (.0044, -.0185), (.0044, .0139),
                (.0038, .0142), (-.0037, .0142), (-.0044, .01365)]
     verts = [(x, y, z) for z in (.00901, .00916) for x, y in outline]
@@ -453,6 +441,8 @@ def build(out_dir):
         'iso': {'position': (.085,.105,.110), 'target': tuple(target), 'scale': .088},
         'detail': {'position': (.095,-.010,.175), 'target': tuple(Vector((0,-.003,.006))+shift), 'scale': .054},
     }
+    # Keep orange diffuse colour and brushed steel below studio highlight clipping.
+    bpy.context.scene.view_settings.exposure = -1.25
     render_previews(ASSET_ID, ROOT/'assets/previews', [body], views, seed=SEED)
     print(f'ASSET BUILT: {path}; {meta["triangles"]} triangles; {len(meta["materials"])} materials', flush=True)
 

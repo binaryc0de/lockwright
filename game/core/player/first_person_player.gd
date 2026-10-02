@@ -9,6 +9,8 @@ signal target_changed(target: Interactable)
 const WALK_SPEED := 3.0
 const ACCEL := 12.0
 const EYE_HEIGHT := 1.6
+## Distance between footstep sounds.
+const STRIDE_M := 0.6
 const REACH := 3.0
 const RADIUS := 0.3
 const HEIGHT := 1.75
@@ -22,6 +24,7 @@ var input_enabled: bool = true
 
 var _pitch: float = 0.0
 var _report_timer: float = 0.0
+var _stride := 0.0
 
 
 func _ready() -> void:
@@ -84,6 +87,11 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 	move_and_slide()
+	if is_on_floor():
+		_stride += Vector2(velocity.x, velocity.z).length() * delta
+		if _stride >= STRIDE_M:
+			_stride = 0.0
+			EBSound.play_at(self, EBSound.FOOTSTEPS.pick_random(), -16.0, 0.08)
 	_update_target()
 	_report_timer -= delta
 	if _report_timer <= 0.0:

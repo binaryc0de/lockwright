@@ -44,6 +44,7 @@ func setup(p_lock: KeypadLock) -> void:
 
 
 func _press(key: String) -> void:
+	EBSound.play_ui(self, "key", -8.0)
 	match key:
 		"CLR":
 			_entry = ""

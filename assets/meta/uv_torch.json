@@ -3,7 +3,7 @@
     "lens_surface_centre": [
       -0.0,
       0.013,
-      -0.05491497801542282
+      -0.05491467999219894
     ]
   },
   "animations": [],
@@ -13,20 +13,20 @@
     "max": [
       0.013,
       0.026000001,
-      0.056614976
+      0.056614678
     ],
     "min": [
       -0.013,
       0.0,
-      -0.056614976
+      -0.056614678
     ]
   },
   "bounds_m": [
     0.026000001,
-    0.113229953,
+    0.113229357,
     0.026000001
   ],
-  "built_at": "2026-10-02T21:12:42+00:00",
+  "built_at": "2026-10-02T21:17:11+00:00",
   "collision": null,
   "dimensions_nominal_m": {
     "body_diameter": 0.022,
@@ -35,18 +35,18 @@
     "lens_diameter": 0.018
   },
   "forward": "Blender +Y -> Godot -Z",
-  "glb_sha256": "e4d5349eede0bf4425d45bd1fef87b8de50c8f9c572e2d920a83d6a91c36787b",
+  "glb_sha256": "4762d12ef0fa1808c5ab7add8f11afeb653a1cd530debfc4ab0859c4ccfcf64f",
   "label_strings": [
     "UV 365nm",
     "KL-IT-0118"
   ],
   "lens_emission": {
     "linear_rgb": [
-      0.22,
-      0.012,
-      0.85
+      0.28,
+      0.008,
+      1.0
     ],
-    "strength": 0.32
+    "strength": 0.75
   },
   "materials": [
     "M_uv_torch_body",
@@ -69,7 +69,7 @@
     "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
     "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
   },
-  "script_sha256": "a7c7dc8a212b228023749c419685196addcb9e13f3d52c92db7d2d92f9edc0b4",
+  "script_sha256": "70b65b24b51ccb546faf4a8cc27743cf9be353a5a5603456db48dff0df2d74e3",
   "textures": [
     {
       "embedded": true,
@@ -143,5 +143,5 @@
     }
   ],
   "third_party": [],
-  "triangles": 12384
+  "triangles": 11936
 }

@@ -78,3 +78,7 @@ func _server_intent(_player_id: String, verb: String, payload: Dictionary) -> Di
 
 func client_interact(_item_path: String = "") -> void:
 	Game.ui_open_patch_panel(self)
+
+
+func _state_sound(old: Dictionary, new: Dictionary) -> Variant:
+	return "relay" if new.get("state") == "solved" and old.get("state") != "solved" else ""

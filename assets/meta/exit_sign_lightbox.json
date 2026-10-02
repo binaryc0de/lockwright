@@ -40,12 +40,12 @@
     0.049999997,
     0.150000006
   ],
-  "built_at": "2026-10-02T21:10:04+00:00",
+  "built_at": "2026-10-02T21:18:01+00:00",
   "emission_strength": {
     "face": 0.85,
     "led": 0.4
   },
-  "glb_sha256": "2bf9561333dd3af15b5173ff16673c1debb5a05886e5e91daae93013afadb994",
+  "glb_sha256": "1b9858e72894db2b76a9700d3b4a7758175bd25e507ad3c2e26e27fa18aa989d",
   "materials": [
     "M_exit_sign_lightbox_face",
     "M_exit_sign_lightbox_housing",
@@ -68,7 +68,7 @@
     "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
   },
   "preview_renderer": "Cycles CPU; 32 samples; 4 threads",
-  "script_sha256": "a3d78ba586d21c14cf53daaca0b653f6db1c634a501d67fa0af0670dc4717d7c",
+  "script_sha256": "8011f4d8655552dab119cdee447a5eb24a1528a58db117577bc9444e8826854f",
   "textures": [
     {
       "embedded": true,

@@ -8,6 +8,7 @@ const SMOOTH := 12.0
 
 var _avatars: Dictionary = {}   # player id -> Node3D
 var _targets: Dictionary = {}   # player id -> {pos, yaw}
+var _strides: Dictionary = {}   # player id -> metres since the last step
 
 
 func _ready() -> void:
@@ -37,7 +38,13 @@ func _process(delta: float) -> void:
 		var a := _avatars[pid] as Node3D
 		var t: Dictionary = _targets[pid]
 		var feet: Vector3 = (t["pos"] as Vector3) - Vector3.UP * EYE_HEIGHT
+		var before := a.global_position
 		a.global_position = a.global_position.lerp(feet, k)
+		var stride: float = _strides.get(pid, 0.0) + Vector2(a.global_position.x - before.x, a.global_position.z - before.z).length()
+		if stride >= FirstPersonPlayer.STRIDE_M:
+			stride = 0.0
+			EBSound.play_at(a, EBSound.FOOTSTEPS.pick_random(), -14.0, 0.08)
+		_strides[pid] = stride
 		a.rotation.y = lerp_angle(a.rotation.y, float(t["yaw"]), k)
 
 

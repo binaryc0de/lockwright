@@ -1,6 +1,6 @@
 # Third-party assets
 
-Every file under this directory is CC0 1.0 (public domain dedication) and stored exactly as published. `tools/thirdparty/fetch_cc0.sh` re-downloads all of them. Attribution is not required by CC0; it is recorded here so sources stay traceable (PLAN.md 13.8).
+Every file under this directory is CC0 1.0 (each Kenney pack keeps its License.txt) (public domain dedication) and stored exactly as published. `tools/thirdparty/fetch_cc0.sh` re-downloads all of them. Attribution is not required by CC0; it is recorded here so sources stay traceable (PLAN.md 13.8).
 
 | Path | Asset | Source | Licence | Used in |
 |---|---|---|---|---|
@@ -15,6 +15,10 @@ Every file under this directory is CC0 1.0 (public domain dedication) and stored
 | `polyhaven/cardboard_box_01/` | Cardboard Box 01, 1k glTF | https://polyhaven.com/a/cardboard_box_01 | CC0 | Night Shift migration boxes |
 | `polyhaven/fire_alarm/` | Fire Alarm (manual call point), 1k glTF | https://polyhaven.com/a/fire_alarm | CC0 | Night Shift, beside the exit door |
 | `polyhaven/security_camera_02/` | Security Camera 02, 1k glTF | https://polyhaven.com/a/security_camera_02 | CC0 | Night Shift office ceiling corner |
+| `kenney/interface-sounds/` | Kenney Interface Sounds: click, confirmation, error, bong (hint chime), win | https://kenney.nl/assets/interface-sounds | CC0 | SDK default sounds (keypads, hints, end screen) |
+| `kenney/impact-sounds/` | Kenney Impact Sounds: heavy metal impact (maglock slam), light impact, carpet footsteps | https://kenney.nl/assets/impact-sounds | CC0 | SDK default sounds, player footsteps |
+| `kenney/sci-fi-sounds/` | Kenney Sci-fi Sounds: force field (maglock release buzz) | https://kenney.nl/assets/sci-fi-sounds | CC0 | SDK default sound |
+| `kenney/rpg-audio/` | Kenney RPG Audio: door open/close, creak (drawer), leather (pick up), page flip, metal latch | https://kenney.nl/assets/rpg-audio | CC0 | SDK default sounds |
 | `polyhaven/stationery_supplies/` | Stationery Supplies, 1k glTF | https://polyhaven.com/a/stationery_supplies | CC0 | not placed yet (M4 desk dressing) |
 
 Known budget exception: `desk_lamp_arm_01` is about 25.7k polygons, over the 20k prop budget (PLAN.md 13.8). Accepted for the M1 look test; a Codex decimation pass is listed for M4.

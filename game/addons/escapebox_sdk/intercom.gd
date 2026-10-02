@@ -18,9 +18,4 @@ func _show(text: String) -> void:
 	var l := get_node_or_null(label) as Label3D
 	if l:
 		l.text = "%s:\n%s" % [speaker_name, text]
-	if chime:
-		var p := AudioStreamPlayer3D.new()
-		p.stream = chime
-		add_child(p)
-		p.finished.connect(p.queue_free)
-		p.play()
+	EBSound.play_at(self, chime if chime else "chime", 0.0, 0.0)

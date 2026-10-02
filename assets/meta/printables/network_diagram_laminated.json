@@ -8,9 +8,9 @@
       "path": "game/rooms/night_shift/assets/docs/network_diagram_laminated.png",
       "preview": "assets/previews/printables/network_diagram_laminated_25.png",
       "preview_background": "document",
-      "preview_sha256": "16d6a38823920427b04f2d880eee96f9dcfa44f96116c25b05f300913e38a813",
+      "preview_sha256": "a32879ac35d29d83c5131e018b5ee390b38a03c6abe48c200eaf00b5407cdd06",
       "rgba": true,
-      "sha256": "0d05badd422f875a5cd318380c884b299d10bad27fdf4226929373d84b72bf07",
+      "sha256": "be298572081818ee64bd62ca7d4ae512c1cb10136b9898d2165eb285636e4428",
       "size": [
         2048,
         1448
@@ -87,11 +87,11 @@
           "width_px": 65.52483300176421
         },
         {
-          "cap_height_25_px": 21.75,
-          "cap_height_px": 87.0,
+          "cap_height_25_px": 19.5,
+          "cap_height_px": 78.0,
           "id": "port_A",
           "text": "3",
-          "width_px": 67.20604385336001
+          "width_px": 60.25369448921932
         },
         {
           "cap_height_25_px": 18.0,
@@ -101,11 +101,11 @@
           "width_px": 59.14631085369313
         },
         {
-          "cap_height_25_px": 21.75,
-          "cap_height_px": 87.0,
+          "cap_height_25_px": 19.5,
+          "cap_height_px": 78.0,
           "id": "port_B",
           "text": "7",
-          "width_px": 66.79731667453848
+          "width_px": 59.88724943234484
         },
         {
           "cap_height_25_px": 18.0,
@@ -115,11 +115,11 @@
           "width_px": 66.92617489297479
         },
         {
-          "cap_height_25_px": 21.75,
-          "cap_height_px": 87.0,
+          "cap_height_25_px": 19.5,
+          "cap_height_px": 78.0,
           "id": "port_C",
           "text": "1",
-          "width_px": 66.85570627151299
+          "width_px": 59.93959872618405
         },
         {
           "cap_height_25_px": 18.0,
@@ -129,11 +129,11 @@
           "width_px": 65.3315475195236
         },
         {
-          "cap_height_25_px": 21.75,
-          "cap_height_px": 87.0,
+          "cap_height_25_px": 19.5,
+          "cap_height_px": 78.0,
           "id": "port_D",
           "text": "5",
-          "width_px": 66.85570627151299
+          "width_px": 59.93959872618405
         },
         {
           "cap_height_25_px": 8.25,
@@ -149,5 +149,5 @@
   "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
   "request_sha256": "7f1eb60f41acb4ade2795ed5888b1b1b08e57989d166c4f2aedb8672ada26f6b",
   "seed": 417,
-  "source_sha256": "2390d2c34deca6eca47231b7f33ef19a2082ce0e34adb97f07642be98474268b"
+  "source_sha256": "a472efcf7edd49c8691e298aa0246f59d29147990f37d9616252b35721d9455a"
 }

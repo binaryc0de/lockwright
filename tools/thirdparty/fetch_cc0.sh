@@ -51,6 +51,25 @@ polyhaven_model() {
 	echo "polyhaven model $id"
 }
 
+# Kenney audio pack subset: <pack> <file>... (CC0, https://kenney.nl). The
+# download link carries a hash, so it is read from the pack's page.
+kenney_audio() {
+	local pack=$1; shift
+	local dir="$dest/kenney/$pack"
+	[[ -f "$dir/.done" ]] && return
+	mkdir -p "$dir"
+	local url zip tmp
+	url="$(curl -fsSL "https://kenney.nl/assets/$pack" | grep -o 'https://kenney.nl/media/pages/assets/[^"]*\.zip' | head -1)"
+	zip="$(mktemp)"; tmp="$(mktemp -d)"
+	curl -fsSL -o "$zip" "$url"
+	unzip -q -o "$zip" -d "$tmp"
+	cp "$(find "$tmp" -iname 'License.txt' | head -1)" "$dir/License.txt"
+	for f in "$@"; do cp "$(find "$tmp" -name "$f" | head -1)" "$dir/$f"; done
+	chmod -R u+w "$tmp"; rm -rf "$zip" "$tmp"
+	touch "$dir/.done"
+	echo "kenney $pack ($# sounds)"
+}
+
 ambientcg Carpet012 2K-JPG
 ambientcg OfficeCeiling001 2K-JPG
 polyhaven_tex painted_plaster_wall 2k
@@ -63,3 +82,7 @@ polyhaven_model cardboard_box_01 1k
 polyhaven_model fire_alarm 1k
 polyhaven_model security_camera_02 1k
 polyhaven_tex concrete_floor_painted 2k
+kenney_audio interface-sounds click_002.ogg confirmation_002.ogg error_004.ogg bong_001.ogg confirmation_004.ogg
+kenney_audio impact-sounds impactMetal_heavy_002.ogg impactGeneric_light_002.ogg footstep_carpet_000.ogg footstep_carpet_001.ogg footstep_carpet_002.ogg footstep_carpet_003.ogg footstep_carpet_004.ogg
+kenney_audio sci-fi-sounds forceField_001.ogg
+kenney_audio rpg-audio doorOpen_1.ogg doorClose_2.ogg creak1.ogg handleSmallLeather.ogg bookFlip2.ogg metalLatch.ogg

@@ -48,3 +48,7 @@ func _apply_state(state: Dictionary) -> void:
 ## True for items that switch on UV layers while selected.
 func is_uv_source() -> bool:
 	return false
+
+
+func _state_sound(old: Dictionary, new: Dictionary) -> Variant:
+	return "pick_up" if old.get("state") == "world" and new.get("state") == "inventory" else ""
