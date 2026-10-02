@@ -1,0 +1,19 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/core/third_party/ambientcg/OfficeCeiling001/OfficeCeiling001_2K-JPG_Color.jpg" id="1"]
+[ext_resource type="Texture2D" path="res://assets/core/third_party/ambientcg/OfficeCeiling001/OfficeCeiling001_2K-JPG_NormalGL.jpg" id="2"]
+[ext_resource type="Texture2D" path="res://assets/core/third_party/ambientcg/OfficeCeiling001/OfficeCeiling001_2K-JPG_Roughness.jpg" id="3"]
+[ext_resource type="Texture2D" path="res://assets/core/third_party/ambientcg/OfficeCeiling001/OfficeCeiling001_2K-JPG_AmbientOcclusion.jpg" id="4"]
+
+[resource]
+resource_name = "mat_ceiling_tiles"
+albedo_texture = ExtResource("1")
+roughness_texture = ExtResource("3")
+ao_enabled = true
+ao_texture = ExtResource("4")
+normal_enabled = true
+normal_texture = ExtResource("2")
+uv1_scale = Vector3(0.2778, 0.2778, 0.2778)
+uv1_triplanar = true
+uv1_world_triplanar = true
+albedo_color = Color(0.85, 0.85, 0.85, 1)

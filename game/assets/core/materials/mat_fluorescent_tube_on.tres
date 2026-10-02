@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/core/third_party/polyhaven/mounted_fluorescent_lights/textures/mounted_fluorescent_lights_emission_1k.jpg" id="1"]
+
+[resource]
+resource_name = "mat_fluorescent_tube_on"
+albedo_color = Color(0.95, 0.97, 1, 1)
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.82, 0.92, 1, 1)
+emission_energy_multiplier = 2.5
+emission_operator = 1
+emission_texture = ExtResource("1")

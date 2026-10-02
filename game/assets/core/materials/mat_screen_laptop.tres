@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "mat_screen_laptop"
+albedo_color = Color(0.02, 0.03, 0.05, 1)
+roughness = 0.15
+emission_enabled = true
+emission = Color(0.16, 0.32, 0.62, 1)
+emission_energy_multiplier = 1.6
