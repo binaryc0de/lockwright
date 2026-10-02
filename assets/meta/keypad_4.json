@@ -1,0 +1,181 @@
+{
+  "animations": [],
+  "asset_id": "keypad_4",
+  "blender_version": "5.2.2 LTS",
+  "bounds_godot_m": {
+    "max": [
+      0.037500001,
+      0.057500001,
+      -0.0
+    ],
+    "min": [
+      -0.037500001,
+      -0.057500001,
+      -0.022
+    ]
+  },
+  "bounds_m": [
+    0.075000003,
+    0.022,
+    0.115000002
+  ],
+  "built_at": "2026-10-02T00:55:38+00:00",
+  "collision": {
+    "bounds_m": [
+      0.075,
+      0.022,
+      0.115
+    ],
+    "part": "body-col",
+    "shape": "box"
+  },
+  "forward": "Blender +Y -> Godot -Z",
+  "glb_path": "game/assets/core/props/keypad_4.glb",
+  "glb_sha256": "cf2aa3f98878c7557333974547f08d19234f1b8b09116bc0a70fb7b4a26b7cc5",
+  "key_origins_godot_m": {
+    "btn_0": [
+      0.0,
+      -0.037,
+      -0.016
+    ],
+    "btn_1": [
+      0.02,
+      0.011,
+      -0.016
+    ],
+    "btn_2": [
+      0.0,
+      0.011,
+      -0.016
+    ],
+    "btn_3": [
+      -0.02,
+      0.011,
+      -0.016
+    ],
+    "btn_4": [
+      0.02,
+      -0.005,
+      -0.016
+    ],
+    "btn_5": [
+      0.0,
+      -0.005,
+      -0.016
+    ],
+    "btn_6": [
+      -0.02,
+      -0.005,
+      -0.016
+    ],
+    "btn_7": [
+      0.02,
+      -0.021,
+      -0.016
+    ],
+    "btn_8": [
+      0.0,
+      -0.021,
+      -0.016
+    ],
+    "btn_9": [
+      -0.02,
+      -0.021,
+      -0.016
+    ],
+    "btn_clear": [
+      0.02,
+      -0.037,
+      -0.016
+    ],
+    "btn_enter": [
+      -0.02,
+      -0.037,
+      -0.016
+    ]
+  },
+  "legend_font": "original_bold_sans_stroke_atlas",
+  "materials": [
+    "M_keypad_4_body",
+    "M_keypad_4_key",
+    "M_keypad_4_led",
+    "M_keypad_4_screen",
+    "M_keypad_4_screw"
+  ],
+  "origin": "mount_plane_center",
+  "parts": [
+    "body",
+    "body-col",
+    "btn_0",
+    "btn_1",
+    "btn_2",
+    "btn_3",
+    "btn_4",
+    "btn_5",
+    "btn_6",
+    "btn_7",
+    "btn_8",
+    "btn_9",
+    "btn_clear",
+    "btn_enter",
+    "led_status",
+    "screen"
+  ],
+  "pipeline_sha256": {
+    "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
+    "common/__init__.py": "544d16dbad2dbe139cfb3f86cd19aeca1a54e1757ef02be17b9a438d3f52989a",
+    "common/cli.py": "db662b91c52cc8ee531e5b1923a70c6f6958b7a10409587ea68346fa216f0f16",
+    "common/export.py": "a11ff7e4d096de2aaab49d604b6dd4c3ba782608635884f48f6e5a8784bd2d44",
+    "common/geometry.py": "513eb6fe2ebcc5375bc5c1590e1d8bbf38f0f04925f29670702032d1ed652418",
+    "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
+    "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
+    "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "render": {
+    "denoise": true,
+    "device": "CPU",
+    "engine": "CYCLES",
+    "samples": 32,
+    "threads": 4
+  },
+  "script_sha256": "28b9f32d75c0783693014ed6cf18ac7f4988a034ec296990bfac3017e41a0da9",
+  "textures": [
+    {
+      "embedded": true,
+      "map": "body_base_color",
+      "name": "T_keypad_4_body_base_color",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "body_normal",
+      "name": "T_keypad_4_body_normal",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "body_orm",
+      "name": "T_keypad_4_body_orm",
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "embedded": true,
+      "map": "legend_atlas",
+      "name": "T_keypad_4_legend_atlas",
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "triangles": 5674
+}
