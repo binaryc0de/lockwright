@@ -69,3 +69,28 @@ func test_connecting_overlay_and_cancel() -> void:
 	assert_array(left).has_size(1)
 	assert_object(Game.net.client).is_null()
 	assert_bool(multiplayer.multiplayer_peer is ENetMultiplayerPeer).is_false()
+
+
+func test_join_code_uses_the_platform() -> void:
+	var menu := auto_free(MainMenu.new()) as MainMenu
+	add_child(menu)
+	var got: Array = []
+	menu.join_requested.connect(func(a: AppArgs) -> void: got.append(a))
+	menu._server.text = "192.168.1.20"
+	menu._code.text = "ab3k9z"
+	menu._token.text = "ignored-with-a-code"
+	menu._join()
+	assert_array(got).has_size(1)
+	var a: AppArgs = got[0]
+	assert_bool(a.via_platform()).is_true()
+	assert_str(a.join_url).is_equal("http://192.168.1.20:8080")
+	assert_str(a.join_code).is_equal("AB3K9Z")
+	assert_str(a.server_token).is_empty()
+
+
+func test_host_needs_an_address() -> void:
+	var menu := auto_free(MainMenu.new()) as MainMenu
+	add_child(menu)
+	menu._server.text = ""
+	menu._host()
+	assert_str(menu._status.text).contains("platform's address")

@@ -15,8 +15,11 @@ var _pack: LineEdit
 var _pack_room: LineEdit
 var _status: Label
 var _server: LineEdit
+var _code: LineEdit
 var _token: LineEdit
 var _ws: CheckBox
+var _host_btn: Button
+var _platform: PlatformClient
 
 
 func _ready() -> void:
@@ -75,16 +78,22 @@ func _ready() -> void:
 	play.pressed.connect(_play)
 	box.add_child(play)
 
-	box.add_child(_caption("Join a game server"))
+	box.add_child(_caption("Online: platform or game server address"))
 	var jrow := HBoxContainer.new()
 	_server = LineEdit.new()
-	_server.placeholder_text = "192.168.1.20  or  host:7777"
+	_server.placeholder_text = "address, e.g. 192.168.1.20"
 	_server.text = Settings.last_server
 	_server.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_server.text_submitted.connect(func(_t: String) -> void: _join())
 	jrow.add_child(_server)
+	_code = LineEdit.new()
+	_code.placeholder_text = "join code"
+	_code.max_length = 6
+	_code.custom_minimum_size = Vector2(120, 0)
+	_code.text_submitted.connect(func(_t: String) -> void: _join())
+	jrow.add_child(_code)
 	_token = LineEdit.new()
-	_token.placeholder_text = "invite password"
+	_token.placeholder_text = "server password"
 	_token.secret = true
 	_token.custom_minimum_size = Vector2(170, 0)
 	_token.text_submitted.connect(func(_t: String) -> void: _join())
@@ -94,11 +103,20 @@ func _ready() -> void:
 	_ws.text = "WebSocket (for servers behind a tunnel)"
 	_ws.button_pressed = Settings.last_ws
 	box.add_child(_ws)
+	var brow := HBoxContainer.new()
 	var join := Button.new()
 	join.text = "Join"
 	join.custom_minimum_size = Vector2(0, 48)
+	join.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	join.pressed.connect(_join)
-	box.add_child(join)
+	brow.add_child(join)
+	_host_btn = Button.new()
+	_host_btn.text = "Host the selected room on the platform"
+	_host_btn.custom_minimum_size = Vector2(0, 48)
+	_host_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_host_btn.pressed.connect(_host)
+	brow.add_child(_host_btn)
+	box.add_child(brow)
 
 	var quit := Button.new()
 	quit.text = "Quit"
@@ -138,11 +156,16 @@ func _join() -> void:
 	if server.is_empty():
 		show_error("Type the server's address.")
 		return
-	var argv: PackedStringArray = ["--connect", server, "--name", Settings.display_name]
-	if not _token.text.is_empty():
-		argv.append_array(["--token", _token.text])
-	if _ws.button_pressed:
-		argv.append_array(["--transport", "ws"])
+	var argv: PackedStringArray
+	var code := _code.text.strip_edges()
+	if not code.is_empty():
+		argv = ["--join", server, "--code", code, "--name", Settings.display_name]
+	else:
+		argv = ["--connect", server, "--name", Settings.display_name]
+		if not _token.text.is_empty():
+			argv.append_array(["--token", _token.text])
+		if _ws.button_pressed:
+			argv.append_array(["--transport", "ws"])
 	var args := AppArgs.parse(argv)
 	if not args.errors.is_empty():
 		show_error("\n".join(args.errors))
@@ -156,3 +179,38 @@ func _join() -> void:
 func _save_name() -> void:
 	Settings.display_name = _name.text.strip_edges() if not _name.text.strip_edges().is_empty() else "Player"
 	Settings.save_settings()
+
+
+## Creates a game for the selected room on the platform, then joins it; the
+## join code shows in-game (toast and pause menu) to read out to friends.
+func _host() -> void:
+	_save_name()
+	var server := _server.text.strip_edges()
+	if server.is_empty():
+		show_error("Type the platform's address.")
+		return
+	var sel := _rooms.get_selected_items()
+	if sel.is_empty():
+		show_error("Pick a room to host.")
+		return
+	var room_id: String = _rooms.get_item_metadata(sel[0])
+	if _platform == null:
+		_platform = PlatformClient.new(AppArgs.platform_http_url(server))
+		add_child(_platform)
+	else:
+		_platform.base_url = AppArgs.platform_http_url(server)
+	_host_btn.disabled = true
+	show_error("Creating a game on %s ..." % _platform.base_url)
+	_platform.request_async(HTTPClient.METHOD_POST, "/api/sessions", {"room_id": room_id}, func(code: int, data: Variant) -> void:
+		if not is_instance_valid(self):
+			return
+		_host_btn.disabled = false
+		if code == 201 and data is Dictionary:
+			Settings.last_server = server
+			Settings.save_settings()
+			_code.text = str(data["invite_code"])
+			join_requested.emit(AppArgs.parse(["--join", server, "--code", _code.text, "--name", Settings.display_name]))
+		elif code == 0:
+			show_error("No platform answered at %s." % _platform.base_url)
+		else:
+			show_error("The platform refused: %s" % (data.get("message", "HTTP %d" % code) if data is Dictionary else "HTTP %d" % code)), 10.0)

@@ -7,6 +7,11 @@ signal quit_requested
 
 func setup() -> void:
 	add_title("Paused")
+	if not Game.join_code.is_empty():
+		var code := Label.new()
+		code.text = "Join code for friends: %s" % Game.join_code
+		code.add_theme_font_size_override("font_size", 22)
+		body().add_child(code)
 	var grid := GridContainer.new()
 	grid.columns = 2
 	_slider(grid, "Mouse sensitivity", 0.0005, 0.01, 0.0005, Settings.mouse_sensitivity,

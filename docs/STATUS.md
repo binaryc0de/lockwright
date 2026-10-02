@@ -79,7 +79,7 @@ Started 2026-10-02 on branch `m3-platform` (design: ADR-0018; Docker access: ADR
 - [x] `tools/m3_smoke.sh` (in `tools/test.sh`): platform + spawned game servers + join-code bots + flag + game-server crash/restore + recorded win + bad code
 - [ ] Real Docker run: build the intranet image, attack it with curl, end-to-end with containers (waiting on the owner's `sudo usermod -aG docker $USER` + re-login)
 - [ ] `docker compose up` (platform + challenge images) per PLAN.md M3 acceptance
-- [ ] Main menu "Join code" / "Host a game" on the platform (CLI works today)
+- [x] Main menu: platform address + join code joins through the platform; "Host the selected room on the platform" creates a game and joins it; the join code shows on joining and in the pause menu (`tests/ui/test_join_flow.gd` 5 tests; layout checked in a windowed capture)
 - [ ] Codex review of the branch
 
 ## M4: Night Shift content and polish
