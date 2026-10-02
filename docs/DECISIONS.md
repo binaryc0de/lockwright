@@ -101,3 +101,15 @@ Short records: context, decision, consequences. Newest at the bottom. Never edit
 9. **Transports.** `--transport enet` (default, UDP) or `ws` (WebSocket); same MultiplayerAPI.
 10. **Testing.** A headless bot client (`--bot`) replays `room.yaml`'s `solution` through the network, teleporting its reported position to each target. `tools/m2_smoke.sh` runs server + bots + a server kill/restart in one script; gdUnit covers the diff/mirror logic in-process.
 **Consequences.** Per-session `vars` (e.g. the cabinet code) reach every client because clients render templated text; a player who reads process memory could cheat. Accepted for trusted friends; flags never enter the WorldState. Real flags, platform join verification and snapshot POSTs stay M3.
+
+## ADR-0016: Server-side movement validation; reported positions are not trusted (2026-10-02)
+
+**Context.** Codex's M2 review (P1) showed that ADR-0015's "intents carry the player's position" let a modified client claim to stand next to any node and bypass the reach check (ADR-0010).
+**Decision.** The server owns each player's starting position (spawn on first join, last accepted position on rejoin within the server's lifetime) and sends it in `rpc_welcome`; the client places its player there. A reported position, whether from `rpc_position` or carried by `rpc_intent`, is accepted only if it is within `1 m + 6 m/s x elapsed` of the last accepted one; otherwise it is ignored and the reach check uses the last accepted position. `--trust-positions` turns the check off for headless test bots only and prints a warning.
+**Consequences.** Real players can no longer teleport for reach; a player who lags badly may briefly fail reach checks until their next plausible report. Physics-level validation (walls, noclip) is still client-authoritative and out of scope for trusted friends.
+
+## ADR-0017: Docker access for M3 development (2026-10-02)
+
+**Context.** M3 runs CTF challenge containers through the Docker API. On the Alienware, Docker 27 is installed and running but the user is not in the `docker` group. PLAN.md (Risks, M5) intends rootless Docker on the LAN host; rootless on Ubuntu 24.04 also needs an AppArmor rule for rootlesskit.
+**Decision.** Owner's choice: on the development laptop, add the user to the `docker` group (`sudo usermod -aG docker $USER`, then log out and in). The LAN host gets rootless Docker (plus gVisor if feasible) in the M5 runbook. The platform talks to whatever `DOCKER_HOST` points at, so both work unchanged.
+**Consequences.** On the dev laptop, docker group membership is root-equivalent; acceptable for a single-user dev machine. Container hardening (no egress, cap_drop ALL, no-new-privileges, read-only rootfs, pids/mem/cpu limits) is required regardless of daemon mode, and the M3 tests check it on the created containers.

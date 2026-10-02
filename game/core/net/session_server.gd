@@ -8,17 +8,28 @@ const ROSTER_HZ := 15.0
 const SNAPSHOT_DEBOUNCE_S := 0.5
 const SNAPSHOT_PERIOD_S := 30.0
 const MAX_PLAYERS := 6
+## Movement sanity check (PLAN.md 6.2, review M2-P1): reported positions may
+## move at most this fast, plus slack for jitter and the first report.
+const MAX_SPEED_MPS := 6.0
+const MOVE_SLACK_M := 1.0
 
 var session_id: String = ""
 var room_id: String = ""
 var room_version: String = ""
 var verifier: JoinVerifier
 var store: SnapshotStore
+## Test-only (--trust-positions): accept teleports so headless bots can stand
+## at each target. Never set on a server real players use.
+var trust_positions := false
 
 ## peer id -> {id: player id, name: display name}
 var players: Dictionary = {}
-## player id -> {name, pos: Vector3, yaw: float}
+## player id -> {name, pos: Vector3, yaw: float} (roster)
 var _positions: Dictionary = {}
+## player id -> {pos: Vector3, t: float}: last accepted position and when.
+var _last_move: Dictionary = {}
+## player id -> last accepted position, kept across disconnects for rejoin.
+var _known_pos: Dictionary = {}
 
 var _net: NetBridge
 var _auth: RoomAuthority
@@ -88,8 +99,14 @@ func on_join(peer: int, token: String, display_name: String) -> void:
 		return
 	var pid := _unique_player_id(display_name)
 	players[peer] = {"id": pid, "name": display_name.strip_edges().left(32)}
+	# The server decides where a (re)joining player stands: where they were
+	# last seen this server lifetime, else the spawn point.
+	var start: Vector3 = _known_pos.get(pid, _spawn_eye())
+	_last_move[pid] = {"pos": start, "t": _now()}
+	_auth.update_player_position(pid, start)
 	_auth.event_logged.emit("player_joined", {"player": pid})
 	_net.rpc_welcome.rpc_id(peer, {
+		"position": start,
 		"player_id": pid,
 		"room_id": room_id,
 		"room_version": room_version,
@@ -150,8 +167,28 @@ func on_position(peer: int, pos: Vector3, yaw: float) -> void:
 	var pid := _player(peer)
 	if pid.is_empty():
 		return
+	var now := _now()
+	var last: Dictionary = _last_move.get(pid, {"pos": _spawn_eye(), "t": now})
+	if not trust_positions and not move_allowed(last["pos"], pos, now - float(last["t"])):
+		return  # implausible jump: keep the last accepted position
+	_last_move[pid] = {"pos": pos, "t": now}
+	_known_pos[pid] = pos
 	_auth.update_player_position(pid, pos)
 	_positions[pid] = {"name": players[peer]["name"], "pos": pos, "yaw": yaw}
+
+
+static func move_allowed(from: Vector3, to: Vector3, dt: float) -> bool:
+	return from.distance_to(to) <= MOVE_SLACK_M + MAX_SPEED_MPS * maxf(dt, 0.0)
+
+
+func _now() -> float:
+	return Time.get_ticks_msec() / 1000.0
+
+
+func _spawn_eye() -> Vector3:
+	var room := Game.room
+	var origin: Vector3 = room.spawn_transform().origin if room else Vector3.ZERO
+	return origin + Vector3.UP * FirstPersonPlayer.EYE_HEIGHT
 
 
 func on_examining(peer: int, title: String) -> void:
@@ -165,6 +202,7 @@ func _on_peer_disconnected(peer: int) -> void:
 	var p: Dictionary = players[peer]
 	players.erase(peer)
 	_positions.erase(p["id"])
+	_last_move.erase(p["id"])
 	_auth.player_positions.erase(p["id"])
 	_auth.event_logged.emit("player_left", {"player": p["id"]})
 	_queue_toast_others(peer, "%s left." % p["name"])

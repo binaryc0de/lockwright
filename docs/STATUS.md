@@ -2,7 +2,7 @@
 
 Milestone checklist from PLAN.md Section 11. Check an item only when it was actually run; each milestone ends with a verification note saying what ran, where, and with which command. Untested things are listed as untested.
 
-**Current milestone: M2 (multiplayer).** M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Server cage dressed (pulled forward from M4) and merged. M2 networking working headless; LAN play-test with real people pending.
+**Current milestone: M3 (platform and CTF).** M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Server cage dressed (pulled forward from M4) and merged. M2 closed 2026-10-02.
 
 ## M0: Repo and specs
 
@@ -61,10 +61,12 @@ Started 2026-10-02 on branch `m2-multiplayer` (design: ADR-0015).
 - [x] `tools/m2_smoke.sh` (in `tools/test.sh`): server + 3 bots + crash/restore + rejected token + WebSocket
 - [x] Owner LAN test, 2026-10-02: 2 players on two computers on the home network; disconnect and rejoin worked; stopping and restarting the server worked (owner's report: "it worked great"). 3 simultaneous human players not tried; 3 concurrent clients are covered by `tools/m2_smoke.sh`
 - [x] Acceptance (PLAN.md M2): disconnect/rejoin and server restart verified by the owner on two LAN machines; 3 concurrent clients verified by the smoke test (headless, one machine); a 3-human session is still worth doing before M5
+- [x] Codex review of `m2-multiplayer` (`codex review --base main`): 4 findings, all fixed with regression tests in `tests/core/test_net.gd`: P1 reach bypass through client-reported positions (ADR-0016: server-owned start position, speed check, `--trust-positions` for bots only); P2 no end screen when (re)joining a finished session (`Hud.sync_end_state`); P2 client stuck on "Connecting..." when the room fails to load after joining (now returns to the menu with the reason); P2 timeout debrief used the local clock (now server time)
+- [x] **M2 closed 2026-10-02**; merged into `main`
 - [x] Main menu "Join a game server" form (address, invite password, WebSocket option; remembers the last server) and a "Connecting..." screen with Cancel; a wrong password returns to the menu with the reason
 
 ## M3: Platform service and CTF orchestration
-Not started. Known blocker: the dev user is not in the `docker` group (`permission denied` on `/var/run/docker.sock`); decide rootless Docker vs group membership before M3 (PLAN.md open question 1).
+Starting 2026-10-02. Docker access decided (ADR-0017): docker group on the dev laptop, rootless on the LAN host in M5. Waiting on the owner to run `sudo usermod -aG docker $USER` and log in again.
 
 ## M4: Night Shift content and polish
 Pulled forward at the owner's request (2026-10-02), on branch `m4-cage-dressing`:
@@ -142,3 +144,4 @@ Not started.
 - Found and fixed while building: a 2 s server-side ENet timeout dropped clients that were still loading the room (the load blocks the main loop for seconds); the server now keeps ENet defaults and the client tightens its own timeout only after loading. The rejection RPC was lost when the peer was dropped in the same frame; the drop is now delayed 0.5 s.
 - Not verified: anything visual or interactive in multiplayer (avatars, HUD toasts, two windows at once), a second physical machine, the 60 fps target with avatars.
 - Join UI (2026-10-02): `tests/ui/test_join_flow.gd` (3 tests: form builds the same args as the CLI, bad input shown, overlay appears and Cancel closes the connection). Windowed captures of the menu and the connecting screen on the Alienware showed a layout bug inherited from M1 (menu drawn off the top-left, background not filling the window; anchors set without offsets); fixed with full-rect CenterContainers. `tools/m2_smoke.sh` now holds 3 clients at once (Carol, Erin, Alice). `tools/test.sh` exit 0, gdUnit4 66/66.
+- Review fixes (2026-10-02): `tools/test.sh` exit 0; gdUnit4 70/70 (4 new regression tests); `tools/m2_smoke.sh` PASS with `--trust-positions` on the test server.

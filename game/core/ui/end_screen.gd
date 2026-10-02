@@ -15,7 +15,7 @@ func setup(won: bool) -> void:
 	text.add_theme_font_size_override("normal_font_size", 19)
 	var md := Game.manifest.briefing("win_md" if won else "timeout_md")
 	var bb := EBMarkdown.to_bbcode(md) + "\n\n" if not md.is_empty() else ""
-	var end_t := w.finished_at if won else Time.get_unix_time_from_system()
+	var end_t := w.finished_at if won else minf(Game.server_now(), w.started_at + w.duration_s)
 	bb += "[b]Time:[/b] %s\n[b]Hints used:[/b] %d\n\n[b]Timeline[/b]\n" % [_fmt(end_t - w.started_at), w.hints_used()]
 	var solved: Array = []
 	for id: String in w.puzzles:

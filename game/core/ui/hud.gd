@@ -19,6 +19,7 @@ var _banner_timer: SceneTreeTimer
 var _clock: Label
 var _inventory: InventoryBar
 var _ended_shown: bool = false
+var _ended_won := false
 
 
 func setup(p: FirstPersonPlayer) -> void:
@@ -202,12 +203,25 @@ func open_briefing() -> void:
 
 
 func show_end(won: bool) -> void:
-	if won == false and _ended_shown:
+	if _ended_shown and (not won or _ended_won):
 		return
 	_ended_shown = true
+	_ended_won = won
 	var p := _open(EndScreen.new()) as EndScreen
 	p.setup(won)
 	p.quit_requested.connect(func() -> void: leave_requested.emit())
+
+
+## Shows the end screen if the world is already over (joining or rejoining
+## a session that was won or timed out while we were away).
+func sync_end_state() -> void:
+	var w := Game.world()
+	if w == null:
+		return
+	if w.finished:
+		show_end(w.won)
+	elif w.timed_out:
+		show_end(false)
 
 
 func _unhandled_input(event: InputEvent) -> void:

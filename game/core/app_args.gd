@@ -37,6 +37,8 @@ var bot: bool = false
 var bot_first_step: int = 0
 var bot_last_step: int = -1
 var bot_wait_win: bool = false
+## Server, tests only: accept teleporting positions (bots).
+var trust_positions: bool = false
 var errors: PackedStringArray = []
 
 
@@ -107,6 +109,8 @@ func _apply(key: String, value: String) -> void:
 			bot = true
 		"bot-wait-win":
 			bot_wait_win = true
+		"trust-positions":
+			trust_positions = true
 		"bot-steps":
 			var r := value.split("-")
 			if r.size() == 2 and r[0].is_valid_int() and (r[1].is_valid_int() or r[1] == "end"):

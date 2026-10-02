@@ -28,7 +28,7 @@ cleanup() { for p in "${PIDS[@]}"; do kill "$p" 2>/dev/null; done; wait 2>/dev/n
 trap cleanup EXIT
 
 server() { # $1 log, $2 transport, $3 port
-	"$GODOT" --headless --path . -- --server --session smoke --room "$ROOM" --port "$3" \
+	"$GODOT" --headless --path . -- --server --session smoke --room "$ROOM" --port "$3" --trust-positions \
 		--transport "$2" --token "$TOKEN" --snapshot "$SNAP" > "$WORK/$1" 2>&1 &
 	SERVER_PID=$!
 	PIDS+=("$SERVER_PID")

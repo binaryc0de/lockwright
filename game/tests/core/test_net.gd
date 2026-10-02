@@ -162,3 +162,85 @@ func test_client_without_connection_fails_fast() -> void:
 	Game.request(room.get_node("Desk") as EBNode, "open", {}, func(r: Dictionary) -> void: got.append(r))
 	assert_array(got).has_size(1)
 	assert_str(got[0]["error"]).is_equal("not_connected")
+
+
+# --- Codex M2 review regressions ------------------------------------------
+
+func test_server_rejects_teleporting_positions() -> void:
+	assert_bool(SessionServer.move_allowed(Vector3.ZERO, Vector3(0.9, 0, 0), 0.0)).is_true()
+	assert_bool(SessionServer.move_allowed(Vector3.ZERO, Vector3(5, 0, 0), 0.1)).is_false()
+	assert_bool(SessionServer.move_allowed(Vector3.ZERO, Vector3(5, 0, 0), 1.0)).is_true()
+	var room := auto_free(TestRoom.build()) as RoomRoot
+	add_child(room)
+	Game.start_local_session(TestRoom.manifest(), room, "move-test")
+	var srv := auto_free(SessionServer.new()) as SessionServer
+	srv._auth = Game.authority
+	srv.players = {5: {"id": "p", "name": "P"}}
+	var start := Vector3(1, 1.6, 1)
+	srv._last_move["p"] = {"pos": start, "t": srv._now()}
+	Game.authority.update_player_position("p", start)
+	srv.on_position(5, Vector3(40, 1.6, 40), 0.0)
+	assert_vector(Game.authority.player_positions["p"]).is_equal(start)
+	srv.on_position(5, start + Vector3(0.5, 0, 0), 0.0)
+	assert_vector(Game.authority.player_positions["p"]).is_equal(start + Vector3(0.5, 0, 0))
+	srv.trust_positions = true
+	srv.on_position(5, Vector3(40, 1.6, 40), 0.0)
+	assert_vector(Game.authority.player_positions["p"]).is_equal(Vector3(40, 1.6, 40))
+
+
+func test_end_screen_shows_for_a_session_already_over() -> void:
+	var room := auto_free(TestRoom.build()) as RoomRoot
+	add_child(room)
+	Game.start_local_session(TestRoom.manifest(), room, "end-test")
+	var player := auto_free(FirstPersonPlayer.new()) as FirstPersonPlayer
+	add_child(player)
+	var hud := auto_free(Hud.new()) as Hud
+	add_child(hud)
+	hud.setup(player)
+	hud.sync_end_state()
+	assert_object(hud._modal).is_null()
+	Game.world().started_at = Game.server_now() - 600.0
+	Game.world().finished = true
+	Game.world().won = true
+	Game.world().finished_at = Game.server_now()
+	hud.sync_end_state()
+	assert_object(hud._modal).is_instanceof(EndScreen)
+	var first: Node = hud._modal
+	hud.sync_end_state()
+	assert_object(hud._modal).is_same(first)
+	Game.hud = null
+
+
+func test_timeout_debrief_uses_server_time() -> void:
+	var manifest := TestRoom.manifest()
+	var server_room := auto_free(TestRoom.build()) as RoomRoot
+	add_child(server_room)
+	var auth := auto_free(RoomAuthority.new()) as RoomAuthority
+	add_child(auth)
+	auth.setup(manifest, server_room, "skew")
+	var server_now := Time.get_unix_time_from_system() + 3600.0
+	auth.state.started_at = server_now - 1200.0
+	auth.state.timed_out = true
+	var client_room := auto_free(TestRoom.build()) as RoomRoot
+	add_child(client_room)
+	Game.start_client_session(manifest, client_room, "p1", auth.snapshot(), server_now)
+	var end := auto_free(EndScreen.new()) as EndScreen
+	add_child(end)
+	end.setup(false)
+	var text := ""
+	for c in end.find_children("*", "RichTextLabel", true, false):
+		text += (c as RichTextLabel).text
+	assert_str(text).contains("[b]Time:[/b] 20:00")
+
+
+func test_room_load_failure_after_join_returns_to_menu() -> void:
+	var session := PlaySession.new()
+	add_child(session)
+	var left: Array = []
+	session.left.connect(func() -> void: left.append(true))
+	session.start_remote(AppArgs.parse(["--connect", "127.0.0.1:1", "--name", "Riley", "--pack", "/nonexistent/x.pck"]))
+	session._on_welcomed({"player_id": "riley", "room_id": "night_shift", "room_version": "0.1.0",
+		"snapshot_json": "{}", "server_now": Time.get_unix_time_from_system(), "position": Vector3.ZERO})
+	assert_array(left).has_size(1)
+	assert_str(session.error).contains("cannot load")
+	assert_object(Game.net.client).is_null()

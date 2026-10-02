@@ -67,12 +67,19 @@ func _on_welcomed(info: Dictionary) -> void:
 		return
 	if room != null:
 		Game.rejoin_client(info["player_id"], snap, float(info["server_now"]))
+		_place_from_welcome(info)
+		if hud:
+			hud.sync_end_state()
 		return
 	var loader := _load(str(info["room_id"]), _pack_path)
 	if loader == null:
+		error = "Joined, but this game cannot load the server's room: %s" % error
 		push_error(error)
-		if hud:
-			hud.toast(error)
+		Game.net.disconnect_client()
+		if _bot:
+			_bot._finish(2, error)
+		else:
+			leave()
 		return
 	_hide_overlay()
 	Game.start_client_session(loader.manifest, room, info["player_id"], snap, float(info["server_now"]))
@@ -81,6 +88,19 @@ func _on_welcomed(info: Dictionary) -> void:
 	add_child(remote_players)
 	if _bot == null:
 		_spawn_player_and_hud()
+		_place_from_welcome(info)
+		hud.sync_end_state()
+
+
+## Stand where the server says (rejoin keeps your place; the server rejects
+## positions that jump, so the client must start from the server's view).
+func _place_from_welcome(info: Dictionary) -> void:
+	if player == null or not info.has("position"):
+		return
+	var eye: Vector3 = info["position"]
+	var t := player.global_transform
+	t.origin = eye - Vector3.UP * FirstPersonPlayer.EYE_HEIGHT
+	player.global_transform = t
 
 
 func _on_rejected(reason: String) -> void:

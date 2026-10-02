@@ -99,6 +99,9 @@ func _run_server(args: AppArgs) -> void:
 	server.session_id = args.session_id
 	server.room_id = loader.manifest.id
 	server.room_version = str(loader.manifest.data.get("version", ""))
+	server.trust_positions = args.trust_positions
+	if args.trust_positions:
+		print("escapebox server: WARNING --trust-positions (test mode): reach checks accept teleports")
 	add_child(server)
 	var err := server.start(args.port, args.transport, JoinVerifier.new(args.server_token), store)
 	if err != OK:
