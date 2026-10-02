@@ -114,7 +114,7 @@ Exact strings that must be legible, font feel (dot-matrix, laser-printed, handwr
 |---|---|
 | `tools/blender/props/<asset_id>.py` | Deterministic build script. Entry point `build(out_dir)`; runnable via `blender -b --python tools/blender/props/<asset_id>.py -- --out <dir>`. Uses only `bpy`, `bmesh`, `mathutils`, stdlib, and `tools/blender/common/`. No network. Seeds any randomness. |
 | `game/assets/core/props/<asset_id>.glb` (or room assets dir) | glTF binary, textures embedded or alongside as PNG/KTX2 per request |
-| `assets/previews/<asset_id>_front.png`, `_iso.png`, `_detail.png` | 1024 px Eevee/Workbench renders on neutral grey, three-point lighting from `common/preview.py` |
+| `assets/previews/<asset_id>_front.png`, `_iso.png`, `_detail.png` | 1024 px renders on neutral grey, three-point lighting from `common/preview.py`. **Render with Workbench or Cycles on CPU only** (`cycles.device = "CPU"`, low samples + denoise); never Eevee or GPU compute. The dev box has an Intel UHD 620 iGPU with a history of GPU hangs (ADR-0003). |
 | `assets/meta/<asset_id>.json` | `{ "asset_id", "triangles", "materials": [...], "textures": [{name,size}], "bounds_m": [w,d,h], "origin": "base_center", "parts": [...], "animations": [...], "script_sha256", "blender_version", "built_at" }` |
 | `assets/reports/<asset_id>.md` | What was built, deviations from the request and why, known issues, suggested in-engine material tweaks |
 | `ATTRIBUTION.md` entry | Only if any third-party asset or texture was used |
