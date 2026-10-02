@@ -1,0 +1,40 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://tests/scenes/showcase.gd" id="1_show"]
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 1
+background_color = Color(0.22, 0.22, 0.24, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.5, 0.5, 0.55, 1)
+ambient_light_energy = 0.6
+
+[sub_resource type="BoxMesh" id="Wall_1"]
+size = Vector3(0.6, 0.6, 0.02)
+
+[node name="KeypadShowcase" type="Node3D"]
+script = ExtResource("1_show")
+prop_path = "res://assets/core/props/keypad_4.glb"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_1")
+
+[node name="Wall" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.01)
+mesh = SubResource("Wall_1")
+
+[node name="Prop" type="Node3D" parent="."]
+
+[node name="Key" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.2, -0.35)
+light_energy = 2.0
+omni_range = 2.0
+
+[node name="Fill" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.05, -0.3)
+light_energy = 0.6
+omni_range = 2.0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -0.3)
+fov = 40.0
