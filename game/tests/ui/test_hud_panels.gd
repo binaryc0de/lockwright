@@ -65,6 +65,10 @@ func test_terminal_flag_and_simulated_shell() -> void:
 	var t := room.get_node("Laptop") as Terminal
 	hud.open_terminal(t)
 	var ui := hud._modal as TerminalPanel
+	# A blank Enter is not a guess: nothing reaches the authority.
+	ui._on_submit("   ")
+	assert_bool(Game.world().flags_accepted.has("intranet")).is_false()
+	assert_str(ui._status.text).is_equal("Type or paste a flag first.")
 	ui._on_submit("anything")
 	assert_bool(Game.world().flags_accepted.has("intranet")).is_true()
 	assert_str(ui._status.text).is_equal("ACCESS GRANTED")

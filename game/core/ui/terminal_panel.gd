@@ -55,7 +55,12 @@ func _show_connection_card() -> void:
 func _on_submit(text: String) -> void:
 	_input.clear()
 	if term.mode == "remote":
-		var r := Game.request(term, "submit_flag", {"value": text})
+		# An empty submit is a slip of the Enter key, not a guess: never spend a
+		# rate-limited attempt on it.
+		if text.strip_edges().is_empty():
+			_status.text = "Type or paste a flag first."
+			return
+		var r := Game.request(term, "submit_flag", {"value": text.strip_edges()})
 		if r.get("ok", false):
 			_status.text = "ACCESS GRANTED"
 			_log.append_text("[color=#5f5]> flag accepted[/color]\n")
