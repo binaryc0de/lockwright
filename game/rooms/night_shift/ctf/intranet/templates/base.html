@@ -1,0 +1,20 @@
+{{define "head"}}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kestrel Intranet</title>
+<style>
+body{margin:0;font:15px/1.5 system-ui,Segoe UI,Helvetica,Arial,sans-serif;background:#13294b;color:#1d2433}
+header{background:#0d1d36;color:#e8eef8;padding:12px 24px;display:flex;align-items:center;gap:16px}
+header b{font-size:18px;letter-spacing:.5px} header span{opacity:.7} header form{margin-left:auto}
+main{max-width:760px;margin:40px auto;background:#fff;border-radius:6px;padding:28px 32px;box-shadow:0 8px 30px #0006}
+h1{font-size:22px;margin:0 0 16px} .muted{color:#667085} .err{background:#fde8e7;color:#a5281b;padding:10px 12px;border-radius:4px}
+.warn{background:#fff3e0;color:#9a4b00;padding:10px 12px;border-radius:4px}
+label{display:block;margin:12px 0 4px;font-weight:600} input{width:100%;box-sizing:border-box;padding:9px;border:1px solid #c5ccd8;border-radius:4px;font:inherit}
+button{background:#1f5fbf;color:#fff;border:0;border-radius:4px;padding:9px 18px;font:inherit;cursor:pointer;margin-top:16px}
+header button{margin:0;background:#2a3f62}
+table{width:100%;border-collapse:collapse} td,th{text-align:left;padding:8px;border-bottom:1px solid #e4e7ec} a{color:#1f5fbf}
+.token{font:16px/1.4 ui-monospace,Menlo,Consolas,monospace;background:#f2f4f7;border:1px dashed #98a2b3;padding:12px;border-radius:4px;word-break:break-all}
+</style></head><body>
+<header><b>KESTREL LOGISTICS</b><span>Intranet</span>{{if .User}}<span>signed in as {{.User}}</span>
+<form method="post" action="/logout"><button>Sign out</button></form>{{end}}</header>
+<main>{{end}}
+{{define "foot"}}</main></body></html>{{end}}

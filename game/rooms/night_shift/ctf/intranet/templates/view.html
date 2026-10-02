@@ -1,0 +1,8 @@
+{{template "head" .}}
+{{if .Missing}}<h1>Ticket not found</h1><p><a href="/tickets">Back to my tickets</a></p>
+{{else}}<h1>#{{.T.ID}} {{.T.Title}}</h1>
+<p class="muted">{{.T.Team}} &middot; raised by {{.T.Owner}} &middot; {{.T.Opened}} &middot; {{.T.Status}}</p>
+<p>{{.T.Body}}</p>
+{{if .Token}}<p><b>Override token:</b></p><p class="token">{{.Token}}</p>{{end}}
+<p><a href="/tickets">Back to my tickets</a></p>{{end}}
+{{template "foot" .}}

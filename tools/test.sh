@@ -20,6 +20,12 @@ go run ./tools/roomcheck
 step "assetcheck"
 go run ./tools/assetcheck
 
+step "room CTF challenges (go test in each challenge module)"
+for mod in game/rooms/*/ctf/*/go.mod; do
+  [[ -f "$mod" ]] || continue
+  (cd "$(dirname "$mod")" && gofmt -l . | (! grep .) && go vet ./... && go test ./...)
+done
+
 if [[ "${1:-}" == "--no-godot" ]]; then exit 0; fi
 
 step "godot import"

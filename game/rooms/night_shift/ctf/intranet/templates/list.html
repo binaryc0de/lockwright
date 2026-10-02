@@ -1,0 +1,6 @@
+{{template "head" .}}
+<h1>My tickets</h1>
+<table><tr><th>#</th><th>Title</th><th>Status</th><th>Opened</th></tr>
+{{range .Tickets}}<tr><td>{{.ID}}</td><td><a href="/tickets/view?id={{.ID}}">{{.Title}}</a></td><td>{{.Status}}</td><td>{{.Opened}}</td></tr>{{end}}
+</table>
+{{template "foot" .}}

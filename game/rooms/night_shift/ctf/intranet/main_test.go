@@ -1,0 +1,117 @@
+package main
+
+import (
+	"io"
+	"net/http"
+	"net/http/cookiejar"
+	"net/http/httptest"
+	"net/url"
+	"strconv"
+	"strings"
+	"testing"
+)
+
+const testFlag = "TESTFLAG-not-a-real-format-123"
+
+func setup(t *testing.T) (*httptest.Server, *http.Client) {
+	t.Helper()
+	ts := httptest.NewServer(newServer(testFlag).routes())
+	t.Cleanup(ts.Close)
+	jar, _ := cookiejar.New(nil)
+	return ts, &http.Client{Jar: jar}
+}
+
+func body(t *testing.T, r *http.Response) string {
+	t.Helper()
+	defer r.Body.Close()
+	b, _ := io.ReadAll(r.Body)
+	return string(b)
+}
+
+func login(t *testing.T, ts *httptest.Server, c *http.Client, user, pass string) *http.Response {
+	t.Helper()
+	r, err := c.PostForm(ts.URL+"/login", url.Values{"username": {user}, "password": {pass}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return r
+}
+
+func TestHealthz(t *testing.T) {
+	ts, c := setup(t)
+	r, _ := c.Get(ts.URL + "/healthz")
+	if r.StatusCode != 200 || body(t, r) != "ok\n" {
+		t.Fatalf("healthz %d", r.StatusCode)
+	}
+}
+
+func TestWrongCredentialsAndNoAccessWithoutLogin(t *testing.T) {
+	ts, c := setup(t)
+	for _, creds := range [][2]string{{"mreyes", "kestrel#2019"}, {"admin", password}, {"", ""}} {
+		r := login(t, ts, c, creds[0], creds[1])
+		b := body(t, r)
+		if r.StatusCode != http.StatusUnauthorized || !strings.Contains(b, "Invalid username or password") {
+			t.Fatalf("login %v: %d", creds, r.StatusCode)
+		}
+	}
+	r, _ := c.Get(ts.URL + "/tickets/view?id=1040")
+	b := body(t, r)
+	if strings.Contains(b, testFlag) || !strings.Contains(b, "Sign in") {
+		t.Fatal("ticket readable without logging in")
+	}
+	// A forged cookie does not log you in.
+	u, _ := url.Parse(ts.URL)
+	c.Jar.SetCookies(u, []*http.Cookie{{Name: cookieName, Value: "mreyes.deadbeef"}})
+	r, _ = c.Get(ts.URL + "/tickets")
+	if b := body(t, r); strings.Contains(b, "My tickets") {
+		t.Fatal("forged cookie accepted")
+	}
+}
+
+func TestIntendedPath(t *testing.T) {
+	ts, c := setup(t)
+	r := login(t, ts, c, " mreyes ", password)
+	b := body(t, r)
+	if !strings.Contains(b, "My tickets") || !strings.Contains(b, "view?id=1042") {
+		t.Fatalf("ticket list missing after login: %d", r.StatusCode)
+	}
+	if strings.Contains(b, testFlag) || strings.Contains(b, "1040") {
+		t.Fatal("the flag ticket is listed without the IDOR")
+	}
+	r, _ = c.Get(ts.URL + "/tickets/view?id=1042")
+	if b := body(t, r); strings.Contains(b, testFlag) {
+		t.Fatal("flag on the user's own ticket")
+	}
+	// The IDOR: a neighbouring id shows someone else's ticket, with the token.
+	r, _ = c.Get(ts.URL + "/tickets/view?id=1040")
+	b = body(t, r)
+	if r.StatusCode != 200 || !strings.Contains(b, testFlag) || !strings.Contains(b, "maglock") {
+		t.Fatalf("flag ticket not reachable by id: %d", r.StatusCode)
+	}
+	for _, id := range []string{"1036", "9999", "abc", ""} {
+		r, _ = c.Get(ts.URL + "/tickets/view?id=" + id)
+		if b := body(t, r); r.StatusCode != 404 || strings.Contains(b, testFlag) {
+			t.Fatalf("id %q: %d", id, r.StatusCode)
+		}
+	}
+}
+
+func TestFlagOnlyOnTheFacilitiesTicket(t *testing.T) {
+	ts, c := setup(t)
+	body(t, login(t, ts, c, username, password))
+	for id, tk := range tickets() {
+		r, _ := c.Get(ts.URL + "/tickets/view?id=" + strconv.Itoa(id))
+		has := strings.Contains(body(t, r), testFlag)
+		if has != (id == FlagTicketID) || has != tk.HasToken {
+			t.Fatalf("ticket %d shows flag=%v", id, has)
+		}
+	}
+}
+
+func TestOutputIsEscaped(t *testing.T) {
+	ts, c := setup(t)
+	r := login(t, ts, c, "<script>x</script>", "nope")
+	if b := body(t, r); strings.Contains(b, "<script>x</script>") {
+		t.Fatal("username echoed unescaped")
+	}
+}

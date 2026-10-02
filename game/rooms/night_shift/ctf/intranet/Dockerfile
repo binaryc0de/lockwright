@@ -1,11 +1,15 @@
-# PLACEHOLDER - the Kestrel Intranet challenge is milestone M3 work.
-#
-# The real image (PLAN.md Section 10, "CTF challenge intranet") is a small Go or
-# Python web app listening on 8080: login (mreyes / the reused WiFi password),
-# a tickets list with an IDOR on ?id=, and GET /healthz. It reads its
-# per-instance flag from the FLAG environment variable at runtime and never
-# contains a literal flag.
-#
-# This placeholder fails the build on purpose so nobody ships it by mistake.
-FROM busybox:1.36
-RUN echo "intranet challenge is implemented in M3" && false
+# Kestrel Intranet: Night Shift's CTF challenge (PLAN.md Section 10, ADR-0018).
+# Built by the platform from this directory alone. The flag arrives at run
+# time in $FLAG (per session); none is baked into the image.
+FROM golang:1.27-alpine AS build
+WORKDIR /src
+COPY go.mod ./
+COPY *.go ./
+COPY templates ./templates
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /intranet .
+
+FROM scratch
+COPY --from=build /intranet /intranet
+USER 65534:65534
+EXPOSE 8080
+ENTRYPOINT ["/intranet"]
