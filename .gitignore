@@ -1,0 +1,18 @@
+# Godot
+game/.godot/
+game/export/
+*.import.tmp
+# Builds
+/build/
+/dist/
+*.pck
+# Asset agent scratch
+assets/cache/
+*.blend1
+# Go
+/platform/bin/
+# Runtime data
+/data/
+*.sqlite
+*.sqlite-*
+.env
