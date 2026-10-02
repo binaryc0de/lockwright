@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # M2 multiplayer smoke test (ADR-0015), all headless on one machine:
 #   1. a dedicated server starts with a snapshot file
-#   2. Carol joins and waits for the win without acting (sees every change)
+#   2. Carol and Erin join and wait for the win without acting (3 clients at once
+#      while Alice plays)
 #   3. Alice plays solution steps 0-8 and leaves
 #   4. the server is killed mid-session and restarted from its snapshot;
 #      Carol reconnects on her own
@@ -46,11 +47,15 @@ client() { # $1 log, $2 name, then extra args
 say "workdir $WORK, port $PORT"
 server server1.log enet "$PORT" || exit 1
 
-say "Carol joins and waits for the win"
+say "Carol and Erin join and wait for the win"
 "$GODOT" --headless --path . -- --connect "127.0.0.1:$PORT" --name Carol --token "$TOKEN" \
 	--bot --bot-steps 1-0 --bot-wait-win > "$WORK/carol.log" 2>&1 &
 CAROL_PID=$!
 PIDS+=("$CAROL_PID")
+"$GODOT" --headless --path . -- --connect "127.0.0.1:$PORT" --name Erin --token "$TOKEN" \
+	--bot --bot-steps 1-0 --bot-wait-win > "$WORK/erin.log" 2>&1 &
+ERIN_PID=$!
+PIDS+=("$ERIN_PID")
 sleep 2
 
 say "Alice plays steps 0-8"
@@ -71,6 +76,9 @@ rc=$?; [ $rc -eq 0 ] || bad "Bob exited $rc"
 wait "$CAROL_PID"; rc=$?
 [ $rc -eq 0 ] || bad "Carol exited $rc (she should have seen the win)"
 grep -q "session finished, won=true" "$WORK/carol.log" || bad "Carol never saw the win"
+wait "$ERIN_PID"; rc=$?
+[ $rc -eq 0 ] || bad "Erin exited $rc (she should have seen the win)"
+grep -q "player erin joined" "$WORK/server1.log" || bad "Erin never joined"
 grep -q '"won":true' "$SNAP" || bad "final snapshot is not won"
 
 say "wrong token is rejected"

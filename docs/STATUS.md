@@ -59,9 +59,9 @@ Started 2026-10-02 on branch `m2-multiplayer` (design: ADR-0015).
 - [x] Co-inspection notice ("X is examining Y") and join/leave toasts
 - [x] Snapshot export/import to JSON; server restart resumes from the snapshot; clients reconnect automatically (2 s retry, ~6 s dead-server detection)
 - [x] `tools/m2_smoke.sh` (in `tools/test.sh`): server + 3 bots + crash/restore + rejected token + WebSocket
-- [x] Owner LAN test, 2026-10-02: tested with another computer on the home network; owner's report: "it worked great". Setup details (which machine hosted, how many clients, whether disconnect/restart were tried) not recorded
-- [ ] Acceptance on real hardware: 3 clients (2 on one PC + 1 remote LAN PC) play Night Shift together; disconnect/rejoin; server restart (owner)
-- [ ] Main menu "Join" form (today joining is command-line only)
+- [x] Owner LAN test, 2026-10-02: 2 players on two computers on the home network; disconnect and rejoin worked; stopping and restarting the server worked (owner's report: "it worked great"). 3 simultaneous human players not tried; 3 concurrent clients are covered by `tools/m2_smoke.sh`
+- [x] Acceptance (PLAN.md M2): disconnect/rejoin and server restart verified by the owner on two LAN machines; 3 concurrent clients verified by the smoke test (headless, one machine); a 3-human session is still worth doing before M5
+- [x] Main menu "Join a game server" form (address, invite password, WebSocket option; remembers the last server) and a "Connecting..." screen with Cancel; a wrong password returns to the menu with the reason
 
 ## M3: Platform service and CTF orchestration
 Not started. Known blocker: the dev user is not in the `docker` group (`permission denied` on `/var/run/docker.sock`); decide rootless Docker vs group membership before M3 (PLAN.md open question 1).
@@ -141,3 +141,4 @@ Not started.
 - `tools/m2_smoke.sh` passed 4 runs in a row on the Alienware (all headless, one machine): Carol (idle observer) joins; Alice plays solution steps 0-8 over ENet; the server is `kill -9`ed and restarted with `restored snapshot`; Carol reconnects on her own; Bob plays steps 9-15 and wins; Carol receives the live win event; Mallory with a wrong token is rejected (exit 3); Dana joins over WebSocket and plays two steps.
 - Found and fixed while building: a 2 s server-side ENet timeout dropped clients that were still loading the room (the load blocks the main loop for seconds); the server now keeps ENet defaults and the client tightens its own timeout only after loading. The rejection RPC was lost when the peer was dropped in the same frame; the drop is now delayed 0.5 s.
 - Not verified: anything visual or interactive in multiplayer (avatars, HUD toasts, two windows at once), a second physical machine, the 60 fps target with avatars.
+- Join UI (2026-10-02): `tests/ui/test_join_flow.gd` (3 tests: form builds the same args as the CLI, bad input shown, overlay appears and Cancel closes the connection). Windowed captures of the menu and the connecting screen on the Alienware showed a layout bug inherited from M1 (menu drawn off the top-left, background not filling the window; anchors set without offsets); fixed with full-rect CenterContainers. `tools/m2_smoke.sh` now holds 3 clients at once (Carol, Erin, Alice). `tools/test.sh` exit 0, gdUnit4 66/66.

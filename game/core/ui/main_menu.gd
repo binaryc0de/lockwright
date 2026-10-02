@@ -1,31 +1,37 @@
 class_name MainMenu
 extends Control
-## M1 menu: player name, rooms found in res://rooms (dev mode and mounted
-## packs), or a .pck path. The lobby/session browser arrives with the
-## platform in M3.
+## Player name; play a room offline (rooms found in res://rooms or a .pck);
+## or join a game server on the LAN (M2). The lobby/session browser arrives
+## with the platform in M3.
 
 signal play_requested(room_id: String, pack_path: String)
+## `args` is a parsed client command line (AppArgs) so menu and CLI share
+## validation.
+signal join_requested(args: AppArgs)
 
 var _name: LineEdit
 var _rooms: ItemList
 var _pack: LineEdit
 var _pack_room: LineEdit
 var _status: Label
+var _server: LineEdit
+var _token: LineEdit
+var _ws: CheckBox
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new()
 	bg.color = Color(0.07, 0.07, 0.09)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
 	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_CENTER)
-	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	box.grow_vertical = Control.GROW_DIRECTION_BOTH
 	box.custom_minimum_size = Vector2(520, 0)
 	box.add_theme_constant_override("separation", 10)
-	add_child(box)
+	center.add_child(box)
 
 	var title := Label.new()
 	title.text = "ESCAPEBOX"
@@ -64,10 +70,36 @@ func _ready() -> void:
 	box.add_child(row)
 
 	var play := Button.new()
-	play.text = "Play"
+	play.text = "Play offline"
 	play.custom_minimum_size = Vector2(0, 48)
 	play.pressed.connect(_play)
 	box.add_child(play)
+
+	box.add_child(_caption("Join a game server"))
+	var jrow := HBoxContainer.new()
+	_server = LineEdit.new()
+	_server.placeholder_text = "192.168.1.20  or  host:7777"
+	_server.text = Settings.last_server
+	_server.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_server.text_submitted.connect(func(_t: String) -> void: _join())
+	jrow.add_child(_server)
+	_token = LineEdit.new()
+	_token.placeholder_text = "invite password"
+	_token.secret = true
+	_token.custom_minimum_size = Vector2(170, 0)
+	_token.text_submitted.connect(func(_t: String) -> void: _join())
+	jrow.add_child(_token)
+	box.add_child(jrow)
+	_ws = CheckBox.new()
+	_ws.text = "WebSocket (for servers behind a tunnel)"
+	_ws.button_pressed = Settings.last_ws
+	box.add_child(_ws)
+	var join := Button.new()
+	join.text = "Join"
+	join.custom_minimum_size = Vector2(0, 48)
+	join.pressed.connect(_join)
+	box.add_child(join)
+
 	var quit := Button.new()
 	quit.text = "Quit"
 	quit.pressed.connect(func() -> void: get_tree().quit())
@@ -89,8 +121,7 @@ func _caption(text: String) -> Label:
 
 
 func _play() -> void:
-	Settings.display_name = _name.text.strip_edges() if not _name.text.strip_edges().is_empty() else "Player"
-	Settings.save_settings()
+	_save_name()
 	if not _pack.text.strip_edges().is_empty():
 		play_requested.emit(_pack_room.text.strip_edges(), _pack.text.strip_edges())
 		return
@@ -99,3 +130,29 @@ func _play() -> void:
 		show_error("Pick a room.")
 		return
 	play_requested.emit(_rooms.get_item_metadata(sel[0]), "")
+
+
+func _join() -> void:
+	_save_name()
+	var server := _server.text.strip_edges()
+	if server.is_empty():
+		show_error("Type the server's address.")
+		return
+	var argv: PackedStringArray = ["--connect", server, "--name", Settings.display_name]
+	if not _token.text.is_empty():
+		argv.append_array(["--token", _token.text])
+	if _ws.button_pressed:
+		argv.append_array(["--transport", "ws"])
+	var args := AppArgs.parse(argv)
+	if not args.errors.is_empty():
+		show_error("\n".join(args.errors))
+		return
+	Settings.last_server = server
+	Settings.last_ws = _ws.button_pressed
+	Settings.save_settings()
+	join_requested.emit(args)
+
+
+func _save_name() -> void:
+	Settings.display_name = _name.text.strip_edges() if not _name.text.strip_edges().is_empty() else "Player"
+	Settings.save_settings()

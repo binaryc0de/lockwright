@@ -14,6 +14,10 @@ var error: String = ""
 
 var _pack_path: String = ""
 var _bot: SolutionBot = null
+var _remote := false
+## Shown while joining, until the server's welcome (players only, not bots).
+var _overlay: CanvasLayer = null
+var _overlay_label: Label = null
 
 
 ## Loads and starts a room offline. Returns false (with `error`) on failure.
@@ -33,6 +37,7 @@ func start(room_id: String, pack_path: String = "", session_id: String = "") -> 
 ## `bot` makes this a headless test client instead of a player.
 func start_remote(args: AppArgs) -> bool:
 	_pack_path = args.pack_path
+	_remote = true
 	Game.display_name = args.display_name if not args.display_name.is_empty() else Settings.display_name
 	Game.net.welcomed.connect(_on_welcomed)
 	Game.net.rejected.connect(_on_rejected)
@@ -41,6 +46,8 @@ func start_remote(args: AppArgs) -> bool:
 	Game.net.add_child(client)
 	Game.net.client = client
 	client.status_changed.connect(_on_status)
+	if not args.bot:
+		_show_overlay("Connecting to %s:%d ..." % [args.connect_host, args.port])
 	if args.bot:
 		_bot = SolutionBot.new()
 		_bot.first_step = args.bot_first_step
@@ -67,6 +74,7 @@ func _on_welcomed(info: Dictionary) -> void:
 		if hud:
 			hud.toast(error)
 		return
+	_hide_overlay()
 	Game.start_client_session(loader.manifest, room, info["player_id"], snap, float(info["server_now"]))
 	remote_players = RemotePlayers.new()
 	remote_players.name = "RemotePlayers"
@@ -76,13 +84,21 @@ func _on_welcomed(info: Dictionary) -> void:
 
 
 func _on_rejected(reason: String) -> void:
-	error = "The server refused to let you in (%s)." % reason
+	error = "The server refused to let you in (%s)." % ("wrong invite password" if reason == "bad_token" else reason)
 	if hud:
 		hud.toast(error)
+	elif _bot == null:
+		leave()
 
 
 func _on_status(status: String, detail: String) -> void:
 	print("connection: %s %s" % [status, detail])
+	if _overlay_label:
+		match status:
+			"connecting":
+				_overlay_label.text = "Connecting to %s ..." % detail
+			"lost":
+				_overlay_label.text = "Can't reach the server (%s). Retrying ..." % detail
 	if hud == null:
 		return
 	match status:
@@ -119,11 +135,48 @@ func _spawn_player_and_hud() -> void:
 	hud.open_briefing()
 
 
+func _show_overlay(text: String) -> void:
+	_overlay = CanvasLayer.new()
+	add_child(_overlay)
+	var bg := ColorRect.new()
+	bg.color = Color(0.07, 0.07, 0.09)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_overlay.add_child(bg)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_overlay.add_child(center)
+	var box := VBoxContainer.new()
+	box.custom_minimum_size = Vector2(520, 0)
+	box.add_theme_constant_override("separation", 14)
+	center.add_child(box)
+	_overlay_label = Label.new()
+	_overlay_label.text = text
+	_overlay_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_overlay_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(_overlay_label)
+	var cancel := Button.new()
+	cancel.text = "Cancel"
+	cancel.custom_minimum_size = Vector2(0, 44)
+	cancel.pressed.connect(leave)
+	box.add_child(cancel)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func _hide_overlay() -> void:
+	if _overlay:
+		_overlay.queue_free()
+	_overlay = null
+	_overlay_label = null
+
+
 func leave() -> void:
 	if Game.net.welcomed.is_connected(_on_welcomed):
 		Game.net.welcomed.disconnect(_on_welcomed)
 		Game.net.rejected.disconnect(_on_rejected)
 	Game.end_session()
+	if _remote:
+		# Covers leaving before the welcome, when Game is not in CLIENT mode yet.
+		Game.net.disconnect_client()
 	Game.hud = null
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	left.emit()

@@ -28,9 +28,7 @@ func _ready() -> void:
 	Settings.load_settings()
 	get_tree().root.content_scale_factor = Settings.text_scale
 	if args.is_remote_client():
-		var session := PlaySession.new()
-		add_child(session)
-		session.start_remote(args)
+		_join(args)
 	elif not args.room_id.is_empty():
 		_play(args.room_id, args.pack_path)
 	else:
@@ -42,6 +40,7 @@ func _show_menu(error: String = "") -> void:
 	_menu = MainMenu.new()
 	add_child(_menu)
 	_menu.play_requested.connect(_play)
+	_menu.join_requested.connect(_join)
 	if not error.is_empty():
 		_menu.show_error(error)
 
@@ -59,6 +58,16 @@ func _play(room_id: String, pack_path: String) -> void:
 		_show_menu(err)
 		return
 	session.left.connect(func() -> void: _show_menu())
+
+
+func _join(args: AppArgs) -> void:
+	if _menu:
+		_menu.queue_free()
+		_menu = null
+	var session := PlaySession.new()
+	add_child(session)
+	session.left.connect(func() -> void: _show_menu(session.error))
+	session.start_remote(args)
 
 
 ## Dedicated server (PLAN.md 7.1): loads the room, restores the snapshot if
