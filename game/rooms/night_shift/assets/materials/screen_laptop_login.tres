@@ -7,5 +7,5 @@ resource_name = "screen_laptop_login"
 albedo_texture = ExtResource("1")
 roughness = 0.12
 emission_enabled = true
-emission_energy_multiplier = 0.9
+emission_energy_multiplier = 0.3
 emission_texture = ExtResource("1")
