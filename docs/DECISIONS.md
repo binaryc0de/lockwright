@@ -43,3 +43,15 @@ Short records: context, decision, consequences. Newest at the bottom. Never edit
 **Context.** Exporting the `room-pack-night_shift` preset (only `res://rooms/night_shift/**`) on Godot 4.7.2 showed the PCK always also contains `project.binary`, `.godot/global_script_class_cache.cfg` and `.godot/uid_cache.bin`.
 **Decision.** Packs are loaded with `load_resource_pack(path, false)` (already a non-negotiable), so those engine files never override the base game's. Because the pack's class cache is therefore ignored, **room scripts must not declare `class_name`**; they reference SDK classes (which live in the base game) and their own scripts by path. `roomcheck` will warn on `class_name` in room scripts from M1. The room pack preset excludes `res://core`, `res://addons`, `res://assets` (shipped in the client and server builds).
 **Consequences.** Room-specific shared types use `preload("res://rooms/<id>/scripts/x.gd")`. Revisit if Godot gains per-pack class registration.
+
+## ADR-0008: SDK node names that collide with Godot built-ins (2026-10-01)
+
+**Context.** PLAN.md 8.2 names SDK nodes `Container` and `Button`; Godot 4.7 already has `Container` (Control) and `Button`, and a `class_name` may not shadow an engine class.
+**Decision.** The SDK uses `ContainerProp` and `PushButton`. Every other plan name is used as written (checked against the 4.7 class reference). Shared open/close behaviour lives in an `Openable` base used by `ContainerProp` and `Door`; `EBNode` is the base of all replicated SDK nodes.
+**Consequences.** `ROOM_AUTHORING.md` uses the new names.
+
+## ADR-0009: Authority model in M1 (2026-10-01)
+
+**Context.** M1 is offline single-player, but M2 must add a dedicated server without rewriting gameplay (PLAN.md 7.2).
+**Decision.** All gameplay changes go through `RoomAuthority.handle_intent(player, node_path, verb, payload)`, which validates (reach, availability, item ownership), calls the SDK node's `_server_intent`, and mutates the `WorldState` only through `set_node_state`/`give_item`/`pin_document`/`activate`/`submit_flag`. The authority applies each change to its own scene immediately and announces it by signal. The client hub (`Game` autoload) only calls `request()`, `request_hint()`, `add_note()`. M1 runs the authority in the same process and scene; M2 moves it to the server and turns the signals into RPCs. Locks: activating an unpowered lock powers it; activating a powered lock unlocks it.
+**Consequences.** Room authors wire puzzles with exports (`locked_by`, `targets`, `challenge_id`) and need no scripts for Night Shift. Every SDK node state has a `state` string so `node_state` conditions work uniformly.

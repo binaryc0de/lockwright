@@ -254,12 +254,13 @@ func TestWarnsOnForbiddenAPIInRoomScript(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(dir, "scripts"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "scripts", "bad.gd"), []byte("func f():\n\tvar h = HTTPRequest.new()\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "scripts", "bad.gd"), []byte("class_name Bad\nfunc f():\n\tvar h = HTTPRequest.new()\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	s, _ := CompileSchema(filepath.Join("..", "..", "docs", "schema", "room.schema.json"))
-	if r := Validate(dir, res, s); !hasIssue(r, Warning, "forbidden_api", "HTTPRequest") {
-		t.Fatalf("expected forbidden api warning, got %v", r.Issues)
+	r := Validate(dir, res, s)
+	if !hasIssue(r, Warning, "forbidden_api", "HTTPRequest") || !hasIssue(r, Warning, "class_name", "bad.gd") {
+		t.Fatalf("expected forbidden api and class_name warnings, got %v", r.Issues)
 	}
 }
 

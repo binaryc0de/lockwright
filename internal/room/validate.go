@@ -53,6 +53,7 @@ func CompileSchema(path string) (*jsonschema.Schema, error) {
 var (
 	templateRe  = regexp.MustCompile(`\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}`)
 	literalFlag = regexp.MustCompile(`(?i)\bflag\{[^{}\s]+\}`)
+	classNameRe = regexp.MustCompile(`(?m)^\s*class_name\s`)
 	// Room scripts may only use the SDK API (PLAN.md 8.2). Warnings in the prototype.
 	forbiddenAPIs = []string{"rpc(", "rpc_id(", "multiplayer.", "HTTPRequest", "HTTPClient", "OS.execute", "OS.create_process", "OS.shell_open", "StreamPeerTCP", "PacketPeerUDP", "load_resource_pack"}
 )
@@ -347,6 +348,9 @@ func checkSources(rep *Report, dir string) {
 			rep.add(Error, "flag_literal", "%s:%d contains what looks like a literal flag; flags must be templates", rel, line)
 		}
 		if ext == ".gd" {
+			if classNameRe.Match(data) {
+				rep.add(Warning, "class_name", "%s declares class_name; pack class caches are ignored (ADR-0007), use preload()", rel)
+			}
 			for _, api := range forbiddenAPIs {
 				if bytes.Contains(data, []byte(api)) {
 					rep.add(Warning, "forbidden_api", "%s uses %q; room scripts should only use the SDK API", rel, api)
