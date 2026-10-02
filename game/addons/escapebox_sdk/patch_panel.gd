@@ -14,11 +14,13 @@ extends Interactable
 ## Correct mapping, "A:3,B:1,C:4,D:2". Server-only.
 @export var solution: String = ""
 @export var targets: Array[NodePath] = []
-## Optional model with `cable_<id>` (hanging) and `plug_<id>` (plugged, parked
-## at port 1) parts, ids lower-cased. Patched cables show their plug moved to
-## the port along the model's X axis; the rest hang.
+## Optional model with `cable_<id>` (hanging) and `plug_<id>` (plugged) parts,
+## ids lower-cased. A patched cable hides its hanging part and shows its plug
+## moved (in the model's space) from where the model parks it to its port:
+## parked + port1_offset + (port - 1) * port_step. The rest hang.
 @export var model: NodePath
-@export var port_pitch: float = 0.06
+@export var port1_offset: Vector3 = Vector3.ZERO
+@export var port_step: Vector3 = Vector3(0.06, 0, 0)
 
 var _plug_home := {}  # plug node -> its port-1 position
 
@@ -100,7 +102,7 @@ func _apply_state(state: Dictionary) -> void:
 		if hanging:
 			hanging.visible = port <= 0
 		if port > 0:
-			plug.position = (_plug_home[plug] as Vector3) + Vector3((port - 1) * port_pitch, 0, 0)
+			plug.position = (_plug_home[plug] as Vector3) + port1_offset + port_step * (port - 1)
 
 
 func client_interact(_item_path: String = "") -> void:

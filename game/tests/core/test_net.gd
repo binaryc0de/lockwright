@@ -384,6 +384,8 @@ func test_patch_panel_moves_plugs_to_their_ports() -> void:
 		plug.position = Vector3(-0.21, 0.008, -0.103)
 		m.add_child(plug)
 	panel.model = NodePath("Model")
+	panel.port1_offset = Vector3.ZERO
+	panel.port_step = Vector3(0.06, 0, 0)
 	panel.cable_ids = PackedStringArray(["A", "B"])
 	panel._apply_state({"state": "idle", "connections": {"A": 3}})
 	var pa := m.get_node("plug_a") as Node3D

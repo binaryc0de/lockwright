@@ -394,3 +394,18 @@ func test_airlock_waits_while_nobody_is_inside() -> void:
 	gate._physics_process(gate.seal_after_s + 5.0)
 	assert_bool(gate.is_sealed()).is_false()
 	assert_vector(room.join_spawn_transform().origin).is_equal(room.spawn_transform().origin)
+
+
+func test_patched_plugs_sit_under_their_printed_ports() -> void:
+	# patch_panel_8 prints port n at model x = 0.21 - (n - 1) * 0.06 (front faces -Z).
+	var panel := room.get_node("Cage/PatchPanel") as PatchPanel
+	var m := panel.get_node(panel.model)
+	panel._apply_state({"state": "idle", "connections": {"A": 3, "B": 7, "C": 1, "D": 5}})
+	for id: String in ["A", "B", "C", "D"]:
+		var plug := m.find_child("plug_" + id.to_lower(), true, false) as Node3D
+		assert_object(plug).override_failure_message("model has no plug_%s" % id.to_lower()).is_not_null()
+		var port: int = {"A": 3, "B": 7, "C": 1, "D": 5}[id]
+		assert_float(plug.position.x).override_failure_message("plug %s not under port %d" % [id, port]) \
+			.is_equal_approx(0.21 - (port - 1) * 0.06, 0.003)
+		assert_bool(plug.visible).is_true()
+		assert_bool((m.find_child("cable_" + id.to_lower(), true, false) as Node3D).visible).is_false()

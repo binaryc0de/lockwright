@@ -1,6 +1,12 @@
 {
   "anchors_godot_m": {
     "front_face_z": -0.103,
+    "port1_godot_m": [
+      -0.21,
+      0.008,
+      -0.103
+    ],
+    "port_pitch_m": 0.06,
     "rail_plane_z": -0.1
   },
   "animations": [],
@@ -30,7 +36,7 @@
     0.221873939,
     0.47394345
   ],
-  "built_at": "2026-10-02T16:50:42+00:00",
+  "built_at": "2026-10-02T22:05:09+00:00",
   "cables": [
     {
       "length_m": 0.671274,
@@ -60,7 +66,7 @@
   "collision": null,
   "forward": "Blender +Y -> Godot -Z",
   "glb_path": "game/assets/core/props/patch_panel_8.glb",
-  "glb_sha256": "41efb74e5c9d9ebdef3e0bb2d2734bc18b9a079ec23afca1e306a19efd145ba3",
+  "glb_sha256": "d4046d9d4d1a6fe2d068a25b85dc0f855d30c46d0e9634d2d61193f4ac57ab85",
   "legend_cap_heights_m": {
     "ports": 0.012,
     "tags": 0.015,
@@ -86,7 +92,11 @@
     "cable_b",
     "cable_c",
     "cable_d",
-    "panel"
+    "panel",
+    "plug_a",
+    "plug_b",
+    "plug_c",
+    "plug_d"
   ],
   "pipeline_sha256": {
     "build_assets.sh": "3b60d89e9623c9bee6c645a88a0dac31ae08f68fa867b54f6b2f1f68800b6e21",
@@ -97,6 +107,22 @@
     "common/materials.py": "0b74ffc40eaca0592bc13e978e5fc6c6e6ae81294667aabcb3f7c3b7d90bf790",
     "common/preview.py": "d1c783147fad6f334a5db0eafe3a9fae1ad2b00f981e13d6f640d9facaeeb7fc",
     "common/scene.py": "e80539631d26a5270ae30233a9607e3b286438251d44233840589ea26a13dabe"
+  },
+  "plugged_leads": {
+    "parked_port": 1,
+    "parts": [
+      "plug_a",
+      "plug_b",
+      "plug_c",
+      "plug_d"
+    ],
+    "preview_ports_abcd": [
+      3,
+      7,
+      1,
+      5
+    ],
+    "routing": "constant X; downward into continuous manager shelf"
   },
   "port_centres_godot_m": [
     [
@@ -147,7 +173,7 @@
     "samples": 32,
     "threads": 4
   },
-  "script_sha256": "5918d8e3c83ee2d61c49e791007aef89c77ec7461a10044d8a4e37163f6ab858",
+  "script_sha256": "33d656f317c35d5f4bccbee743d75ce803936bae98baaacc40049fdf9260d381",
   "textures": [
     {
       "embedded": true,
@@ -301,5 +327,5 @@
     }
   ],
   "third_party": [],
-  "triangles": 53156
+  "triangles": 57900
 }

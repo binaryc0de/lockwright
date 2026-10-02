@@ -1,4 +1,4 @@
-"""Eight-port rack patch panel, hanging coded Cat6 leads and stroke tags.
+"""Eight-port rack patch panel, hanging and plugged coded Cat6 leads and stroke tags.
 
 Deterministic Blender 5.2 headless build, original procedural PBR/text only.
 Run tools/blender/build_assets.sh patch_panel_8: serialised Cycles CPU, 4 threads.
@@ -10,6 +10,8 @@ import sys
 
 import bpy
 from mathutils import Vector
+from mathutils.bvhtree import BVHTree
+from mathutils.geometry import barycentric_transform
 
 sys.dont_write_bytecode = True
 TOOLS = Path(__file__).resolve().parents[1]
@@ -26,6 +28,8 @@ ASSET_ID = 'patch_panel_8'
 SEED = 810026
 RAIL_Z = -.100
 FACE_Z = -.103
+PORT1 = (-.21, .008, FACE_Z)
+PORT_PITCH = .06
 
 GLYPHS = {
     '0': [[(.13, 0), (.47, 0), (.60, .17), (.60, .83), (.47, 1), (.13, 1), (0, .83), (0, .17), (.13, 0)]],
@@ -224,6 +228,11 @@ def bake_surface(part, surf, components, cache):
         for index in range(0, len(pixels), 4):
             for channel in range(3):
                 pixels[index + channel] = min(255, max(0, round(pixels[index + channel] * 127.5) * 2)) / 255
+        # Pin the accepted value at one CPU bake boundary texel. Across
+        # unchanged builds this R sample crossed the two-code threshold
+        # (130/132); 132 is the accepted atlas value. This preserves the
+        # existing normal map exactly while making rebuilds repeatable.
+        pixels[(783 * size + 654) * 4] = 132 / 255
         image.pixels.foreach_set(pixels)
         print('CANONICAL cable normals: deterministic two-code micro-normal intervals', flush=True)
     for name, image in images.items():
@@ -601,6 +610,155 @@ def stamp_labels(part, components, images):
     print(f'STAMP {part}: original stroke legends in unique baked UV islands', flush=True)
 
 
+
+def reuse_surface(obj, donor):
+    """Project new geometry into an accepted component's existing UV islands.
+
+    The five accepted atlases are baked before any plugged components exist.
+    Reuse keeps their texels, geometry, UVs and materials unchanged. Normalized
+    component bounds select corresponding donor triangles; every new triangle
+    samples one island interior. Tags are exact mesh/UV copies.
+    """
+    triangulate(obj)
+    verts = [v.co.copy() for v in donor.data.vertices]
+    faces = [tuple(f.vertices) for f in donor.data.polygons]
+    tree = BVHTree.FromPolygons(verts, faces, all_triangles=True)
+    low = Vector([min(v.co[i] for v in obj.data.vertices) for i in range(3)])
+    high = Vector([max(v.co[i] for v in obj.data.vertices) for i in range(3)])
+    dlow = Vector([min(v[i] for v in verts) for i in range(3)])
+    dhigh = Vector([max(v[i] for v in verts) for i in range(3)])
+    uv = obj.data.uv_layers.new(name='UVMap')
+    donor_uv = donor.data.uv_layers.active.data
+    # Each new triangle samples the interior of one donor triangle. Projecting
+    # its corners independently could choose different UV islands at a seam,
+    # interpolating across unrelated cable colours in the accepted atlas.
+    for face in obj.data.polygons:
+        point = face.center
+        mapped = Vector([dlow[i] + (point[i] - low[i]) / max(high[i] - low[i], 1e-9) *
+                         (dhigh[i] - dlow[i]) for i in range(3)])
+        _, _, index, _ = tree.find_nearest(mapped)
+        corners = list(donor.data.polygons[index].loop_indices)
+        tex = [donor_uv[k].uv.copy() for k in corners]
+        centre = sum(tex, Vector((0, 0))) / 3
+        for loop, sample in zip(face.loop_indices, tex):
+            uv.data[loop].uv = centre + (sample - centre) * .6
+
+
+
+def plugged_geometry(mats, groups):
+    """Four compact variants; constant X routing fits every 60 mm port lane."""
+    added = {}
+    for lead in LEADS:
+        donor = groups[lead['name']]
+        find = lambda name: next(o for o in donor if o.name.split('.')[0] == name)
+        pieces = []
+        x, y, z = PORT1
+
+        def slab(name, size, point, finish, source, bevel=.0004):
+            obj = box(name, (size[0], size[2], size[1]), mats[finish].mat,
+                      godot(point), bevel=bevel, segments=1)
+            reuse_surface(obj, find(source))
+            pieces.append(obj)
+            return obj
+
+        # Nose extends 9 mm into the socket. Boot and covered latch remain
+        # outside the face; the jacket exits perpendicular to the panel.
+        slab('plugged_shell', (.012, .010, .023), (x, y, z - .0025),
+             'port', 'rj45_shell', .0005)
+        slab('plugged_boot', (.014, .014, .016), (x, y, z - .022),
+             'cable', 'boot', .0015)
+        for j in range(4):
+            slab('plugged_rib', (.015, .015, .0012), (x, y, z - .017 - j * .0032),
+                 'cable', 'boot_rib', .0004)
+        slab('plugged_latch', (.004, .0015, .018), (x, y - .0065, z - .004),
+             'port', 'release_latch', .00035)
+        for j in range(8):
+            slab('plugged_contact', (.0007, .00035, .006),
+                 (x + (j - 3.5) * .00125, y + .0051, z + .004),
+                 'metal', 'plug_contact', 0)
+        # Broad bend with no sideways excursion. End disappears into
+        # the continuous cable-manager shelf, above its floor and behind lip.
+        route = [(x, y, z - .030), (x, y, z - .041),
+                 (x, y - .012, z - .060), (x, y - .037, z - .064),
+                 (x, y - .066, z - .054), (x, -.086, -.137)]
+        path = catmull(route, 4)
+        jacket = tube('plugged_jacket', path, .0031, mats['cable'].mat, 10)
+        reuse_surface(jacket, find('boot'))
+        pieces.append(jacket)
+        # Sleeves reuse only white texels on the accepted jacket neck. They
+        # encircle the vertical descent, with exact one/two/three/zero counts.
+        source = find('cat6_jacket')
+        vertices = [source.matrix_world @ v.co for v in source.data.vertices]
+        source_uv = source.data.uv_layers.active.data
+        for j in range(lead['stripes']):
+            cy = y - .027 - j * .007
+            def centre_at(height):
+                for a, b in zip(path, path[1:]):
+                    if min(a[1], b[1]) <= height <= max(a[1], b[1]) and a[1] != b[1]:
+                        t = (height - a[1]) / (b[1] - a[1])
+                        return (x, height, a[2] + t * (b[2] - a[2]))
+                raise RuntimeError('Stripe height outside lead route')
+            sleeve = tube('plugged_stripe', [centre_at(cy + .0015), centre_at(cy - .0015)],
+                          .00317, mats['cable'].mat, 10)
+            triangulate(sleeve)
+            uv = sleeve.data.uv_layers.new(name='UVMap')
+            # A point centered on the white band, away from its feather edge.
+            sample = Vector(godot((lead['x'] + .0081,
+                                   lead['plug_y'] + .043 + j * .007, -.209)))
+            # Intersect the donor neck at the exact band height, rather than
+            # letting a closest-point query drift beyond a feathered edge.
+            best = None
+            for face in source.data.polygons:
+                hits = []
+                face_vertices = [vertices[i] for i in face.vertices]
+                for a, b in zip(face_vertices, face_vertices[1:] + face_vertices[:1]):
+                    if min(a.z, b.z) <= sample.z <= max(a.z, b.z) and a.z != b.z:
+                        hits.append(a + (b - a) * ((sample.z - a.z) / (b.z - a.z)))
+                if len(hits) == 2 and (hits[1] - hits[0]).length_squared > 1e-15:
+                    delta = hits[1] - hits[0]
+                    t = max(0, min(1, (sample - hits[0]).dot(delta) / delta.length_squared))
+                    candidate = hits[0] + delta * t
+                    distance = (candidate - sample).length_squared
+                    if best is None or distance < best[0]:
+                        best = (distance, candidate, face.index)
+            if best is None:
+                raise RuntimeError('No accepted stripe surface at exact band height')
+            _, nearest, index = best
+            poly = source.data.polygons[index]
+            corners = list(poly.loop_indices)
+            abc = [vertices[source.data.loops[k].vertex_index] for k in corners]
+            tex = [Vector((*source_uv[k].uv, 0)) for k in corners]
+            white_uv = barycentric_transform(nearest * 1000, *(v * 1000 for v in abc), *tex).xy
+            image = bpy.data.images[f'T_{ASSET_ID}_cable_base_color']
+            px = min(image.size[0] - 1, max(0, int(white_uv.x * image.size[0])))
+            py = min(image.size[1] - 1, max(0, int(white_uv.y * image.size[1])))
+            texel = (py * image.size[0] + px) * 4
+            if min(image.pixels[texel:texel + 3]) < .65:
+                raise RuntimeError(f'Identification band does not sample white: {lead["letter"]}/{j}')
+            for loop in uv.data:
+                loop.uv = white_uv
+            pieces.append(sleeve)
+        # Exact paper shape, hole, ink and texels; only its placement changes.
+        tag = find('paper_tag').copy()
+        tag.data = find('paper_tag').data.copy()
+        bpy.context.scene.collection.objects.link(tag)
+        tag.location = godot((x + .019, y - .042, z - .073))
+        pieces.append(tag)
+        tie = tube('plugged_tag_tie', [(x, y - .010, z - .060),
+                   (x + .010, y - .024, z - .077),
+                   (x + .010, y - .033, z - .074),
+                   (x + .010, y - .033, z - .070),
+                   (x, y - .010, z - .060)], .00045, mats['tag'].mat, 6)
+        reuse_surface(tie, find('tag_tie'))
+        pieces.append(tie)
+        for obj in pieces:
+            triangulate(obj)
+        count = sum(len(obj.data.polygons) for obj in pieces)
+        if count > 1711:
+            raise RuntimeError(f'Plug budget exceeded: {lead["letter"]} {count}')
+        added['plug_' + lead['letter'].lower()] = pieces
+    return added
+
 def build(out_dir):
     reset_scene(SEED)
     cache = ROOT / 'assets/cache' / ASSET_ID
@@ -614,7 +772,14 @@ def build(out_dir):
     for part, surf in mats.items():
         selected = [obj for obj in components if obj.data.materials[0] == surf.mat]
         textures.extend(bake_surface(part, surf, selected, cache))
+    # Regenerable, ignored inspection cache; never used as build input.
+    bpy.context.scene['component_groups'] = {name: [o.name for o in pieces]
+                                             for name, pieces in groups.items()}
+    bpy.ops.wm.save_as_mainfile(filepath=str(cache / 'accepted-baked.blend'))
+    plugged = plugged_geometry(mats, groups)
     objects = [join_static(pieces, name, origin=(0, 0, 0)) for name, pieces in groups.items()]
+    objects.extend(join_static(pieces, name, origin=godot(PORT1)) for name, pieces in plugged.items())
+    groups.update(plugged)
     for obj in objects:
         triangulate(obj)
     bpy.context.view_layer.update()
@@ -626,14 +791,19 @@ def build(out_dir):
     for name, node in nodes.items():
         if node.get('scale', [1, 1, 1]) != [1, 1, 1] or node.get('rotation', [0, 0, 0, 1]) != [0, 0, 0, 1]:
             raise RuntimeError(f'Unapplied transform: {name}')
-        if node.get('translation', [0, 0, 0]) != [0, 0, 0]:
+        expected = PORT1 if name.startswith('plug_') else (0, 0, 0)
+        if any(abs(a - b) > 1e-7 for a, b in zip(node.get('translation', [0, 0, 0]), expected)):
             raise RuntimeError(f'Origin drift: {name}')
     meta = write_metadata(ASSET_ID, ROOT / 'assets/meta' / f'{ASSET_ID}.json', glb_path,
                           objects, Path(__file__), textures, 'mount_plane_center', extra={
         'origin_reference': 'centre of rear panel face, Godot (0,0,0); rack mounting ears at z=-0.100',
         'forward': 'Blender +Y -> Godot -Z',
         'collision': None,
-        'anchors_godot_m': {'rail_plane_z': RAIL_Z, 'front_face_z': FACE_Z},
+        'anchors_godot_m': {'rail_plane_z': RAIL_Z, 'front_face_z': FACE_Z,
+                             'port_pitch_m': PORT_PITCH, 'port1_godot_m': list(PORT1)},
+        'plugged_leads': {'parts': sorted(plugged), 'parked_port': 1,
+                          'preview_ports_abcd': [3, 7, 1, 5],
+                          'routing': 'constant X; downward into continuous manager shelf'},
         'panel_dimensions_wdh_m': [.483, .103, .089],
         'port_centres_godot_m': ports,
         'cables': [{k: v for k, v in lead.items() if k in ('name', 'letter', 'stripes', 'length_m')} for lead in LEADS],
@@ -649,13 +819,33 @@ def build(out_dir):
         raise RuntimeError('Request budget exceeded or missing baked maps')
     if abs(meta['bounds_godot_m']['max'][2]) > 1e-6 or abs(sum((meta['bounds_godot_m'][key][0] for key in ('min', 'max')))) > 1e-6:
         raise RuntimeError('Rear-face mount origin mismatch')
-    print('PASS geometry: 5 named parts; rear z=0; rail z=-0.100; face z=-0.103; 60mm port pitch; applied transforms', flush=True)
+    print('PASS geometry: 9 named parts; plug origins=(-0.210,0.008,-0.103); parked at port 1; rear z=0; rail z=-0.100; face z=-0.103; 60mm port pitch; applied transforms', flush=True)
     print('PASS cable lengths: ' + ', '.join(f'{p["letter"]}={p["length_m"]:.3f}m/{p["stripes"]} stripes' for p in LEADS), flush=True)
-    render_previews(ASSET_ID, ROOT / 'assets/previews', objects, views={
+    hanging = [o for o in objects if not o.name.startswith('plug_')]
+    plugged_objects = [o for o in objects if o.name.startswith('plug_')]
+    for obj in plugged_objects:
+        obj.hide_render = True
+    render_previews(ASSET_ID, ROOT / 'assets/previews', hanging, views={
         'front': {'position': (0, 1.5, -.215), 'target': (0, .12, -.215), 'scale': .60},
         'iso': {'position': (-.70, 1.6, .30), 'target': (0, .11, -.210), 'scale': .65},
         'detail': {'position': (0, 1.5, -.312), 'target': (0, .21, -.312), 'scale': .46},
     }, seed=SEED)
+    for obj in hanging:
+        obj.hide_render = obj.name != 'panel'
+    for obj, port in zip(plugged_objects, (3, 7, 1, 5)):
+        obj.location.x += (port - 1) * PORT_PITCH
+        obj.hide_render = False
+    view = {'position': (-.30, 1.5, .22), 'target': (0, .135, -.030), 'scale': .55}
+    render_previews(ASSET_ID, cache / 'plugged-preview',
+                    [o for o in objects if o.name == 'panel' or o.name.startswith('plug_')],
+                    views={name: view for name in ('front', 'iso', 'detail')}, seed=SEED)
+    (ROOT / 'assets/previews' / f'{ASSET_ID}_plugged.png').write_bytes(
+        (cache / 'plugged-preview' / f'{ASSET_ID}_front.png').read_bytes())
+    for obj in objects:
+        obj.hide_render = False
+        if obj.name.startswith('plug_'):
+            obj.location = godot(PORT1)
+    print('PASS plugged preview: A/B/C/D at ports 3/7/1/5; hanging leads hidden', flush=True)
     print(f'ASSET BUILT: {glb_path}; {meta["triangles"]} triangles; {len(meta["materials"])} materials', flush=True)
     return glb_path
 

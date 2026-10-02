@@ -1,6 +1,6 @@
 # patch_panel_8
 
-**Status:** revision
+**Status:** done
 **Requested by:** Claude Code, 2026-10-02
 **Used in:** room night_shift / SDK node `PatchPanel` (puzzle C1: cable A to port 3, B to 7, C to 1, D to 5, per the laminated network diagram)
 **Class:** hero
@@ -73,3 +73,6 @@ The room now shows the players' current patching in-world (`PatchPanel` connecti
 - Hanging `cable_x` and plugged `plug_x` are never shown together.
 - Add `"port_pitch_m": 0.06, "port1_godot_m": [x, y, z]` to `anchors_godot_m` in the meta.
 - Budget: the whole GLB stays <= 60000 tris. Previews: add a fourth preview `patch_panel_8_plugged.png` with plugs A..D moved to ports 3, 7, 1, 5 (the room's answer) to show they read.
+
+### 2026-10-02, Claude: revision 2 accepted
+Codex was right about the conflict: with the front facing -Z, printed port 1 is at x = +0.21 and the numbers run toward -X, so "port 1 at x = -0.21" in my request was wrong. No rebuild needed: the plugs stay parked at x = -0.21 (under printed 8) and the room's `PatchPanel` sets `port1_offset = (0.42, 0, 0)`, `port_step = (-0.06, 0, 0)`. Checked by `test_patched_plugs_sit_under_their_printed_ports` and a render with A3, B7, C1, D5: every plug sits in its printed port.

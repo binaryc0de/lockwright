@@ -92,7 +92,7 @@ Continued on branch `m4-polish`:
 - [x] Printables `network_diagram_laminated` and `work_order` (Codex) in the room.
 - [x] Hero props `uv_torch`, `usb_stick`, `exit_sign_lightbox` (Codex) in the room; `tools/test.sh` exit 0 (gdUnit4 97/97, assetcheck 23/23, m2 + m3 smoke with real Docker)
 - [x] Polish: blinking rack LEDs (shader), focused-view camera move-in (keypads, patch panel, terminals), desk lamp reduced to 11.6k triangles (Codex; `assetcheck` gained the `source` origin kind)
-- [ ] Patch cables shown plugged into their ports (SDK side done; `patch_panel_8` revision 2 with Codex)
+- [x] Patch cables shown plugged into their ports: `PatchPanel.model` + `plug_*` parts (Codex `patch_panel_8` revision 2, 57.9k tris); render with A3 B7 C1 D5 checked; `tools/test.sh` exit 0 (gdUnit4 85 + 17 room, assetcheck 24/24, m2 + m3 smoke)
 - [x] Exports (ADR-0021): `tools/export.sh` builds Linux/Windows clients, the stripped Linux server and room packs; `tools/export_smoke.sh` plays to the win with the exported Linux builds. Windows `.exe` built, not run.
 - [x] Performance pass: graphics presets low/medium/high (pause menu), `tests/scenes/perf_bench.tscn`
 - [ ] Measure on the owner's target mid-range GPU (PLAN.md open question 2); Codex review of M4

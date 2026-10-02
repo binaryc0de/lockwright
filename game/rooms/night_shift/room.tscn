@@ -1711,6 +1711,8 @@ targets = Array[NodePath]([NodePath("../../Office/ExitDoor/Keypad")])
 display_name = "Patch panel P1"
 verbs = PackedStringArray("patch")
 model = NodePath("Model")
+port1_offset = Vector3(0.42, 0, 0)
+port_step = Vector3(-0.06, 0, 0)
 
 [node name="Panel" type="MeshInstance3D" parent="Cage/PatchPanel" unique_id=2010716929]
 

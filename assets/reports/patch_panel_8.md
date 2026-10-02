@@ -1,151 +1,145 @@
-# patch_panel_8
+# patch_panel_8 — revision 2: plugged leads
 
-Built from `assets/requests/patch_panel_8.md` with Blender 5.2.2 LTS. The
-accepted `exit_door_maglock` and `exit_keypad_6` scripts supplied the local
-structure for Godot-axis geometry, original stroke lettering, procedural
-surface baking, named-part checks, metadata and previews. Their routines
-were copied and adapted inside this asset's script; this build does not
-import another asset script. No shared helper changes, external assets,
-fonts, downloads, dependencies or commits.
+Implemented the dated revision in `assets/requests/patch_panel_8.md` using
+Blender 5.2.2 LTS. The final GLB contains **57,900 triangles, nine meshes,
+five materials and fifteen embedded PNG textures**. The original panel,
+hanging leads, materials, rear-face origin and mounting anchors are retained.
+No shared helpers, other assets, runtime code, room scenes, room.yaml or
+request files were edited by this task. No third-party assets, fonts,
+downloads, dependencies or commits were added.
 
-## Delivered asset
+## Added leads
 
-- **53,156 triangles**, five named meshes, five materials and **15 embedded
-  PNG textures**. No collision helpers, animation, cameras or lights in GLB.
-- A 483 mm wide, 89 mm high 2U panel with a 100 mm deep folded sheet-metal
-  chassis. The rear face is at Godot Z = 0; the 2 mm mounting ears have their
-  back at Z = -0.100; the central front land is at Z = -0.103.
-- Eight keystone sockets on 60 mm pitch, centred at Y = +0.008. Each has a
-  real aperture, latch keyway, recessed walls and eight gold contact fingers.
-  Ports read 1–8 from left to right when viewed from the front. Original
-  white stroke legends have the requested 12 mm cap height; the upper-left
-  `P1 -> UPS BYPASS` strip uses 9 mm capitals.
-- A 1U cable manager directly below the panel, with a folded shelf, front
-  lip, four round guide loops, slotted ears and recessed cross-head screws.
-- Four independent hanging Cat6 leads. A is red with one white band, B blue
-  with two, C yellow with three, and D green with none. Bands wrap only the
-  neck approaching the plug. Each cable includes its boot, strain-relief
-  ribs, latch, contact pads, tie and 28 × 29 mm paper tag. Tags use original
-  slanted marker strokes at the specified 15 mm cap height. Lead lengths,
-  including the connector allowance, are A 0.671274 m, B 0.685900 m,
-  C 0.671627 m and D 0.686581 m; plug centres are approximately Y = -0.32
-  to -0.365 m, with tags and plugs separated in front view.
+`plug_a`, `plug_b`, `plug_c`, `plug_d` are independently movable meshes.
+All four are parked at Godot **[-0.21, 0.008, -0.103] m**, with their origins
+at that port mouth and identity rotation/scale. They deliberately overlap
+in the GLB. Each contains an inserted RJ45 nose with eight contact pads,
+release latch, ribbed boot, curved Cat6 jacket, paper tag and tie. The
+jacket stays at constant X and descends into the continuous manager shelf;
+there is no sideways run across neighbouring sockets. Each complete lead
+is narrower than the 60 mm port pitch. A/B/C/D use the accepted red/blue/
+yellow/green finishes and one/two/three/zero white bands, respectively.
 
-Surface detail includes powder-coat grain, slight edge chipping, rubbed
-manager edges, fine service scratches, dust on upward-facing steel, moulded
-plastic grain, PVC jacket texture, paper fibers and brushed contact/fastener
-metal. All five materials have baked base colour, tangent normal and packed
-ORM maps. Panel/legend and cable maps are 2048 px; socket, tag and metal maps
-are 1024 px. UV islands are unique per material, with 8 px packing and bake
-margins. Base colour and roughness/metallic use procedural emission bakes;
-AO is ray traced and packed into ORM R, with roughness in G and metallic in B.
-The cable micro-normal map is rounded to two-code intervals in its 8-bit
-encoding, retaining neutral code 128 and the fine PVC grain. This addresses
-a variation found in an initial unchanged-build comparison: one red-channel
-sample of the 2048 px cable normal map encoded as 130 in one build and 131
-in the next. Geometry and the other fourteen texture payloads were identical.
-The delivered source applies this rounding before saving and embedding.
+The added triangle counts are A 1,168, B 1,204, C 1,240 and D 1,132:
+**4,744 new triangles**, leaving 2,100 below the hero budget. The seated
+parts use compact applied bevels and a smooth ten-sided jacket. All four
+have the same geometry apart from stripe count and the tag's existing ink.
+No collision helpers, animation, cameras or lights are exported.
 
-The three 1024 × 1024 previews use the shared neutral-grey three-point studio,
-Cycles CPU, 32 samples, denoising and four threads. All were visually reviewed.
-The detail view clearly shows A/B/C/D and the one/two/three/zero band counts.
-Initial visual review prompted narrower edge wear on the manager and removal
-of duplicated stripe groups on the return side of each cable bend.
+The accepted five materials are baked before any new geometry is created.
+New triangles reuse interiors of the existing atlas islands; paper tags
+copy their accepted geometry and UVs. The white sleeves sample existing
+white jacket texels, checked during the build, and follow the cable bend.
+This adds no textures or materials. The source pins one cable-normal
+boundary texel to its accepted value (PNG R at x=654, y=1264: code 132),
+resolving an observed unchanged CPU bake variation between codes 130/132.
+The delivered fifteen embedded PNGs match the accepted GLB byte for byte.
 
-## Integration
-
-Exactly `panel`, `cable_a`, `cable_b`, `cable_c`, `cable_d` are exported. Each
-has identity rotation/scale and an origin at the requested rear-face centre;
-moving a cable moves its plug, tag and stripes with it. Everything is at
-Godot Z ≤ 0 and faces -Z. Combined bounds are approximately 0.483 W × 0.222 D
-× 0.474 H m, including the hanging leads.
-
-Metadata includes the requested anchors:
+Metadata retains the existing anchors and adds:
 
 ```json
-"anchors_godot_m": {
-  "rail_plane_z": -0.100,
-  "front_face_z": -0.103
-}
+"port_pitch_m": 0.06,
+"port1_godot_m": [-0.21, 0.008, -0.103]
 ```
 
-There are no request deviations. In-room attachment, lighting review,
-focused UI wiring and the acceptance screenshot remain Claude's integration
-work. No in-room screenshot or gameplay approval is claimed. No runtime
-code, room scene, room.yaml, request status or another asset's files were
-edited. No Godot material overrides are required for the initial review;
-refresh extracted GLB textures if a previous version was imported.
+The three existing previews were regenerated with the plugs hidden.
+`patch_panel_8_plugged.png` hides the hanging leads and translates A/B/C/D
+by the requested `(port - 1) * 0.06` offsets for ports 3/7/1/5. All four
+previews are 1024 × 1024, neutral-grey, shared three-point studio, Cycles
+CPU, 32 samples, denoised, four threads. Tags and stripe counts were
+visually reviewed after correcting an initial atlas-seam sampling artifact.
+Baking also uses Cycles CPU, 16 samples and 8 px margins. The script runs
+headless with seeded randomness and no network. Its inspection `.blend`
+cache is regenerated on every build and is never a build input.
+
+## Request consistency issue
+
+The accepted panel's printed port 1 is at **X=+0.21**, with numbers
+increasing toward negative X. Revision 2 explicitly specifies port 1 at
+**X=-0.21** and positive X steps. Those conventions are reversed. This
+revision preserves the accepted panel and follows the new parking anchor
+and translation formula exactly. Consequently, the specified A/B/C/D
+preview translations lie beneath printed labels **6/2/8/4**, respectively.
+The supplied logical port numbers are **3/7/1/5**. The owner/Claude needs
+to reconcile this numbering conflict before the world visuals can match
+the diagram's printed numbers. Neither labels nor SDK code were changed.
 
 ## Verification actually run
 
-`tools/blender/build_assets.sh patch_panel_8` completed with **exit 0** through
-the shared `flock`, CPU only, four threads. Selected real output from the
-final-source build:
+`tools/blender/build_assets.sh patch_panel_8` completed with **exit 0**,
+through the shared `flock`, CPU only, four threads. Selected real output
+from the final corrected-source build (`revision2-build-verified.log`):
 
 ```text
 Building patch_panel_8 with Blender 5.2.2 (CPU only, 4 threads)
-PASS geometry: 5 named parts; rear z=0; rail z=-0.100; face z=-0.103; 60mm port pitch; applied transforms
+PASS geometry: 9 named parts; plug origins=(-0.210,0.008,-0.103); parked at port 1; rear z=0; rail z=-0.100; face z=-0.103; 60mm port pitch; applied transforms
 PASS cable lengths: A=0.671m/1 stripes, B=0.686m/2 stripes, C=0.672m/3 stripes, D=0.687m/0 stripes
-ASSET BUILT: ~/Work/escapebox/game/assets/core/props/patch_panel_8.glb; 53156 triangles; 5 materials
+PASS plugged preview: A/B/C/D at ports 3/7/1/5; hanging leads hidden
+ASSET BUILT: ~/Work/escapebox/game/assets/core/props/patch_panel_8.glb; 57900 triangles; 5 materials
 ```
 
-`go run ./tools/assetcheck patch_panel_8` completed with **exit 0**. Real output:
+`go run ./tools/assetcheck patch_panel_8` completed with **exit 0**.
+Real output:
 
 ```text
 WARN patch_panel_8: bounds centre y = -0.1925 m; a mount-plane-centre origin would put it near 0
-PASS patch_panel_8 (53156 tris, 5 parts)
+PASS patch_panel_8 (57900 tris, 5 parts)
 assetcheck: 1 asset(s) checked, 1 passed, 0 failed, 1 warning(s)
 ```
 
-The warning is expected: the request places the origin at the panel body's
-rear-face centre, while the hanging cables extend the overall bounds below
-it. The requested origin was retained. The build separately checks the
-rear-most geometry at Z = 0, X centring and all five exported transforms.
+The existing warning reflects the hanging cables extending the bounds
+below the panel's rear-face origin. The requested origin was preserved.
+The checker's `5 parts` counts the main request table's five required
+parts; it does not parse the added table in Revision notes. The independent
+artifact audit and Godot check verify all **nine** exported meshes and
+all four new port-mouth origins.
 
-Read-only artifact checks passed for texture budgets, fifteen embedded maps,
-shared ORM/occlusion texture indices on every material, three 1024 px PNGs,
-the requested anchors, and current source/pipeline/GLB hashes. An independent
-standard-library calculation also verified the four sampled cable lengths.
-Godot 4.7.2 imported a copy of the final-source GLB in an isolated project
-under this asset's ignored cache directory. Import and the headless scene
-check both exited **0**:
+The preservation audit passed against a copy of the accepted GLB saved
+before editing: every original position, normal, tangent, UV, index,
+transform and material graph is unchanged; all fifteen embedded PNG
+payloads are byte-identical. It also checked the four new origins, unit
+rotations/scales, port-lane widths, texture budgets and four 1024 px PNGs.
+The accepted front/iso preview pixels differ only by one display code at
+a few dozen pixels (CPU render/denoising precision); the detail image
+pixels match exactly. No preview PNG byte-identity claim is made.
 
-```text
-PASS Godot headless: 5 named meshes; five textured PBR materials; no collision/animation; rear mount z=0; front toward -Z; applied transforms
-```
-
-The exporter emits its existing shared-ORM warning:
-
-```text
-WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
-```
-
-Texture-node settings agree; exported-data checks confirm that all five
-materials retain their packed ORM and use the same texture for occlusion
-and metallic/roughness.
-
-The two unchanged builds of the final source (including normal rounding)
-both exited **0**, regenerating the GLB and all previews. The second GLB is
-**byte-identical** to the first, including all embedded texture bytes;
-metadata is identical except `built_at`. Real comparison output:
+Godot 4.7.2 imported a copy in an isolated project under this asset's cache.
+Extracted textures were removed before reimporting. Import and the
+headless scene check both completed with **exit 0**. Real check output:
 
 ```text
-PASS reproducibility: byte-identical GLB including embedded textures; metadata identical except built_at
-GLB SHA256 41efb74e5c9d9ebdef3e0bb2d2734bc18b9a079ec23afca1e306a19efd145ba3
+PASS Godot headless: 9 named meshes; four exact plug anchors; five textured PBR materials; no collision/animation; rear mount z=0; front toward -Z; applied transforms
 ```
 
-The delivered GLB is **17,768,540 bytes**. The final assetcheck rerun after
-the unchanged rebuild exited **0** with the exact output quoted above.
-The isolated Godot check used the first final-source GLB, which is identical
-to the delivered second GLB. No preview PNG byte-identity claim is made;
-Blender includes rendering timestamps and timing metadata in preview PNGs.
-The final three previews were visually inspected.
+The exporter retains its shared-ORM warning about multiple texture nodes;
+the unchanged exported materials use the same sampler and ORM image for
+occlusion and metallic/roughness. No in-room screenshot, gameplay test
+or integration acceptance is claimed; those remain Claude's work.
 
-Final build logs: `assets/cache/patch_panel_8/build-canonical-final.log` and
-`assets/cache/patch_panel_8/build-canonical-repro.log`. Final assetcheck output:
-`assets/cache/patch_panel_8/assetcheck-final.log`. Isolated Godot logs:
-`assets/cache/patch_panel_8/godot-import-final.log` and
-`assets/cache/patch_panel_8/godot-check-final.log`.
+Two complete builds of the final unchanged source completed with **exit 0**
+(`revision2-build-verified.log` and `revision2-build-repro.log`). Their GLBs
+are byte-identical, including all embedded textures; metadata matches
+except `built_at`. The delivered GLB is **18,375,972 bytes**. Real comparison
+output:
+
+```text
+PASS reproducibility: two unchanged full builds produce byte-identical GLB; metadata identical except built_at
+GLB SHA256 d4046d9d4d1a6fe2d068a25b85dc0f855d30c46d0e9634d2d61193f4ac57ab85
+GLB bytes 18375972
+```
+
+Assetcheck and the preservation audit were rerun after the reproducibility
+build; both exited **0**. All four delivered previews were visually
+inspected. The final front/iso comparisons against the accepted previews
+found 44/46 pixels different by one display code, respectively; the detail
+pixels match exactly. The Godot-tested GLB is byte-identical to the final
+delivered GLB. `git diff --check` passed for this task's text deliverables.
+
+Logs and audit scripts are in ignored `assets/cache/patch_panel_8/`:
+`revision2-build-verified.log`, `revision2-build-repro.log`,
+`revision2-repro-audit.log`, `revision2-assetcheck.log`,
+`revision2-audit.log`, `revision2-godot-import.log` and
+`revision2-godot-check.log`.
 
 ## Deliverables
 
@@ -154,7 +148,6 @@ Final build logs: `assets/cache/patch_panel_8/build-canonical-final.log` and
 - `assets/previews/patch_panel_8_front.png`
 - `assets/previews/patch_panel_8_iso.png`
 - `assets/previews/patch_panel_8_detail.png`
+- `assets/previews/patch_panel_8_plugged.png`
 - `assets/meta/patch_panel_8.json`
 - `assets/reports/patch_panel_8.md`
-
-Full build/import logs are retained under `assets/cache/patch_panel_8/`.
