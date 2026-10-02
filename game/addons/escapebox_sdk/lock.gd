@@ -30,11 +30,11 @@ func _initial_state() -> Dictionary:
 
 
 func is_unlocked() -> bool:
-	return current_state.get("state", "locked") == "unlocked"
+	return my_state().get("state", "locked") == "unlocked"
 
 
 func is_powered() -> bool:
-	return current_state.get("powered", true)
+	return my_state().get("powered", true)
 
 
 func is_available() -> bool:
@@ -53,7 +53,7 @@ func _server_try_code(value: String) -> Dictionary:
 		return {"ok": false, "error": "no_power", "message": "The panel is dead."}
 	if is_unlocked():
 		return {"ok": true, "already": true}
-	var attempts: int = current_state.get("attempts", 0) + 1
+	var attempts: int = my_state().get("attempts", 0) + 1
 	var correct := authority.resolve(code).strip_edges().to_upper()
 	if value.strip_edges().to_upper() == correct and not correct.is_empty():
 		set_state({"state": "unlocked", "attempts": attempts, "last_ok": true})

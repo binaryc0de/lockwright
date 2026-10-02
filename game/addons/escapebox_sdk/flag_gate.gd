@@ -14,7 +14,7 @@ func _initial_state() -> Dictionary:
 
 
 func _server_flag_accepted(id: String) -> void:
-	if id != challenge_id or current_state.get("state") == "fired":
+	if id != challenge_id or my_state().get("state") == "fired":
 		return
 	set_state({"state": "fired"})
 	for t in targets:

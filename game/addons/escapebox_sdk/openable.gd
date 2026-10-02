@@ -41,7 +41,7 @@ func _initial_state() -> Dictionary:
 
 
 func is_open() -> bool:
-	return current_state.get("state", "closed") == "open"
+	return my_state().get("state", "closed") == "open"
 
 
 func current_verb() -> String:
@@ -52,10 +52,11 @@ func lock_path() -> String:
 	return room_path_of(locked_by)
 
 
-## True while the linked lock (if any) is still locked. Works on clients too.
+## True while the linked lock (if any) is still locked. Authoritative on the
+## server, last applied state on clients.
 func is_locked() -> bool:
 	var lock := get_node_or_null(locked_by) as Lock
-	return lock != null and lock.current_state.get("state", "locked") != "unlocked"
+	return lock != null and state_of(lock).get("state", "locked") != "unlocked"
 
 
 func prompt(item_name: String = "") -> String:

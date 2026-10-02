@@ -34,12 +34,30 @@ static func _collect(n: Node, out: Array[EBNode]) -> void:
 		_collect(c, out)
 
 
-## Current state as last applied. Read-only; use set_state() on the server.
+## Copy of the state as last applied, for presentation. Server decisions
+## must use my_state()/state_of(), which read the authoritative table.
 var current_state: Dictionary = {}
 
 
 func _initial_state() -> Dictionary:
 	return {"state": "idle"}
+
+
+## Server: whether players may act on this node at all, from the WorldState.
+## (Closed containers are handled by the authority.)
+func _server_available() -> bool:
+	return true
+
+
+## Authoritative state of this node on the server; the applied copy on clients.
+func my_state() -> Dictionary:
+	return state_of(self)
+
+
+func state_of(n: EBNode) -> Dictionary:
+	if n == null:
+		return {}
+	return authority.state.node_state(n.eb_path) if authority else n.current_state
 
 
 ## Handles a player's intent on the server. Return {ok: true} or

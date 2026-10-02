@@ -33,8 +33,17 @@ var flags: FlagValidator = DevFlagValidator.new()
 var clock: Callable = Time.get_unix_time_from_system
 ## player id -> last known world position (sanity checks only).
 var player_positions: Dictionary = {}
+## Trusted callers only (tests, solution replay): skip the reach check for
+## players that never reported a position. Never set on a networked server.
+var allow_unpositioned: bool = false
 
 var _nodes: Dictionary = {}   # path -> EBNode
+## node path -> puzzle ids whose solved_when watches that node; item_id and
+## challenge id -> puzzle ids likewise. Intents on a watched node are refused
+## until those puzzles' prerequisites are solved (PLAN.md 7.2).
+var _gates_by_path: Dictionary = {}
+var _gates_by_item: Dictionary = {}
+var _gates_by_challenge: Dictionary = {}
 var _last_progress: float = 0.0
 
 
@@ -63,9 +72,11 @@ func setup(p_manifest: RoomManifest, room_instance: Node, p_session_id: String, 
 	for path: String in _nodes:
 		if not state.nodes.has(path):
 			state.nodes[path] = (_nodes[path] as EBNode)._initial_state()
-	# The authority's own scene always mirrors the state it owns.
+	# The authority's own scene always mirrors the state it owns (as copies:
+	# nothing outside the authority may hold a writable reference into it).
 	for path: String in _nodes:
-		(_nodes[path] as EBNode).receive_state(state.nodes[path])
+		(_nodes[path] as EBNode).receive_state(state.nodes[path].duplicate(true))
+	_build_gates()
 	_last_progress = now
 	graph.evaluate(state, now)
 	event_logged.emit("session_started", {"room": manifest.id, "restored": not snapshot.is_empty()})
@@ -115,8 +126,10 @@ func handle_intent(player_id: String, path: String, verb: String, payload: Dicti
 		return {"ok": false, "error": "unknown_node"}
 	if not _in_reach(player_id, n):
 		return {"ok": false, "error": "out_of_reach"}
-	if n is Interactable and not (n as Interactable).is_available():
+	if not is_available(n):
 		return {"ok": false, "error": "unavailable"}
+	if not _prerequisites_met(n):
+		return {"ok": false, "error": "not_yet", "message": "Nothing happens. Something else must come first."}
 	var item_path: String = payload.get("item", "")
 	if not item_path.is_empty() and not item_path in state.inventory:
 		return {"ok": false, "error": "item_not_held"}
@@ -164,9 +177,63 @@ func update_player_position(player_id: String, pos: Vector3) -> void:
 
 
 func _in_reach(player_id: String, n: EBNode) -> bool:
-	if not player_positions.has(player_id) or not n.is_inside_tree():
-		return true  # Unknown position (tests, solution replay): nothing to check.
+	if not n.is_inside_tree():
+		return false
+	if not player_positions.has(player_id):
+		return allow_unpositioned
 	return (player_positions[player_id] as Vector3).distance_to(n.global_position) <= MAX_REACH_M
+
+
+## Server-side availability, decided from the WorldState only (never from
+## scene visibility, which is presentation): the node's own rule, and no
+## closed ContainerProp holding it in its `contents`.
+func is_available(n: EBNode) -> bool:
+	if not n._server_available():
+		return false
+	var p := n.get_parent()
+	while p != null and p != room:
+		if p is ContainerProp:
+			var c := p as ContainerProp
+			var contents := c.get_node_or_null(c.contents)
+			if contents and (contents == n or contents.is_ancestor_of(n)) \
+					and state.node_state(c.eb_path).get("state") != "open":
+				return false
+		p = p.get_parent()
+	return true
+
+
+func _prerequisites_met(n: EBNode) -> bool:
+	var gates: Array = _gates_by_path.get(n.eb_path, [])
+	if n is Item:
+		gates = gates + _gates_by_item.get((n as Item).item_id, [])
+	if n is Terminal:
+		gates = gates + _gates_by_challenge.get((n as Terminal).challenge_id, [])
+	for pid: String in gates:
+		if state.is_solved(pid):
+			continue
+		for r: String in graph.requires(pid):
+			if not state.is_solved(r):
+				return false
+	return true
+
+
+func _build_gates() -> void:
+	_gates_by_path = {}
+	_gates_by_item = {}
+	_gates_by_challenge = {}
+	for p: Dictionary in manifest.puzzles:
+		_index_condition(p.get("solved_when", {}), p["id"])
+
+
+func _index_condition(c: Dictionary, pid: String) -> void:
+	if c.has("node_state"):
+		_gates_by_path.get_or_add(c["node_state"]["path"], []).append(pid)
+	elif c.has("item_picked_up"):
+		_gates_by_item.get_or_add(c["item_picked_up"], []).append(pid)
+	elif c.has("flag_accepted"):
+		_gates_by_challenge.get_or_add(c["flag_accepted"]["challenge"], []).append(pid)
+	for sub: Dictionary in c.get("all_of", []) + c.get("any_of", []):
+		_index_condition(sub, pid)
 
 
 # --- Mutation API used by SDK nodes on the server ------------------------
@@ -177,8 +244,8 @@ func set_node_state(path: String, patch: Dictionary) -> void:
 	state.nodes[path] = cur
 	var n: EBNode = _nodes.get(path)
 	if n:
-		n.receive_state(cur)
-	node_state_changed.emit(path, cur)
+		n.receive_state(cur.duplicate(true))
+	node_state_changed.emit(path, cur.duplicate(true))
 
 
 ## Moves an Item into the team inventory.
@@ -233,6 +300,10 @@ func submit_flag(player_id: String, challenge_id: String, value: String) -> Dict
 		return {"ok": false, "error": "unknown_challenge"}
 	if state.flags_accepted.has(challenge_id):
 		return {"ok": true, "already": true}
+	for pid: String in _gates_by_challenge.get(challenge_id, []):
+		for r: String in graph.requires(pid):
+			if not state.is_solved(r):
+				return {"ok": false, "error": "not_yet", "message": "The system isn't ready for that yet."}
 	var r: Dictionary = flags.validate(session_id, challenge_id, value, player_id)
 	event_logged.emit("flag_submitted", {"player": player_id, "challenge": challenge_id, "accepted": r.get("accepted", false)})
 	if not r.get("accepted", false):

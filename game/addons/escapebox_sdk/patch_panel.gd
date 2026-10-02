@@ -25,7 +25,7 @@ func _initial_state() -> Dictionary:
 
 
 func is_solved() -> bool:
-	return current_state.get("state") == "solved"
+	return my_state().get("state") == "solved"
 
 
 func is_available() -> bool:

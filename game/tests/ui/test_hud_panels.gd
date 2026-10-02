@@ -13,6 +13,7 @@ func before_test() -> void:
 	room = auto_free(TestRoom.build())
 	add_child(room)
 	Game.start_local_session(TestRoom.manifest(), room, "ui-test")
+	Game.authority.allow_unpositioned = true
 	player = auto_free(FirstPersonPlayer.new())
 	add_child(player)
 	hud = auto_free(Hud.new())
@@ -26,6 +27,8 @@ func after_test() -> void:
 
 
 func test_keypad_panel_submits_through_authority() -> void:
+	Game.request(room.get_node("Desk") as EBNode, "open")
+	Game.request(room.get_node("Desk/Contents/Torch") as EBNode, "pick_up")
 	var lock := room.get_node("Cabinet/Keypad") as KeypadLock
 	hud.open_keypad(lock)
 	assert_bool(hud.is_modal_open()).is_true()
@@ -42,6 +45,10 @@ func test_keypad_panel_submits_through_authority() -> void:
 
 
 func test_patch_panel_ui_maps_cables() -> void:
+	Game.request(room.get_node("Desk") as EBNode, "open")
+	Game.request(room.get_node("Desk/Contents/Torch") as EBNode, "pick_up")
+	Game.request(room.get_node("Cabinet/Keypad") as EBNode, "submit_code", {"value": Game.vars()["cabinet_code"]})
+	Game.request(room.get_node("Laptop") as EBNode, "submit_flag", {"value": "dev"})
 	var pp := room.get_node("Panel") as PatchPanel
 	hud.open_patch_panel(pp)
 	var ui := hud._modal as PatchPanelUI

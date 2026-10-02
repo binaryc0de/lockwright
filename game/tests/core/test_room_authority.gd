@@ -17,6 +17,7 @@ func before_test() -> void:
 	add_child(room)
 	auth = auto_free(RoomAuthority.new())
 	auth.clock = func() -> float: return now
+	auth.allow_unpositioned = true
 	auth.event_logged.connect(func(k: String, d: Dictionary) -> void: events.append([k, d]))
 	auth.setup(TestRoom.manifest(), room, "session-1")
 
@@ -59,14 +60,15 @@ func test_pickup_first_intent_wins_and_solves_puzzle() -> void:
 
 
 func test_keypad_checks_code_on_server() -> void:
+	act("Desk", "open")
+	act("Desk/Contents/Torch", "pick_up")
 	assert_dict(act("Cabinet", "open")).contains_key_value("error", "locked")
 	var wrong := "0000" if code() != "0000" else "1111"
 	assert_dict(act("Cabinet/Keypad", "submit_code", {"value": wrong})).contains_key_value("error", "wrong_code")
 	assert_dict(auth.state.node_state("Cabinet/Keypad")).contains_key_value("attempts", 1)
 	assert_dict(act("Cabinet/Keypad", "submit_code", {"value": " %s " % code()})).contains_key_value("ok", true)
 	assert_dict(act("Cabinet", "open")).contains_key_value("ok", true)
-	# open_cabinet waits for its prerequisite (find_uv).
-	assert_bool(auth.state.is_solved("open_cabinet")).is_false()
+	assert_bool(auth.state.is_solved("open_cabinet")).is_true()
 
 
 func test_reading_pins_documents_once() -> void:
@@ -98,7 +100,7 @@ func test_full_solution_finishes_session() -> void:
 	act("Desk/Contents/Torch", "pick_up")
 	act("Cabinet/Keypad", "submit_code", {"value": code()})
 	act("Laptop", "submit_flag", {"value": "dev"})
-	assert_dict(act("ExitKeypad", "submit_code", {"value": "417062"})).contains_key_value("error", "no_power")
+	assert_dict(act("ExitKeypad", "submit_code", {"value": "417062"})).contains_key_value("error", "not_yet")
 	assert_dict(act("Panel", "patch", {"value": "A:1,B:2"})).contains_key_value("error", "no_effect")
 	assert_dict(act("Panel", "patch", {"value": "A:9,B:1"})).contains_key_value("error", "bad_mapping")
 	assert_dict(act("Panel", "patch", {"value": "a:2, B:1"})).contains_key_value("ok", true)
@@ -160,3 +162,45 @@ func test_restart_from_snapshot_restores_world() -> void:
 	assert_bool((room2.get_node("Desk/Contents/Torch") as Node3D).visible).is_false()
 	assert_bool((room2.get_node("Cabinet/Keypad") as Lock).is_unlocked()).is_true()
 	assert_float(auth2.state.started_at).is_equal(1000.0)
+
+
+# --- Regression tests for the Codex adversarial review of M1 ---------------
+
+func test_prerequisites_gate_mechanisms_before_any_mutation() -> void:
+	# Panel belongs to "power", which requires hack + open_cabinet.
+	assert_dict(act("Panel", "patch", {"value": "A:2,B:1"})).contains_key_value("error", "not_yet")
+	assert_str(auth.state.node_state("Panel").get("state")).is_equal("idle")
+	assert_dict(auth.state.node_state("ExitKeypad")).contains_key_value("powered", false)
+	assert_dict(act("ExitKeypad", "submit_code", {"value": "417062"})).contains_key_value("error", "not_yet")
+	# The cabinet keypad belongs to open_cabinet, which requires find_uv.
+	assert_dict(act("Cabinet/Keypad", "submit_code", {"value": code()})).contains_key_value("error", "not_yet")
+	assert_str(auth.state.node_state("Cabinet/Keypad").get("state")).is_equal("locked")
+
+
+func test_client_side_state_writes_never_reach_the_authority() -> void:
+	var cage_lock := room.get_node("CageLock") as Lock
+	cage_lock.current_state["state"] = "unlocked"
+	assert_dict(act("CageDoor", "open")).contains_key_value("error", "locked")
+	assert_str(auth.state.node_state("CageLock").get("state")).is_equal("locked")
+	var captured: Array = []
+	auth.node_state_changed.connect(func(_p: String, s: Dictionary) -> void: captured.append(s))
+	act("Desk", "open")
+	(captured[0] as Dictionary)["state"] = "closed"
+	assert_str(auth.state.node_state("Desk").get("state")).is_equal("open")
+
+
+func test_scene_visibility_is_not_permission() -> void:
+	(room.get_node("Desk/Contents") as Node3D).visible = true
+	assert_dict(act("Desk/Contents/Torch", "pick_up")).contains_key_value("error", "unavailable")
+	assert_array(auth.state.inventory).is_empty()
+	# The keypad on the closed cabinet is not inside its contents: still usable.
+	act("Desk", "open")
+	act("Desk/Contents/Torch", "pick_up")
+	assert_dict(act("Cabinet/Keypad", "submit_code", {"value": code()})).contains_key_value("ok", true)
+
+
+func test_players_without_a_position_are_refused_on_a_real_server() -> void:
+	auth.allow_unpositioned = false
+	assert_dict(act("Note", "read", {}, "ghost")).contains_key_value("error", "out_of_reach")
+	auth.update_player_position("ghost", Vector3.ZERO)
+	assert_dict(act("Note", "read", {}, "ghost")).contains_key_value("ok", true)

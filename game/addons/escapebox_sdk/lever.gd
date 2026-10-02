@@ -32,9 +32,10 @@ func _initial_state() -> Dictionary:
 func _server_intent(_player_id: String, verb: String, _payload: Dictionary) -> Dictionary:
 	if verb != "toggle":
 		return {"ok": false, "error": "unsupported_verb"}
-	var on: bool = current_state.get("state") != "on"
-	var fire: bool = on and not current_state.get("fired", false)
-	set_state({"state": "on" if on else "off", "fired": current_state.get("fired", false) or fire})
+	var cur := my_state()
+	var on: bool = cur.get("state") != "on"
+	var fire: bool = on and not cur.get("fired", false)
+	set_state({"state": "on" if on else "off", "fired": cur.get("fired", false) or fire})
 	if fire:
 		for t in targets:
 			authority.activate(room_path_of(t))

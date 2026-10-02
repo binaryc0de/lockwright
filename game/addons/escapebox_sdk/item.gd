@@ -25,10 +25,14 @@ func is_available() -> bool:
 	return super() and current_state.get("state", "world") == "world"
 
 
+func _server_available() -> bool:
+	return my_state().get("state", "world") == "world"
+
+
 func _server_intent(player_id: String, verb: String, _payload: Dictionary) -> Dictionary:
 	if verb != "pick_up":
 		return {"ok": false, "error": "unsupported_verb"}
-	if authority.state.node_state(eb_path).get("state") != "world":
+	if my_state().get("state") != "world":
 		return {"ok": false, "error": "already_taken", "message": "Someone already took it."}
 	set_state({"state": "inventory"})
 	authority.give_item(eb_path, item_id, player_id)

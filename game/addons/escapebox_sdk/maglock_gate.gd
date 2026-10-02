@@ -13,5 +13,9 @@ func is_available() -> bool:
 	return false  # Not a direct interaction target.
 
 
+func _server_available() -> bool:
+	return false
+
+
 func _server_intent(_player_id: String, _verb: String, _payload: Dictionary) -> Dictionary:
 	return {"ok": false, "error": "no_input", "message": "The maglock is holding."}

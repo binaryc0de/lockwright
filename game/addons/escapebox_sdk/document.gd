@@ -28,7 +28,7 @@ func _initial_state() -> Dictionary:
 func _server_intent(player_id: String, verb: String, _payload: Dictionary) -> Dictionary:
 	if verb != "read":
 		return {"ok": false, "error": "unsupported_verb"}
-	if authority.state.node_state(eb_path).get("state") != "read":
+	if my_state().get("state") != "read":
 		set_state({"state": "read"})
 	authority.pin_document(eb_path, title, player_id)
 	return {"ok": true}
