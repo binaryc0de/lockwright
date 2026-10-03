@@ -98,6 +98,13 @@ func run(args []string) error {
 	if !strings.Contains(string(presets), fmt.Sprintf("name=%q", preset)) {
 		return fmt.Errorf("export preset %q missing from game/export_presets.cfg; copy room-pack-night_shift and change the room path", preset)
 	}
+	others, err := otherRooms(gameDir, id)
+	if err != nil {
+		return err
+	}
+	if m := missingExcludes(string(presets), preset, others); len(m) != 0 {
+		return fmt.Errorf("export preset %q would pack other rooms' files; add to its exclude_filter: %s", preset, strings.Join(m, ","))
+	}
 	if err := os.MkdirAll(*out, 0o755); err != nil {
 		return err
 	}
@@ -114,6 +121,13 @@ func run(args []string) error {
 	}
 	if _, err := os.Stat(packPath); err != nil {
 		return fmt.Errorf("godot reported success but %s is missing", packPath)
+	}
+
+	if b, err := os.ReadFile(packPath); err != nil {
+		return err
+	} else if f := foreignRooms(b, others); len(f) != 0 {
+		_ = os.Remove(packPath)
+		return fmt.Errorf("%s contains files of other rooms (%s); check the preset's filters", packName, strings.Join(f, ","))
 	}
 
 	sum, size, err := hashFile(packPath)
