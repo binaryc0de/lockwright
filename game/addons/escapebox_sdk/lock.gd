@@ -15,6 +15,9 @@ signal attempt_failed
 @export var code: String = ""
 ## False for locks that need power first (e.g. a dead door panel).
 @export var starts_powered: bool = true
+## What players are told while the lock has no power, and the prompt suffix.
+@export var dead_message: String = "The panel is dead."
+@export var dead_prompt: String = "no power"
 ## Optional visuals: a MeshInstance3D or Light3D tinted red/green/off, and a
 ## Label3D showing status text.
 @export var status_light: NodePath
@@ -43,14 +46,14 @@ func is_available() -> bool:
 
 func prompt(item_name: String = "") -> String:
 	if not is_powered():
-		return "%s (no power)" % display_name
+		return "%s (%s)" % [display_name, dead_prompt]
 	return super(item_name)
 
 
 ## Server: compares a submitted code. Normalises case and surrounding spaces.
 func _server_try_code(value: String) -> Dictionary:
 	if not is_powered():
-		return {"ok": false, "error": "no_power", "message": "The panel is dead."}
+		return {"ok": false, "error": "no_power", "message": dead_message}
 	if is_unlocked():
 		return {"ok": true, "already": true}
 	var attempts: int = my_state().get("attempts", 0) + 1

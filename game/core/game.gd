@@ -345,6 +345,11 @@ func ui_open_keypad(lock: KeypadLock) -> void:
 		hud.open_keypad(lock)
 
 
+func ui_open_dial_lock(lock: DialLock) -> void:
+	if hud:
+		hud.open_dial_lock(lock)
+
+
 func ui_open_patch_panel(panel: PatchPanel) -> void:
 	if hud:
 		hud.open_patch_panel(panel)

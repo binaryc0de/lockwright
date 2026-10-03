@@ -13,6 +13,7 @@ const VERB_LABELS := {
 	"use": "Use", "pick_up": "Pick up", "read": "Read", "examine": "Examine",
 	"open": "Open", "close": "Close", "toggle": "Switch", "enter_code": "Enter code",
 	"patch": "Patch cables", "terminal": "Use terminal", "use_item": "Use",
+	"dial": "Set", "strike": "Strike", "wind": "Wind",
 }
 
 ## Name shown in prompts, e.g. "Open Filing cabinet".

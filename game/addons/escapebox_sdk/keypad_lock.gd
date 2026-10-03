@@ -20,6 +20,6 @@ func _server_intent(_player_id: String, verb: String, payload: Dictionary) -> Di
 
 func client_interact(_item_path: String = "") -> void:
 	if not is_powered():
-		Game.toast("The panel is dead.")
+		Game.toast(dead_message)
 		return
 	Game.ui_open_keypad(self)

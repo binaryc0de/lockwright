@@ -36,20 +36,25 @@ Compose your scene from these. They replicate themselves; you never write netcod
 | `KeypadLock` | Number pad with focused UI | `code` (may be `{{var}}`), `display_length`, `starts_powered`, `status_light`, `status_label` | locked, unlocked |
 | `KeyLock` | Opened by using an inventory item on it | `key_item_id`, `consume_key` | locked, unlocked |
 | `MaglockGate` | Lock with no input, released by activation | | locked, unlocked |
+| `DialLock` | Letter rings, number wheels, clock hands: opens the moment every wheel shows the code (ADR-0033) | `wheels` (one entry per wheel: `"ABC..."` one symbol per character, or `"12,1,2,..."`), `separator` (`":"` -> `"4:40"`), `wheel_labels`, `start_code`, `hand_parts` + `hand_turn` (parts turned by each wheel), `code` | locked, unlocked |
+| `SequenceLock` | Chime bars, piano keys, button rows: opens when its `SequencePad` children are struck in `code` order (the latest strikes count; one character per symbol) | `code` (may be `{{var}}`) | locked, unlocked |
+| `SequencePad` | One bar/key of a `SequenceLock`; rings a synthesised note on every client | `symbol`, `tone_hz`, `tone_kind` (`bell`, `whistle`), `moving_part` | idle |
+| `SequencePlayer` | Music box, songbird: Wind/Play plays `sequence` as notes and points `pointer` at each symbol, so it reads without sound too; dead until activated unless `starts_powered` | `sequence` (may be `{{var}}`), `symbols`, `tones_hz`, `pointer`, `pointer_step`, `dead_message` | dead, ready |
+| `AllOfGate` | Activates `targets` once every node in `inputs` is in its state (three gears fitted -> the automaton runs) | `inputs`, `states` (default `unlocked`), `targets` | waiting, fired |
 | `Lever` | Two-position lever/switch; activates `targets` once when switched on | `targets`, `moving_part`, `on_rotation_deg` | off, on |
 | `PatchPanel` | Loose cables to plug into ports; activates `targets` when solved | `cable_ids`, `cable_labels` (never colour alone), `port_count`, `solution` ("A:3,B:1"), `targets` | idle, solved |
 | `Terminal` | `remote`: CTF connection card + flag field; `simulated`: offline shell | `mode`, `challenge_id`, `banner`, `commands` | open, solved |
 | `FlagGate` | Activates `targets` when a challenge's flag is accepted | `challenge_id`, `targets` | waiting, fired |
 | `UVReveal` | UV-ink text on a surface, visible with a UV torch selected nearby | `label` (a Label3D), `text` (may be `{{var}}`), `reveal_range` | |
 | `Intercom` | Shows hints and narration in the room | `label`, `chime`, `speaker_name` | |
-| `SessionClock` | Countdown display | `label` | |
+| `SessionClock` | Countdown display, or with `wall_start` ("23:00") a clock in story time that runs forward to the deadline, with optional hands | `label`, `wall_start`, `hour_hand`, `minute_hand`, `hand_turn` | |
 | `AirlockGate` | Optional onboarding (ADR-0020): players start outside at `spawn_point`; seals `door`, starts the clock and narrates `seal_text` when everyone is inside (or `seal_after_s` after the first); stragglers and later joiners go to `late_spawn`. While it waits, the HUD shows the controls tutorial instead of the briefing | `door`, `inside_min`/`inside_max` (room coordinates), `seal_after_s`, `seal_text`, `late_spawn` | waiting, sealed |
 | `AmbientZone` | Positional room tone synthesised at start-up (mains hum, fan noise, tube buzz); no audio files | `hum_hz`, `hum_level`, `harmonics`, `noise_level`, `noise_cutoff_hz`, `buzz`, `volume_db` | |
-| Planned | `DialLock`, `LetterLock`, `DirectionalLock`, `PushButton`, `Switch`, `Dial`, `FuseBox`, `TriggerVolume`, `PuzzleMarker` | | |
+| Planned | `DirectionalLock`, `PushButton`, `Switch`, `Dial`, `FuseBox`, `TriggerVolume`, `PuzzleMarker` | | |
 
 **Every SDK node** also has `difficulties` (empty = all levels; see section 3).
 
-**Wiring.** `locked_by` points an openable at its lock. `targets` (on `FlagGate`, `PatchPanel`, `Lever`) *activate* other nodes: an unpowered lock gains power, a powered lock unlocks. That covers "the flag releases the cage maglock" and "the patch panel powers the exit keypad" without scripts.
+**Wiring.** `locked_by` points an openable at its lock. `targets` (on `FlagGate`, `PatchPanel`, `Lever`, `AllOfGate`) *activate* other nodes: an unpowered lock gains power, a powered lock unlocks, a dead `SequencePlayer` comes alive. Locks say `dead_message` (and show `dead_prompt`) while unpowered. That covers "the flag releases the cage maglock" and "the patch panel powers the exit keypad" without scripts.
 
 **Collision.** Every interactable needs a `StaticBody3D` + `CollisionShape3D` below it (the SDK puts it on the interaction layer). Walls and furniture use layer 1. Things inside a closed `ContainerProp`'s `contents` are hidden and untargetable automatically.
 

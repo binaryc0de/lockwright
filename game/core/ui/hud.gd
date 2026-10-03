@@ -221,6 +221,11 @@ func open_keypad(lock: KeypadLock) -> void:
 	(_modal as KeypadPanel).setup(lock)
 
 
+func open_dial_lock(lock: DialLock) -> void:
+	_focus(lock, (_open(DialLockPanel.new()) as DialLockPanel))
+	(_modal as DialLockPanel).setup(lock)
+
+
 func open_patch_panel(panel: PatchPanel) -> void:
 	_focus(panel, (_open(PatchPanelUI.new()) as PatchPanelUI))
 	(_modal as PatchPanelUI).setup(panel)

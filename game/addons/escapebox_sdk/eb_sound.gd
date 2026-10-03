@@ -76,3 +76,39 @@ static func play_ui(parent: Node, what: Variant, volume_db: float = -4.0) -> voi
 	parent.add_child(p)
 	p.finished.connect(p.queue_free)
 	p.play()
+
+
+static var _tones := {}
+
+
+## A synthesised note (no audio files): "bell" is a struck tube with
+## inharmonic partials and a long decay; "whistle" is a short sine with
+## vibrato (a mechanical songbird). Cached per pitch and kind.
+static func tone(hz: float, kind: String = "bell") -> AudioStreamWAV:
+	var key := "%s:%.1f" % [kind, hz]
+	if _tones.has(key):
+		return _tones[key]
+	const RATE := 22050
+	var seconds := 2.2 if kind == "bell" else 0.45
+	var n := int(RATE * seconds)
+	var data := PackedByteArray()
+	data.resize(n * 2)
+	for i in n:
+		var t := float(i) / RATE
+		var v := 0.0
+		if kind == "bell":
+			# Tubular-bell partials (relative frequency, level, decay per second).
+			for p: Array in [[1.0, 1.0, 1.6], [2.76, 0.45, 2.6], [5.40, 0.25, 4.0], [8.93, 0.12, 6.0]]:
+				v += sin(TAU * hz * p[0] * t) * p[1] * exp(-t * p[2])
+			v *= 0.45 * minf(1.0, t * 400.0)
+		else:
+			var env := minf(1.0, t * 60.0) * minf(1.0, (seconds - t) * 12.0)
+			v = sin(TAU * hz * t + 0.35 * sin(TAU * 7.0 * t)) * env * 0.5
+		data.encode_s16(i * 2, int(clampf(v, -1.0, 1.0) * 32767.0))
+	var w := AudioStreamWAV.new()
+	w.format = AudioStreamWAV.FORMAT_16_BITS
+	w.mix_rate = RATE
+	w.stereo = false
+	w.data = data
+	_tones[key] = w
+	return w

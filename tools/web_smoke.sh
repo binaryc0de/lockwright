@@ -11,11 +11,16 @@ DIFF="${1:-standard}"
 command -v google-chrome >/dev/null || { echo "SKIP: google-chrome not installed"; exit 0; }
 [ -f build/client-web/index.html ] || { echo "run tools/export.sh first"; exit 2; }
 PORT=$((8600 + RANDOM % 300))
+# Own game and challenge port ranges, away from an always-on platform's
+# defaults (7777-7799, 20000-20999), so a test never races a live game.
+GP=$((24000 + RANDOM % 400 * 10))
+CP=$((30000 + RANDOM % 400 * 25))
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/escapebox-web-XXXXXX")"
 FAIL=0
 bad() { printf 'FAIL: %s\n' "$*"; FAIL=1; }
 go build -o "$WORK/platform" ./platform/cmd/platform || exit 1
 "$WORK/platform" -addr ":$PORT" -data "$WORK/data" -rooms game/rooms -game game -godot godot -transport ws \
+	-game-ports "$GP-$((GP + 9))" -challenge-ports "$CP-$((CP + 20))" \
 	-web build/client-web -packs build/packs -test-trust-positions > "$WORK/platform.log" 2>&1 &
 PP=$!
 trap 'kill $PP 2>/dev/null; wait $PP 2>/dev/null' EXIT

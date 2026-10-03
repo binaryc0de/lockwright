@@ -118,7 +118,7 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Draft rooms stay off the platform (ADR-0030): `draft: true` in `room.yaml`; catalog, game creation and pack downloads leave drafts out unless `-drafts` (`tools/play.sh --drafts`)
 - [x] Design draft: premise, spaces, puzzle chart (9 puzzles, ~28 steps), variables, SDK needs, asset list
 - [ ] Owner review of the design
-- [ ] R1 SDK: `DialLock`, `SequenceLock`, `SequencePlayer`, `AllOfGate`, analog `SessionClock`, `AmbientZone` tick
+- [x] R1 SDK (ADR-0033): `DialLock` (also letter rings), `SequenceLock` + `SequencePad`, `SequencePlayer`, `AllOfGate`, wall-time `SessionClock` with hands, synthesised notes, focused dial panel. `AmbientZone` tick deferred to R3 audio
 - [ ] R2 greybox: scene, `room.yaml` (`draft: true`), briefing, hints, solution replay, roomcheck, `packroom -verify`, owner greybox play
 - [ ] R3 look: Codex assets and printables, dressing, baked browser lighting, audio
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`

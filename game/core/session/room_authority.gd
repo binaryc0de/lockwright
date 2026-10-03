@@ -222,6 +222,12 @@ func is_available(n: EBNode) -> bool:
 	return true
 
 
+## Whether the puzzles before the ones watching `n` are solved (for SDK nodes
+## that change state without an intent on themselves, like SequenceLock).
+func prerequisites_met(n: EBNode) -> bool:
+	return _prerequisites_met(n)
+
+
 func _prerequisites_met(n: EBNode) -> bool:
 	var gates: Array = _gates_by_path.get(n.eb_path, [])
 	if n is Item:
