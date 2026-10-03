@@ -27,7 +27,7 @@ The platform's front door. Files live in `platform/internal/web/site/` and are e
 - `GET /api/games/{code}` -> `{code, room_id, title, difficulty, difficulty_title, status, players: [names], players_max, duration_minutes, hacker_room, created_at, won, elapsed_s}`. `404 bad_invite` for unknown codes. `status` is one of:
   - `idle`: waiting for the first player;
   - `starting` or `running`: in progress;
-  - `finished`: if `won`, escaped in `elapsed_s`; with no players it expired unjoined; otherwise the time ran out or the game ended.
+  - `finished`: if `won`, escaped in `elapsed_s`; if `expired`, the platform closed it (nobody joined, or the team left); otherwise the time ran out. Expired games cannot be joined (`410 game_expired`).
 - `GET /api/status` -> `{waiting, running, finished, max_games, free}` (`max_games` 0 and `free` -1 = no cap).
 - Playing: the browser client is at `/play/?code=<CODE>&name=<url-encoded name>`. Open it in the same tab.
 

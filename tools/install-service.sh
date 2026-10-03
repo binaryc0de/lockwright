@@ -27,9 +27,17 @@ case "${1:-}" in
 	exit 0 ;;
 esac
 
-[ -f build/client-web/index.html ] && ls build/packs/*.pck >/dev/null 2>&1 || {
-	echo "== building the clients and room packs first (tools/export.sh)"; tools/export.sh > build/export.log 2>&1 || { tail -20 build/export.log; exit 1; }
-}
+# Rebuild the browser client and room packs when they are missing or older
+# than any game file, so updates reach players (the server runs from source).
+mkdir -p build
+STALE=1
+if [ -f build/client-web/index.html ] && ls build/packs/*.pck >/dev/null 2>&1; then
+	STALE="$(find game -path game/.godot -prune -o -path game/tests -prune -o -type f -newer build/client-web/index.html -print -quit | wc -l)"
+fi
+if [ "$STALE" != 0 ]; then
+	echo "== building the clients and room packs (tools/export.sh; a few minutes)"
+	tools/export.sh > build/export.log 2>&1 || { tail -20 build/export.log; exit 1; }
+fi
 echo "== building the platform"
 go build -o build/platform ./platform/cmd/platform
 

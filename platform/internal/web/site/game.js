@@ -50,7 +50,7 @@ function render(data) {
   const status = document.querySelector('#game-status');
   status.parentElement.classList.toggle('escaped', finished && data.won);
   document.querySelector('#status-led').className = `led ${data.status === 'idle' ? 'wait' : finished ? (data.won ? 'on' : 'off') : 'on'}`;
-  status.textContent = data.status === 'idle' ? 'Waiting for the team: the room opens when the first player enters' : !finished ? 'In progress' : data.won ? `Escaped in ${elapsed(data.elapsed_s)}` : data.players.length === 0 ? 'Ended · This game expired before anyone joined.' : 'Ended · Time ran out or the game ended.';
+  status.textContent = data.status === 'idle' ? 'Waiting for the team: the room opens when the first player enters' : !finished ? 'In progress' : data.won ? `Escaped in ${elapsed(data.elapsed_s)}` : data.expired ? (data.players.length === 0 ? 'Expired · nobody joined in time.' : 'Expired · the team left it unfinished.') : 'Ended · Time ran out or the game ended.';
   const players = document.querySelector('#players');
   // Avoid rebuilding the list on every poll, including while a reader uses it.
   if (JSON.stringify(data.players) !== players.dataset.names) {

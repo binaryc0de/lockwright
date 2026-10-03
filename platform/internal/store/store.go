@@ -47,6 +47,9 @@ type Session struct {
 	HintsUsed   int
 	// Difficulty is the room difficulty id chosen at creation ("" = default).
 	Difficulty string
+	// Expired: finished by the platform because nobody joined or everybody
+	// left, not by playing. Expired games cannot be joined (no terminal world).
+	Expired bool
 }
 
 // Instance is one running challenge for a session.
@@ -122,6 +125,7 @@ var migrations = []string{
 		PRIMARY KEY (session_id, challenge_id)
 	);`,
 	`ALTER TABLE sessions ADD COLUMN difficulty TEXT NOT NULL DEFAULT ''`,
+	`ALTER TABLE sessions ADD COLUMN expired INTEGER NOT NULL DEFAULT 0`,
 }
 
 // Open opens (creating if needed) the database at path and migrates it.
@@ -252,8 +256,8 @@ func (s *Store) Session(ctx context.Context, id string) (Session, error) {
 	var created, finished int64
 	var won int
 	err := s.db.QueryRowContext(ctx,
-		`SELECT id, room_id, invite_code, server_token, status, created_at, finished_at, won, elapsed_s, hints_used, difficulty FROM sessions WHERE id = ?`, id).
-		Scan(&sess.ID, &sess.RoomID, &sess.InviteCode, &sess.ServerToken, &sess.Status, &created, &finished, &won, &sess.ElapsedS, &sess.HintsUsed, &sess.Difficulty)
+		`SELECT id, room_id, invite_code, server_token, status, created_at, finished_at, won, elapsed_s, hints_used, difficulty, expired FROM sessions WHERE id = ?`, id).
+		Scan(&sess.ID, &sess.RoomID, &sess.InviteCode, &sess.ServerToken, &sess.Status, &created, &finished, &won, &sess.ElapsedS, &sess.HintsUsed, &sess.Difficulty, &sess.Expired)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Session{}, ErrNotFound
 	}
@@ -542,7 +546,7 @@ func (s *Store) ResetLiveStatuses(ctx context.Context) (int, error) {
 // ExpireAbandoned finishes idle sessions created before cutoff that had
 // players but were left (nobody came back to them).
 func (s *Store) ExpireAbandoned(ctx context.Context, cutoff time.Time) (int, error) {
-	res, err := s.db.ExecContext(ctx, `UPDATE sessions SET status = ?, finished_at = ? WHERE status = ? AND created_at < ?`,
+	res, err := s.db.ExecContext(ctx, `UPDATE sessions SET status = ?, finished_at = ?, expired = 1 WHERE status = ? AND created_at < ?`,
 		StatusFinished, s.now().Unix(), StatusIdle, cutoff.Unix())
 	if err != nil {
 		return 0, err
@@ -590,10 +594,23 @@ func (s *Store) ExpireUnjoined(ctx context.Context, cutoff time.Time) ([]string,
 	}
 	rows.Close()
 	for _, id := range ids {
-		if _, err := s.db.ExecContext(ctx, `UPDATE sessions SET status = ?, finished_at = ? WHERE id = ? AND status = ?`,
+		if _, err := s.db.ExecContext(ctx, `UPDATE sessions SET status = ?, finished_at = ?, expired = 1 WHERE id = ? AND status = ?`,
 			StatusFinished, s.now().Unix(), id, StatusIdle); err != nil {
 			return nil, err
 		}
 	}
 	return ids, nil
+}
+
+// HoldsSlot reports whether a session already counts toward the cap
+// (CountActive): starting or running, or idle and never joined.
+func (s *Store) HoldsSlot(ctx context.Context, sess Session) (bool, error) {
+	switch sess.Status {
+	case StatusStarting, StatusRunning:
+		return true, nil
+	case StatusIdle:
+		players, err := s.Players(ctx, sess.ID)
+		return len(players) == 0, err
+	}
+	return false, nil
 }

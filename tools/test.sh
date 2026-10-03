@@ -53,11 +53,14 @@ step "platform smoke (platform + game servers + bots + flag + crash restart, ADR
 GODOT="$GODOT" tools/m3_smoke.sh
 
 step "browser smoke (web export + headless Chrome plays to the win, ADR-0023/0025)"
-if command -v google-chrome >/dev/null; then
+TPL="$HOME/.local/share/godot/export_templates/$("$GODOT" --version | sed -E 's/^([0-9.]+)\.([a-z]+).*/\1.\2/')"
+if ! command -v google-chrome >/dev/null; then
+  echo "skipped: google-chrome not installed"
+elif [[ ! -f "$TPL/web_nothreads_release.zip" ]]; then
+  echo "skipped: Godot web export templates not installed ($TPL); see ADR-0021"
+else
   mkdir -p build/client-web
   "$GODOT" --headless --path game --export-release client-web > build/export-client-web.log 2>&1
   for f in build/client-web/*.pck build/client-web/*.wasm build/client-web/*.js; do gzip -9 -k -f "$f"; done
   tools/web_smoke.sh standard
-else
-  echo "skipped: google-chrome not installed"
 fi

@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -521,5 +523,67 @@ func TestGameViewStatusAndGuardrails(t *testing.T) {
 	resp.Body.Close()
 	if s, _ := catOut[0]["summary"].(string); !strings.Contains(s, "Kestrel") {
 		t.Fatalf("catalog summary %q", s)
+	}
+}
+
+func TestCapHoldsUnderConcurrencyAndOnResume(t *testing.T) {
+	e := setup(t)
+	cat, _ := rooms.Load("../../../game/rooms")
+	ts := httptest.NewServer(NewHandler(&Deps{Store: e.st, Rooms: cat, Servers: e.servers, MaxGames: 1}))
+	defer ts.Close()
+	// 20 simultaneous Start clicks against a cap of 1 create exactly one game.
+	var wg sync.WaitGroup
+	codes := make(chan int, 20)
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			resp, err := http.Post(ts.URL+"/api/sessions", "application/json", strings.NewReader(`{"room_id":"night_shift"}`))
+			if err == nil {
+				codes <- resp.StatusCode
+				resp.Body.Close()
+			}
+		}()
+	}
+	wg.Wait()
+	close(codes)
+	created := 0
+	for c := range codes {
+		if c == 201 {
+			created++
+		}
+	}
+	if created != 1 {
+		t.Fatalf("created %d games with a cap of 1", created)
+	}
+	ctx := context.Background()
+	// An older game whose players left holds no slot; resuming it needs one.
+	old, _ := e.st.CreateSession(ctx, "night_shift")
+	tok, _, _ := e.st.MintJoinToken(ctx, old.ID, "Ann")
+	if _, _, err := e.st.ConsumeJoinToken(ctx, old.ID, tok); err != nil {
+		t.Fatal(err)
+	}
+	body := fmt.Sprintf(`{"invite_code":%q,"display_name":"Ann"}`, old.InviteCode)
+	resp, _ := http.Post(ts.URL+"/api/join", "application/json", strings.NewReader(body))
+	resp.Body.Close()
+	if resp.StatusCode != 503 {
+		t.Fatalf("resume beyond the cap: %d", resp.StatusCode)
+	}
+	// Expired games cannot be joined (they would start a fresh world).
+	if _, err := e.st.ExpireAbandoned(ctx, time.Now().Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	resp, _ = http.Post(ts.URL+"/api/join", "application/json", strings.NewReader(body))
+	var out map[string]any
+	_ = json.NewDecoder(resp.Body).Decode(&out)
+	resp.Body.Close()
+	if resp.StatusCode != 410 || out["error"] != "game_expired" {
+		t.Fatalf("expired join: %d %v", resp.StatusCode, out)
+	}
+	resp, _ = http.Get(ts.URL + "/api/games/" + old.InviteCode)
+	_ = json.NewDecoder(resp.Body).Decode(&out)
+	resp.Body.Close()
+	if out["expired"] != true {
+		t.Fatalf("game view of an expired game: %v", out)
 	}
 }

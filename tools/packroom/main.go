@@ -162,9 +162,19 @@ func verifyPack(godot, gameDir, id, packPath string) error {
 		return err
 	}
 	fmt.Println("verify: importing a copy of the project without rooms/ ...")
-	imp := exec.Command(godot, "--headless", "--path", tmp, "--import")
-	if outb, err := imp.CombinedOutput(); err != nil {
-		return fmt.Errorf("import copy: %w\n%s", err, outb)
+	// Godot's headless importer occasionally dies part-way through a fresh
+	// full import (no crash message; seen once in tools/test.sh after VRAM
+	// compression came in). Importing is idempotent, so retry once.
+	var outb []byte
+	for attempt := 1; attempt <= 2; attempt++ {
+		imp := exec.Command(godot, "--headless", "--path", tmp, "--import")
+		var err error
+		if outb, err = imp.CombinedOutput(); err == nil {
+			break
+		} else if attempt == 2 {
+			return fmt.Errorf("import copy (twice): %w\n%s", err, outb)
+		}
+		fmt.Println("verify: import of the copy failed; retrying once")
 	}
 	bin, err := exec.LookPath(godot)
 	if err != nil {

@@ -147,7 +147,7 @@ func NewHandler(d *Deps) http.Handler {
 	if d.Limiter == nil {
 		d.Limiter = flags.NewLimiter()
 	}
-	a := &app{d}
+	a := &app{d: d}
 	if d.WebDir != "" {
 		mux.Handle("GET /play/", webClient(d.WebDir))
 	}
@@ -176,7 +176,13 @@ func NewHandler(d *Deps) http.Handler {
 	return mux
 }
 
-type app struct{ d *Deps }
+type app struct {
+	d *Deps
+	// slots serialises the cap check with the action that takes the slot
+	// (creating a game, resuming one), so simultaneous requests cannot
+	// overshoot -max-games.
+	slots sync.Mutex
+}
 
 // --- public ---------------------------------------------------------------
 
@@ -220,6 +226,8 @@ func (a *app) createSession(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusTooManyRequests, "too_many_games", "You have started a lot of games just now. Wait a few minutes and try again.")
 		return
 	}
+	a.slots.Lock()
+	defer a.slots.Unlock()
 	if a.d.MaxGames > 0 {
 		n, err := a.d.Store.CountActive(r.Context())
 		if err != nil {
@@ -310,6 +318,32 @@ func (a *app) admit(w http.ResponseWriter, r *http.Request, sess store.Session, 
 	if subtle.ConstantTimeCompare([]byte(code), []byte(sess.InviteCode)) != 1 {
 		writeErr(w, http.StatusForbidden, "bad_invite", "That invite code is not for this session.")
 		return
+	}
+	if sess.Expired {
+		writeErr(w, http.StatusGone, "game_expired", "This game expired. Start a new one from the lobby.")
+		return
+	}
+	// Resuming a game that holds no slot (its players left, or the platform
+	// restarted) needs a free one, like starting a new game.
+	if a.d.MaxGames > 0 && sess.Status != store.StatusFinished && a.d.Servers.Port(sess.ID) == 0 {
+		a.slots.Lock()
+		defer a.slots.Unlock()
+		holds, err := a.d.Store.HoldsSlot(r.Context(), sess)
+		if err != nil {
+			internalErr(w, err)
+			return
+		}
+		if !holds {
+			n, err := a.d.Store.CountActive(r.Context())
+			if err != nil {
+				internalErr(w, err)
+				return
+			}
+			if n >= a.d.MaxGames {
+				writeErr(w, http.StatusServiceUnavailable, "games_full", fmt.Sprintf("All %d game slots are in use; this game resumes when one frees up.", a.d.MaxGames))
+				return
+			}
+		}
 	}
 	token, _, err := a.d.Store.MintJoinToken(r.Context(), sess.ID, name)
 	if err != nil {
@@ -695,7 +729,7 @@ func (a *app) getGame(w http.ResponseWriter, r *http.Request) {
 		"difficulty_title": diffTitle, "status": sess.Status, "players": players,
 		"players_max": room.Mode.Players.Max, "duration_minutes": room.Mode.DurationMinutes,
 		"hacker_room": len(room.CTF.Challenges) > 0, "created_at": sess.CreatedAt.Unix(),
-		"won": sess.Won, "elapsed_s": sess.ElapsedS,
+		"won": sess.Won, "elapsed_s": sess.ElapsedS, "expired": sess.Expired,
 	})
 }
 
