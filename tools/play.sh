@@ -2,17 +2,22 @@
 # One command to play a room with everything real (platform, game server,
 # Docker CTF challenge): starts the platform, creates a session, opens the
 # game joined to it, and shuts it all down when you quit the game.
-#   tools/play.sh [--hard | --difficulty <id>] [room_id] [your name]
+#   tools/play.sh [--hard | --difficulty <id>] [--tailscale] [room_id] [your name]
+# --tailscale advertises this machine's Tailscale address, so friends you have
+# shared the machine with can open the printed link (needs `tailscale up`).
 # Friends on the LAN join from their main menu with this PC's address
 # (printed below, e.g. 192.168.1.20:8090) and the join code.
 # Env: PLATFORM_PORT (default 8090), GODOT (default godot).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 DIFFICULTY=""
+ADVERTISE=""
 POS=()
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--hard) DIFFICULTY=hard ;;
+		--tailscale) ADVERTISE="$(tailscale ip -4 2>/dev/null | head -1)"
+			[ -n "$ADVERTISE" ] || { echo "Tailscale is not up: run 'sudo tailscale up' first"; exit 1; } ;;
 		--difficulty) DIFFICULTY="${2:?--difficulty needs an id}"; shift ;;
 		*) POS+=("$1") ;;
 	esac
@@ -36,7 +41,10 @@ go build -o "$LOG/platform" ./platform/cmd/platform
 # (tools/export.sh).
 WEB=()
 [ -f build/client-web/index.html ] && WEB=(-web build/client-web)
-"$LOG/platform" -addr ":$PORT" -data data -rooms game/rooms -game game -godot "$GODOT" -transport ws "${WEB[@]}" > "$LOG/platform.log" 2>&1 &
+[ -d build/packs ] && WEB+=(-packs build/packs)
+ADV=()
+[ -n "$ADVERTISE" ] && ADV=(-advertise "$ADVERTISE")
+"$LOG/platform" -addr ":$PORT" -data data -rooms game/rooms -game game -godot "$GODOT" -transport ws "${WEB[@]}" "${ADV[@]}" > "$LOG/platform.log" 2>&1 &
 PLATFORM_PID=$!
 cleanup() { kill "$PLATFORM_PID" 2>/dev/null; wait "$PLATFORM_PID" 2>/dev/null; echo "== platform stopped (logs in $LOG)"; }
 trap cleanup EXIT
