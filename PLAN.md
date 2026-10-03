@@ -458,7 +458,15 @@ Each milestone ends with a demo and an entry in `docs/STATUS.md`. Do them in ord
 - Performance pass to hit 60 fps on the target GPU; Windows + Linux client exports.
 - Acceptance: 3 blind play-tests (log in `game/rooms/night_shift/README.md`), every puzzle solved without tier-3 hints by at least one group.
 
-### M5: LAN deployment and prototype sign-off (3-5 days)
+### M5: Browser client (ADR-0023, added 2026-10-02)
+The owner's direction: the game is played in the browser; only hacker rooms' CTF parts may need player setup.
+- Web export (Godot 4.7: Compatibility renderer, WebGL 2) next to the desktop exports; per-platform renderer and a browser-grade look per room (baked lighting instead of SDFGI/volumetric fog/SSIL).
+- Asset size diet so the first load is reasonable (target <= 100 MB, cached), which also helps desktop.
+- Delivery: the platform serves the web client and room packs (`/download`); the browser fetches the room pack and mounts it; game connections over WebSocket (WSS behind HTTPS), platform API over HTTPS with CORS where needed.
+- Browser checks: pointer-lock mouse look, audio unlock, clipboard and "Save" for item files, single-threaded loading, frame rate on a mid-range laptop.
+- Acceptance: the friends test (owner + friends over Tailscale) plays Night Shift to the win in browsers, including the CTF; then the M4 blind play-tests run in the browser.
+
+### M6: Deployment and prototype sign-off (3-5 days; was M5)
 - `deploy/docker-compose.yml` (platform, challenge images, optional Caddy), `deploy/RUNBOOK.md` (host prep incl. rootless Docker, firewall ports, how to add a room pack, how to start a session, how to recover), client download page with version check, LAN discovery (type IP; UDP broadcast optional).
 - Run the Section 4 acceptance checklist on real hardware and record results in `docs/STATUS.md`.
 

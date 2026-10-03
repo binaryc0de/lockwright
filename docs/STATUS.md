@@ -99,7 +99,17 @@ Continued on branch `m4-polish`:
 - [ ] Measure on the owner's target mid-range GPU (PLAN.md open question 2); run the Windows build on Windows
 - [ ] Owner: 3 blind play-tests
 
-## M5: LAN deployment and sign-off
+## M5: Browser client (ADR-0023; owner chose "browser first, then the friends test", 2026-10-02)
+Branch `m5-browser` (stacked on `m4-polish`; M4 stays open for its blind play-tests, which will run in the browser).
+- [ ] Spike: web export boots, loads Night Shift and joins a game server over WebSocket in a real browser
+- [ ] Per-platform renderer + browser-grade lighting for Night Shift
+- [ ] Asset size diet (first load <= 100 MB)
+- [ ] Platform serves the web client and room packs; browser downloads and mounts the pack
+- [ ] HTTPS/WSS path (Tailscale certs for the friends test)
+- [ ] Browser checks: pointer lock, audio, clipboard/save, frame rate
+- [ ] Friends test in browsers (owner + friends over Tailscale), CTF included
+
+## M6: Deployment and prototype sign-off (was M5)
 Not started. Includes `docker compose up` for the platform and challenge images (moved from M3, ADR-0019).
 
 ## Verification log
