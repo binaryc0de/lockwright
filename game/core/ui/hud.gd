@@ -20,6 +20,9 @@ var _clock: Label
 var _inventory: InventoryBar
 var _ended_shown: bool = false
 var _ended_won := false
+## Browser build: pointer lock needs a click and Esc releases it (ADR-0023).
+var _click_hint: Label = null
+var _was_captured := false
 
 
 func setup(p: FirstPersonPlayer) -> void:
@@ -112,6 +115,28 @@ func _process(_delta: float) -> void:
 	if Game.has_session():
 		_clock.text = SessionClock.format_remaining(Game.remaining_s())
 		_clock.modulate = Color(1, 0.4, 0.4) if Game.remaining_s() < 300 else Color.WHITE
+	if OS.has_feature("web"):
+		_web_pointer_lock()
+
+
+## Browsers only lock the pointer after a click, and Esc releases it without
+## the game seeing the key: show "click to play" while the mouse is free, and
+## treat a lost lock as Esc (open the pause menu).
+func _web_pointer_lock() -> void:
+	var captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
+	if _was_captured and not captured and _modal == null and Game.has_session():
+		var p := _open(PauseMenu.new()) as PauseMenu
+		p.setup()
+		p.quit_requested.connect(func() -> void: leave_requested.emit())
+	_was_captured = captured
+	if _click_hint == null:
+		_click_hint = Label.new()
+		_click_hint.text = "Click to play"
+		_click_hint.add_theme_font_size_override("font_size", 28)
+		_click_hint.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+		_click_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_click_hint)
+	_click_hint.visible = not captured and _modal == null and Game.has_session()
 
 
 func _update_prompt() -> void:

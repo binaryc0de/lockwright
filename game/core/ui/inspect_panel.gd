@@ -114,6 +114,9 @@ func _add_file(file_name: String, content: String) -> void:
 ## Writes `content` to the player's Downloads folder (or the user data folder
 ## if there is none). Returns the path, or "" on failure.
 static func save_to_downloads(file_name: String, content: String) -> String:
+	if OS.has_feature("web"):
+		JavaScriptBridge.download_buffer(content.to_utf8_buffer(), file_name.get_file(), "text/plain")
+		return "your browser's downloads"
 	var dir := OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS)
 	if dir.is_empty() or not DirAccess.dir_exists_absolute(dir):
 		dir = ProjectSettings.globalize_path("user://")

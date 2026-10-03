@@ -21,6 +21,15 @@ func _ready() -> void:
 		EscapeboxSDK.VERSION,
 		Engine.get_version_info().string,
 	])
+	if args.stats:
+		var t := Timer.new()
+		t.wait_time = 5.0
+		t.autostart = true
+		t.timeout.connect(func() -> void:
+			print("stats: %d fps, %.1f ms process, %d draw calls" % [Engine.get_frames_per_second(),
+				Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
+				Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)]))
+		add_child(t)
 	if args.smoke_test or not args.errors.is_empty():
 		get_tree().quit(0 if args.errors.is_empty() else 1)
 		return

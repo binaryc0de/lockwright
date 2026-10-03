@@ -50,6 +50,8 @@ var bot_wait_win: bool = false
 var bot_flag: String = ""
 ## Bot stays until a challenge's connection card shows an address (M3 tests).
 var bot_wait_card: bool = false
+## Print frames per second every few seconds (performance checks).
+var stats: bool = false
 ## Server, tests only: accept teleporting positions (bots).
 var trust_positions: bool = false
 var errors: PackedStringArray = []
@@ -135,6 +137,8 @@ func _apply(key: String, value: String) -> void:
 			bot_wait_card = true
 		"trust-positions":
 			trust_positions = true
+		"stats":
+			stats = true
 		"bot-steps":
 			var r := value.split("-")
 			if r.size() == 2 and r[0].is_valid_int() and (r[1].is_valid_int() or r[1] == "end"):
@@ -198,6 +202,8 @@ static func web_query_args(origin: String, query: String) -> PackedStringArray:
 		out.append_array(["--name", str(q["name"])])
 	if q.has("difficulty"):
 		out.append_array(["--difficulty", str(q["difficulty"])])
+	if q.get("stats", "") == "1":
+		out.append("--stats")
 	if q.get("bot", "") == "1":
 		out.append_array(["--bot", "--bot-wait-win"])
 		if q.has("flag"):

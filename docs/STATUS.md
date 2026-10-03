@@ -107,7 +107,7 @@ Branch `m5-browser` (stacked on `m4-polish`; M4 stays open for its blind play-te
 - [x] Platform serves the web client (`-web`, gzip) and room packs (`-packs`, catalog + `/download/packs/`); the browser downloads, verifies and mounts the pack (ADR-0025). `tools/web_smoke.sh` (headless Chrome, Radeon 680M): standard and hard both played to the win, platform recorded it
 - [ ] HTTPS/WSS path (Tailscale certs for the friends test)
 - [x] Web start screen: rooms and difficulties from the platform catalog; Play solo (fetches the pack), Join by code, Host; desktop-only fields hidden
-- [ ] Browser checks: pointer lock, audio, clipboard/save, frame rate
+- [x] Browser checks: "Click to play" + pointer lock recapture, a lost lock (Esc) opens the pause menu, "Save to Downloads" is a browser download, `?stats=1` logs FPS. Measured in headless Chrome on the integrated Radeon 680M at 1920x1080 (start view, corridor into the office): steady 60 fps (vsync), ~9 ms process, ~2,200 draw calls (worth batching later). Audio starts on the first click (Godot handles the browser unlock).
 - [ ] Friends test in browsers (owner + friends over Tailscale), CTF included
 
 ## M6: Deployment and prototype sign-off (was M5)
