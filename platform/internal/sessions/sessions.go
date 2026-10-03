@@ -124,6 +124,9 @@ func (m *Manager) startLocked(ctx context.Context, sess store.Session) (int, err
 			args = append(args, "--pack", pack)
 		}
 	}
+	if sess.Difficulty != "" {
+		args = append(args, "--difficulty", sess.Difficulty)
+	}
 	args = append(args, m.cfg.ExtraArgs...)
 	p, err := m.launch(context.WithoutCancel(ctx), append(append([]string{}, m.cfg.Command...), args...))
 	if err != nil {

@@ -28,7 +28,7 @@ Compose your scene from these. They replicate themselves; you never write netcod
 | Node | Use it for | Key exports | `state` values |
 |---|---|---|---|
 | `RoomRoot` | Scene root | `spawn_point` | |
-| `Item` | Things players pick up into the shared inventory | `item_id`, `display_name`, `description`, `uv_text` | world, inventory, consumed |
+| `Item` | Things players pick up into the shared inventory; optionally carries a file players can copy or save to their own computer | `item_id`, `display_name`, `description`, `uv_text`, `file_name`, `file_text` | world, inventory, consumed |
 | `UVTorch` | Item that reveals UV content while selected | as `Item` | as `Item` |
 | `Document` | Paper, cards, photos; auto-pinned to the evidence board when read | `title`, `text_md`, `back_text_md` (Flip), `uv_text`, `texture` | unread, read |
 | `ContainerProp` | Drawers, cabinets, safes, hatches (Godot already has `Container`, ADR-0008) | `locked_by`, `moving_part`, `open_offset`, `open_rotation_deg`, `contents`, `start_open` | closed, open |
@@ -46,6 +46,8 @@ Compose your scene from these. They replicate themselves; you never write netcod
 | `AirlockGate` | Optional onboarding (ADR-0020): players start outside at `spawn_point`; seals `door`, starts the clock and narrates `seal_text` when everyone is inside (or `seal_after_s` after the first); stragglers and later joiners go to `late_spawn`. While it waits, the HUD shows the controls tutorial instead of the briefing | `door`, `inside_min`/`inside_max` (room coordinates), `seal_after_s`, `seal_text`, `late_spawn` | waiting, sealed |
 | `AmbientZone` | Positional room tone synthesised at start-up (mains hum, fan noise, tube buzz); no audio files | `hum_hz`, `hum_level`, `harmonics`, `noise_level`, `noise_cutoff_hz`, `buzz`, `volume_db` | |
 | Planned | `DialLock`, `LetterLock`, `DirectionalLock`, `PushButton`, `Switch`, `Dial`, `FuseBox`, `TriggerVolume`, `PuzzleMarker` | | |
+
+**Every SDK node** also has `difficulties` (empty = all levels; see section 3).
 
 **Wiring.** `locked_by` points an openable at its lock. `targets` (on `FlagGate`, `PatchPanel`, `Lever`) *activate* other nodes: an unpowered lock gains power, a powered lock unlocks. That covers "the flag releases the cage maglock" and "the patch panel powers the exit keypad" without scripts.
 
@@ -106,6 +108,23 @@ solution:
 Templates: `{{var}}` refers to a declared variable; `{{flags.<challenge_id>}}` to a challenge's per-session flag (solution only); `{{nonce}}` appears only inside a flag `format`.
 
 `solution` acts: `examine`, `pick_up`, `use`, `use_on`, `combine`, `input_code`, `interact`, `submit_flag`. It is replayed by play-testers now and by the auto-solver later.
+
+### Difficulty levels (optional, ADR-0022)
+
+Offer levels with a `difficulties` list; the first is the default and players pick one when hosting (main menu, `POST /api/sessions`, `--difficulty`). A level can replace fields of puzzles (`title`, `requires`, `hints`, `gm_notes`) and challenges (`hints`) by id, and can replace the whole `solution`. `roomcheck` checks every level as its own room.
+
+```yaml
+difficulties:
+  - { id: standard, title: Standard, description: "The classic room." }
+  - id: hard
+    title: Hard
+    description: "No password handed to you: crack it."
+    puzzles:
+      hack_intranet: { requires: [open_cabinet], hints: ["...", "...", "..."] }
+    solution: [ ... ]   # the hard path, replayed by the tests
+```
+
+In the scene, set `difficulties` on any SDK node that only exists at some levels (e.g. two versions of a clue at the same spot). Outside its levels the node is hidden, untouchable and not part of the world state.
 
 ## 4. CTF challenges
 

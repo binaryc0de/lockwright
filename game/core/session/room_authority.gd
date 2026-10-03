@@ -64,12 +64,13 @@ func setup(p_manifest: RoomManifest, room_instance: Node, p_session_id: String, 
 		state.duration_s = manifest.duration_minutes * 60
 		state.auto_nudge = manifest.auto_nudge_minutes > 0
 		state.vars = generate_vars(manifest.data.get("variables", {}), session_id)
+		state.difficulty = manifest.difficulty
 		state.challenges = flags.start_challenges(session_id, manifest.challenges)
 	else:
 		state = WorldState.from_dict(snapshot)
 	for id in graph.ids():
 		state.puzzle(id)
-	_nodes = EBNode.register_all(room, self)
+	_nodes = EBNode.register_all(room, self, manifest.difficulty)
 	for path: String in _nodes:
 		if not state.nodes.has(path):
 			state.nodes[path] = (_nodes[path] as EBNode)._initial_state()

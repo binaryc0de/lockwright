@@ -285,3 +285,69 @@ func TestResolvesInheritedPrefabUnderInstance(t *testing.T) {
 		}
 	}
 }
+
+const difficultiesYAML = `difficulties:
+  - id: standard
+    title: Standard
+  - id: hard
+    title: Hard
+    description: Crack the password yourself.
+    puzzles:
+      hack:
+        requires: [open_cabinet]
+        hints: ["Hard 1.", "Hard 2.", "Hard 3."]
+    challenges:
+      intranet: { hints: ["x", "y", "z"] }
+    solution:
+      - { act: pick_up, item: uv_torch }
+      - { act: input_code, lock: "Cabinet/Keypad", value: "{{cabinet_code}}" }
+      - { act: submit_flag, challenge: intranet, value: "{{flags.intranet}}" }
+`
+
+func TestDifficultiesValidate(t *testing.T) {
+	r := validate(t, goodYAML+difficultiesYAML)
+	if r.Failed() || len(r.Issues) > 0 {
+		t.Fatalf("expected clean report, got %v", r.Issues)
+	}
+}
+
+func TestVariantAppliesOverrides(t *testing.T) {
+	dir, _ := writeRoom(t, goodYAML+difficultiesYAML)
+	l, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	v := l.Manifest.Variant("hard")
+	for _, p := range v.Puzzles {
+		if p.ID == "hack" && (len(p.Requires) != 1 || p.Requires[0] != "open_cabinet" || p.Hints[0] != "Hard 1.") {
+			t.Fatalf("hack not overridden: %+v", p)
+		}
+	}
+	for _, p := range l.Manifest.Puzzles {
+		if p.ID == "hack" && len(p.Requires) != 0 {
+			t.Fatalf("base manifest was modified: %+v", p)
+		}
+	}
+	if b := l.Manifest.Variant("nope"); len(b.Solution) != len(l.Manifest.Solution) {
+		t.Fatal("unknown difficulty should be the base")
+	}
+}
+
+func TestDifficultyChecksTheVariedGraphAndSolution(t *testing.T) {
+	cycle := strings.Replace(goodYAML+difficultiesYAML, "        requires: [open_cabinet]", "        requires: [escape]", 1)
+	if r := validate(t, cycle); !hasIssue(r, Error, "graph", "difficulty hard: puzzle graph has a cycle") {
+		t.Fatalf("expected a cycle in the hard variant, got %v", r.Issues)
+	}
+	badPath := strings.Replace(goodYAML+difficultiesYAML, `      - { act: input_code, lock: "Cabinet/Keypad"`, `      - { act: input_code, lock: "Nowhere/Keypad"`, 1)
+	if r := validate(t, badPath); !hasIssue(r, Error, "node_path", "difficulty hard: solution[1].lock") {
+		t.Fatalf("expected a bad node path in the hard solution, got %v", r.Issues)
+	}
+	unknown := strings.Replace(goodYAML+difficultiesYAML, "      hack:\n", "      nope:\n", 1)
+	if r := validate(t, unknown); !hasIssue(r, Error, "difficulty", `unknown puzzle "nope"`) {
+		t.Fatalf("expected unknown puzzle override, got %v", r.Issues)
+	}
+	dup := goodYAML + difficultiesYAML + "  - id: hard\n    title: Again\n"
+	if r := validate(t, dup); !hasIssue(r, Error, "difficulty", `duplicate difficulty id "hard"`) {
+		t.Fatalf("expected duplicate id, got %v", r.Issues)
+	}
+}

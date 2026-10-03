@@ -76,7 +76,54 @@ func show_item(item: Item) -> void:
 		text += "\n\n[UV] " + item.uv_text
 	_text.text = EBMarkdown.to_bbcode(text)
 	body().add_child(_text)
+	if not item.file_name.is_empty():
+		_add_file(item.file_name, EBTemplate.render(item.file_text, Game.vars()))
 	add_close_button()
+
+
+## A file on an item: shown, copyable, and savable to the player's Downloads.
+func _add_file(file_name: String, content: String) -> void:
+	var label := Label.new()
+	label.text = "File on it: %s" % file_name
+	body().add_child(label)
+	var box := TextEdit.new()
+	box.text = content
+	box.editable = false
+	box.custom_minimum_size = Vector2(640, 150)
+	box.add_theme_font_override("font", SystemFont.new())
+	box.add_theme_font_size_override("font_size", 15)
+	body().add_child(box)
+	var row := HBoxContainer.new()
+	var status := Label.new()
+	var copy := Button.new()
+	copy.text = "Copy to clipboard"
+	copy.pressed.connect(func() -> void:
+		DisplayServer.clipboard_set(content)
+		status.text = "Copied.")
+	row.add_child(copy)
+	var save := Button.new()
+	save.text = "Save to Downloads"
+	save.pressed.connect(func() -> void:
+		var path := InspectPanel.save_to_downloads(file_name, content)
+		status.text = ("Saved to %s" % path) if not path.is_empty() else "Could not save the file.")
+	row.add_child(save)
+	row.add_child(status)
+	body().add_child(row)
+
+
+## Writes `content` to the player's Downloads folder (or the user data folder
+## if there is none). Returns the path, or "" on failure.
+static func save_to_downloads(file_name: String, content: String) -> String:
+	var dir := OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS)
+	if dir.is_empty() or not DirAccess.dir_exists_absolute(dir):
+		dir = ProjectSettings.globalize_path("user://")
+	var path := dir.path_join(file_name.get_file())
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return ""
+	f.store_string(content)
+	f.close()
+	return path
 
 
 func _render_doc() -> void:

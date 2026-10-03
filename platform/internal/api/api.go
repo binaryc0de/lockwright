@@ -94,37 +94,48 @@ type app struct{ d *Deps }
 
 func (a *app) catalog(w http.ResponseWriter, _ *http.Request) {
 	type entry struct {
-		RoomID          string `json:"room_id"`
-		Title           string `json:"title"`
-		Version         string `json:"version"`
-		DurationMinutes int    `json:"duration_minutes"`
-		Players         [2]int `json:"players"`
-		Challenges      int    `json:"challenges"`
+		RoomID          string             `json:"room_id"`
+		Title           string             `json:"title"`
+		Version         string             `json:"version"`
+		DurationMinutes int                `json:"duration_minutes"`
+		Players         [2]int             `json:"players"`
+		Challenges      int                `json:"challenges"`
+		Difficulties    []rooms.Difficulty `json:"difficulties"`
 	}
 	out := []entry{}
 	for _, r := range a.d.Rooms.All() {
-		out = append(out, entry{r.ID, r.Title, r.Version, r.Mode.DurationMinutes, [2]int{r.Mode.Players.Min, r.Mode.Players.Max}, len(r.CTF.Challenges)})
+		ds := r.Difficulties
+		if ds == nil {
+			ds = []rooms.Difficulty{}
+		}
+		out = append(out, entry{r.ID, r.Title, r.Version, r.Mode.DurationMinutes, [2]int{r.Mode.Players.Min, r.Mode.Players.Max}, len(r.CTF.Challenges), ds})
 	}
 	writeJSON(w, http.StatusOK, out)
 }
 
 func (a *app) createSession(w http.ResponseWriter, r *http.Request) {
 	var in struct {
-		RoomID string `json:"room_id"`
+		RoomID     string `json:"room_id"`
+		Difficulty string `json:"difficulty"`
 	}
 	if !readJSON(w, r, &in, maxBody) {
 		return
 	}
-	if _, ok := a.d.Rooms.Room(in.RoomID); !ok {
+	room, ok := a.d.Rooms.Room(in.RoomID)
+	if !ok {
 		writeErr(w, http.StatusNotFound, "unknown_room", "No such room is installed.")
 		return
 	}
-	sess, err := a.d.Store.CreateSession(r.Context(), in.RoomID)
+	if !room.HasDifficulty(in.Difficulty) {
+		writeErr(w, http.StatusBadRequest, "unknown_difficulty", "The room has no such difficulty.")
+		return
+	}
+	sess, err := a.d.Store.CreateSessionWithDifficulty(r.Context(), in.RoomID, in.Difficulty)
 	if err != nil {
 		internalErr(w, err)
 		return
 	}
-	slog.Info("session created", "session", sess.ID, "room", sess.RoomID)
+	slog.Info("session created", "session", sess.ID, "room", sess.RoomID, "difficulty", sess.Difficulty)
 	writeJSON(w, http.StatusCreated, map[string]string{"session_id": sess.ID, "invite_code": sess.InviteCode})
 }
 

@@ -14,8 +14,8 @@ Conventions:
 |---|---|---|---|
 | GET | `/healthz` | M0 | Liveness: `{"status":"ok"}` |
 | GET | `/api/version` | M0 | `{"platform":"0.1.0"}`; room packs' `requires.platform` is matched against it |
-| GET | `/api/catalog` | M3 | Installed rooms: `[{room_id, title, version, duration_minutes, players: [min, max], challenges}]` (pack download fields arrive with `/download` in M5) |
-| POST | `/api/sessions` | M3 | Create a session: `{room_id}` -> `{session_id, invite_code}`. LAN prototype: anyone on the LAN may create. |
+| GET | `/api/catalog` | M3 | Installed rooms: `[{room_id, title, version, duration_minutes, players: [min, max], challenges, difficulties: [{id, title, description}]}]` (pack download fields arrive with `/download` in M5) |
+| POST | `/api/sessions` | M3 | Create a session: `{room_id, difficulty?}` -> `{session_id, invite_code}`. `difficulty` is one of the room's level ids ("" or absent = the default; unknown: 400 `unknown_difficulty`). LAN prototype: anyone on the LAN may create. |
 | GET | `/api/sessions/{id}` | M3 | `{session_id, room_id, status: idle|starting|running|finished, players: [display_name], started_at, duration_minutes}` |
 | POST | `/api/sessions/{id}/join` | M3 | `{display_name, invite_code}` -> `{session_id, room_id, host, port, transport: "enet"|"ws", join_token}`. Starts or restores the game server if it is idle (PLAN.md 7.3, 7.4). `join_token` is single-use, 60 s TTL; clients fetch a new one for every (re)connect. |
 | POST | `/api/join` | M3 | Same as above with only the join code: `{display_name, invite_code}`. Codes are unique among unfinished sessions; 404 `bad_invite` otherwise. This is what the game client uses. |
@@ -45,7 +45,7 @@ The platform spawns one `escapebox-server` per running session (PLAN.md 7.1) wit
 
 Not HTTP: Godot high-level multiplayer over ENet (UDP, default) or WebSocket (`--transport ws`), all RPCs on `/root/Game/Net` (`core/net/net_bridge.gd`). SDK nodes are named by `eb_path` (path from the room root). World snapshots travel as JSON text (`WorldState.to_dict()`).
 
-Launch: `godot --headless --path game -- --server --session <id> --room <room_id> [--pack <file.pck>] [--port 7777] [--transport enet|ws] [--token <invite>] [--snapshot <file.json>]` (`--trust-positions` is for test bots only). Join: `godot --path game -- --connect <host[:port]> --name <display name> [--token <invite>] [--transport ws]`.
+Launch: `godot --headless --path game -- --server --session <id> --room <room_id> [--pack <file.pck>] [--port 7777] [--transport enet|ws] [--token <invite>] [--snapshot <file.json>] [--difficulty <id>]` (`--trust-positions` is for test bots only). Join: `godot --path game -- --connect <host[:port]> --name <display name> [--token <invite>] [--transport ws]`.
 
 | Direction | RPC | Channel | Purpose |
 |---|---|---|---|

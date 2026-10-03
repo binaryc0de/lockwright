@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1448" height="1024" viewBox="0 0 1448 1024">
+  <rect x="0" y="0" width="1448" height="1024" fill="#f3efe3"/>
+  <rect x="22" y="22" width="1404" height="980" rx="12" fill="#faf6e9" stroke="#c5baa5" stroke-width="3"/>
+  <!-- Muted original balloon and confetti graphics are confined to the header. -->
+  <ellipse cx="160" cy="178" rx="57" ry="74" fill="#af7467"/>
+  <ellipse cx="1278" cy="184" rx="59" ry="77" fill="#7d9a94"/>
+  <polygon points="160,247 149,265 171,265" fill="#af7467"/>
+  <polygon points="1278,256 1267,273 1289,273" fill="#7d9a94"/>
+  <polyline points="160,265 176,297 157,340 177,378 162,414" fill="none" stroke="#9a8c77" stroke-width="3"/>
+  <polyline points="1278,273 1265,309 1287,347 1268,385 1282,420" fill="none" stroke="#9a8c77" stroke-width="3"/>
+  <ellipse cx="142" cy="151" rx="10" ry="22" fill="#e0b4a1" opacity="0.58"/>
+  <ellipse cx="1259" cy="157" rx="10" ry="22" fill="#c2d3c2" opacity="0.65"/>
+  <line x1="297" y1="109" x2="313" y2="125" stroke="#b69a51" stroke-width="9"/>
+  <line x1="453" y1="81" x2="459" y2="104" stroke="#819b8c" stroke-width="8"/>
+  <line x1="608" y1="124" x2="622" y2="110" stroke="#ac7b71" stroke-width="7"/>
+  <line x1="834" y1="90" x2="850" y2="108" stroke="#b69a51" stroke-width="8"/>
+  <line x1="990" y1="120" x2="1009" y2="111" stroke="#819b8c" stroke-width="8"/>
+  <line x1="1156" y1="89" x2="1165" y2="112" stroke="#ac7b71" stroke-width="8"/>
+  <circle cx="362" cy="167" r="6" fill="#ac7b71"/>
+  <circle cx="745" cy="94" r="7" fill="#819b8c"/>
+  <circle cx="1096" cy="173" r="6" fill="#b69a51"/>
+  <text x="724" y="342" font-size="155" data-width="934" text-anchor="middle" font-weight="bold" fill="#38565b"><tspan id="five_years">{{0}}</tspan></text>
+  <text x="724" y="451" font-size="46" data-width="1200" text-anchor="middle" fill="#384b47"><tspan id="greeting">{{1}}</tspan></text>
+  <rect x="119" y="491" width="1210" height="97" rx="8" fill="#e8e8d8"/>
+  <text x="724" y="552" font-size="38" data-width="1160" text-anchor="middle" fill="#384b47"><tspan id="joined_year">{{2}}</tspan></text>
+  <!-- Three colleagues: blue fine pen, upright green felt pen, slanted plum ink. -->
+  <text x="126" y="674" font-size="36" data-width="1190" data-lettering="stroke" data-slant="0.14" stroke-width="2.9" fill="#315774"><tspan id="priya_message">{{3}}</tspan></text>
+  <text x="176" y="777" font-size="39" data-width="1120" data-lettering="stroke" data-slant="-0.08" stroke-width="3.8" fill="#436553"><tspan id="dale_message">{{4}}</tspan></text>
+  <text x="129" y="879" font-size="38" data-width="1110" data-lettering="stroke" data-slant="0.28" stroke-width="2.8" fill="#78505b"><tspan id="j_message">{{5}}</tspan></text>
+  <line x1="196" y1="801" x2="325" y2="794" stroke="#436553" stroke-width="3" opacity="0.74"/>
+  <polyline points="906,904 940,898 951,911 973,895 1000,903" fill="none" stroke="#78505b" stroke-width="2.5" opacity="0.72"/>
+  <!-- Tiny original kestrel mark, pin hole and light edge scuff. -->
+  <polygon points="1303,952 1313,933 1333,940 1354,929 1345,946 1334,948 1329,960 1322,952 1310,957" fill="#7d8d80"/>
+  <circle cx="724" cy="40" r="6" fill="#cec6b4" opacity="0.56"/>
+  <circle cx="724" cy="39" r="2.5" fill="#8a7e65" opacity="0.42"/>
+  <line x1="27" y1="662" x2="31" y2="915" stroke="#bcb29b" stroke-width="2" opacity="0.35"/>
+  <line x1="1312" y1="996" x2="1393" y2="993" stroke="#dfd7c5" stroke-width="3"/>
+</svg>

@@ -23,14 +23,14 @@ var _overlay_label: Label = null
 
 
 ## Loads and starts a room offline. Returns false (with `error`) on failure.
-func start(room_id: String, pack_path: String = "", session_id: String = "") -> bool:
+func start(room_id: String, pack_path: String = "", session_id: String = "", difficulty: String = "") -> bool:
 	var loader := _load(room_id, pack_path)
 	if loader == null:
 		return false
 	if session_id.is_empty():
 		session_id = "local-%d" % int(Time.get_unix_time_from_system())
 	Game.display_name = Settings.display_name
-	Game.start_local_session(loader.manifest, room, session_id)
+	Game.start_local_session(loader.manifest, room, session_id, {}, null, difficulty)
 	_spawn_player_and_hud()
 	return true
 

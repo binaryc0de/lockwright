@@ -172,3 +172,22 @@ func TestFinishedSessionStaysFinishedAndTeardownHookRuns(t *testing.T) {
 		t.Fatalf("idle exit changed a finished session to %s", s.Status)
 	}
 }
+
+func TestPassesTheSessionDifficulty(t *testing.T) {
+	ctx := context.Background()
+	m, l, st, sess := setup(t)
+	if _, err := m.EnsureRunning(ctx, sess); err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(l.args[0], "--difficulty") {
+		t.Fatalf("default difficulty should not be passed: %v", l.args[0])
+	}
+	hard, _ := st.CreateSessionWithDifficulty(ctx, "night_shift", "hard")
+	if _, err := m.EnsureRunning(ctx, hard); err != nil {
+		t.Fatal(err)
+	}
+	args := l.args[len(l.args)-1]
+	if i := slices.Index(args, "--difficulty"); i < 0 || args[i+1] != "hard" {
+		t.Fatalf("args %v missing --difficulty hard", args)
+	}
+}

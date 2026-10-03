@@ -77,16 +77,16 @@ func _ready() -> void:
 
 
 ## LOCAL: starts an offline session; `room_instance` must already be in the tree.
-func start_local_session(p_manifest: RoomManifest, room_instance: RoomRoot, session_id: String, snapshot: Dictionary = {}, flags: FlagValidator = null) -> void:
-	_start_authority(p_manifest, room_instance, session_id, snapshot, flags)
+func start_local_session(p_manifest: RoomManifest, room_instance: RoomRoot, session_id: String, snapshot: Dictionary = {}, flags: FlagValidator = null, difficulty: String = "") -> void:
+	_start_authority(p_manifest, room_instance, session_id, snapshot, flags, difficulty)
 	mode = Mode.LOCAL
 	session_started.emit()
 	room.room_ready.emit()
 
 
 ## SERVER: hosts the authority for networked clients (no local player).
-func start_server_session(p_manifest: RoomManifest, room_instance: RoomRoot, session_id: String, snapshot: Dictionary = {}, flags: FlagValidator = null) -> void:
-	_start_authority(p_manifest, room_instance, session_id, snapshot, flags)
+func start_server_session(p_manifest: RoomManifest, room_instance: RoomRoot, session_id: String, snapshot: Dictionary = {}, flags: FlagValidator = null, difficulty: String = "") -> void:
+	_start_authority(p_manifest, room_instance, session_id, snapshot, flags, difficulty)
 	mode = Mode.SERVER
 	room.room_ready.emit()
 
@@ -97,10 +97,10 @@ func start_client_session(p_manifest: RoomManifest, room_instance: RoomRoot, pla
 	end_session()
 	join_code = code
 	mode = Mode.CLIENT
-	manifest = p_manifest
+	manifest = p_manifest.for_difficulty(str(snapshot.get("difficulty", "")))
 	room = room_instance
 	local_player_id = player_id
-	_nodes = EBNode.register_all(room, null)
+	_nodes = EBNode.register_all(room, null, manifest.difficulty)
 	_mirror = WorldState.new()
 	apply_server_state(snapshot, server_now, true)
 	session_started.emit()
@@ -113,9 +113,11 @@ func rejoin_client(player_id: String, snapshot: Dictionary, server_now: float) -
 	apply_server_state(snapshot, server_now, true)
 
 
-func _start_authority(p_manifest: RoomManifest, room_instance: RoomRoot, session_id: String, snapshot: Dictionary, flags: FlagValidator) -> void:
+func _start_authority(p_manifest: RoomManifest, room_instance: RoomRoot, session_id: String, snapshot: Dictionary, flags: FlagValidator, difficulty: String = "") -> void:
 	end_session()
-	manifest = p_manifest
+	# A restored session keeps the difficulty it was started with.
+	var saved := str(snapshot.get("difficulty", ""))
+	manifest = p_manifest.for_difficulty(saved if not saved.is_empty() else difficulty)
 	room = room_instance
 	authority = RoomAuthority.new()
 	authority.name = "RoomAuthority"
@@ -168,6 +170,11 @@ func world() -> WorldState:
 	if authority:
 		return authority.state
 	return _mirror
+
+
+## The difficulty being played ("" without a session).
+func difficulty() -> String:
+	return manifest.difficulty if manifest else ""
 
 
 func vars() -> Dictionary:

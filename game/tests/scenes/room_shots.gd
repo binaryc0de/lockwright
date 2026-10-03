@@ -2,7 +2,7 @@ extends Node3D
 ## Renders screenshots of a room from fixed viewpoints, for art review on a
 ## machine with a real GPU (ADR-0003 forbids this on the iGPU dev box).
 ##   godot --path game res://tests/scenes/room_shots.tscn -- \
-##     --room night_shift --out /tmp/shots [--quality low|medium|high] [--set path={json} ...] [--views name:x,y,z:yaw_deg:pitch_deg ...]
+##     --room night_shift --out /tmp/shots [--quality low|medium|high] [--difficulty <id>] [--set path={json} ...] [--views name:x,y,z:yaw_deg:pitch_deg ...]
 ## Without --views it uses the room spawn plus any Marker3D named Shot* in the room.
 
 const SETTLE_FRAMES := 45
@@ -27,7 +27,7 @@ func _ready() -> void:
 	var room := loader.instantiate()
 	add_child(room)
 	GraphicsQuality.apply(room, _arg(args, "--quality", "high"))
-	Game.start_local_session(loader.manifest, room, "shots")
+	Game.start_local_session(loader.manifest, room, "shots", {}, null, _arg(args, "--difficulty", ""))
 	# --set path={json state} (repeatable): put nodes into a state for the shot
 	# (review only; bypasses the puzzle rules).
 	for j in args.size():

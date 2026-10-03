@@ -55,6 +55,7 @@ CARD=$(grep -o 'BOT: challenge intranet url=[^ ]*' "$WORK/alice.log" | tail -1 |
 if [ $DOCKER -eq 1 ] && [ -z "$CARD" ]; then
 	say "waiting for the challenge container (a first run builds the image)"
 	bot watcher.log Watcher --bot-steps 1-0 --bot-wait-card
+	PLAYERS=3  # the watcher joined too
 	CARD=$(grep -o 'BOT: challenge intranet url=[^ ]*' "$WORK/watcher.log" | tail -1 | sed 's/.*url=//')
 fi
 if [ $DOCKER -eq 1 ] && [ -n "$CARD" ]; then
@@ -101,7 +102,7 @@ say "Bob finishes with the captured flag"
 bot bob.log Bob --bot-steps 9-end --bot-flag "$FLAG" --bot-wait-win; rc=$?
 [ $rc -eq 0 ] || bad "Bob exited $rc"
 for _ in $(seq 1 20); do curl -fs "$URL/api/sessions/$SID" | jq -e '.won == true and .status == "finished"' >/dev/null && break; sleep 0.25; done
-curl -fs "$URL/api/sessions/$SID" | jq -e '.won == true and .status == "finished" and (.players | length) == 2' >/dev/null || bad "platform did not record the win: $(curl -fs "$URL/api/sessions/$SID")"
+curl -fs "$URL/api/sessions/$SID" | jq -e '.won == true and .status == "finished" and (.players | length) == '"${PLAYERS:-2}" >/dev/null || bad "platform did not record the win: $(curl -fs "$URL/api/sessions/$SID")"
 grep -q "flag attempt.*accepted=true" "$WORK/platform.log" || bad "no accepted flag attempt logged"
 grep -qF -- "$FLAG" "$WORK/platform.log" && bad "the flag value appears in the platform log"
 

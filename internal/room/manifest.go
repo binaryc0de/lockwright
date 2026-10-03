@@ -31,7 +31,66 @@ type Manifest struct {
 	CTF struct {
 		Challenges []Challenge `yaml:"challenges"`
 	} `yaml:"ctf"`
-	Solution []map[string]string `yaml:"solution"`
+	Solution     []map[string]string `yaml:"solution"`
+	Difficulties []Difficulty        `yaml:"difficulties"`
+}
+
+// Difficulty is one level of a room (ADR-0022). The first listed is the
+// default. A level replaces fields of puzzles and challenges with the same id,
+// and may replace the whole solution.
+type Difficulty struct {
+	ID          string                       `yaml:"id"`
+	Title       string                       `yaml:"title"`
+	Description string                       `yaml:"description"`
+	Puzzles     map[string]PuzzleOverride    `yaml:"puzzles"`
+	Challenges  map[string]ChallengeOverride `yaml:"challenges"`
+	Solution    []map[string]string          `yaml:"solution"`
+}
+
+// PuzzleOverride holds the puzzle fields a difficulty may replace; nil means
+// "keep the base value".
+type PuzzleOverride struct {
+	Title    *string   `yaml:"title"`
+	Requires *[]string `yaml:"requires"`
+	Hints    []string  `yaml:"hints"`
+	GMNotes  *string   `yaml:"gm_notes"`
+}
+
+// ChallengeOverride holds the challenge fields a difficulty may replace.
+type ChallengeOverride struct {
+	Hints []string `yaml:"hints"`
+}
+
+// Variant returns the manifest as played at difficulty id (the base for an
+// id the room does not declare). Mirrors RoomManifest.for_difficulty.
+func (m Manifest) Variant(id string) Manifest {
+	v := m
+	v.Puzzles = append([]Puzzle(nil), m.Puzzles...)
+	for _, d := range m.Difficulties {
+		if d.ID != id {
+			continue
+		}
+		for i, p := range v.Puzzles {
+			o, ok := d.Puzzles[p.ID]
+			if !ok {
+				continue
+			}
+			if o.Title != nil {
+				p.Title = *o.Title
+			}
+			if o.Requires != nil {
+				p.Requires = append([]string(nil), (*o.Requires)...)
+			}
+			if o.Hints != nil {
+				p.Hints = o.Hints
+			}
+			v.Puzzles[i] = p
+		}
+		if d.Solution != nil {
+			v.Solution = d.Solution
+		}
+	}
+	return v
 }
 
 type Mode struct {

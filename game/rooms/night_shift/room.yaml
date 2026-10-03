@@ -48,7 +48,8 @@ puzzles:
       Office/Whiteboard/UVInk only while a player has the UV torch selected and is within
       2.5 m. The marker note on the board points at it. Enter it on
       Office/FilingCabinet/Keypad, then open the cabinet drawer: laminated network diagram
-      (patch mapping, needed for restore_power) and a USB stick (flavour in the prototype).
+      (patch mapping, needed for restore_power) and a USB stick holding shadow.bak (needed in hard mode,
+      where Mark's password has to be cracked from it).
 
   - id: hack_intranet
     title: Get into the Kestrel intranet
@@ -135,3 +136,49 @@ solution:
   - { act: interact, node: "Cage/PatchPanel", verb: patch, value: "A:3,B:7,C:1,D:5" }
   - { act: input_code, lock: "Office/ExitDoor/Keypad", value: "417062" }
   - { act: interact, node: "Office/ExitDoor", verb: open }
+
+# Difficulty levels (ADR-0022). Standard is the default.
+difficulties:
+  - id: standard
+    title: Standard
+    description: "The classic room. You hack a real web app, but the password is out there to find."
+  - id: hard
+    title: Hard
+    description: "Mark rotated his password. Crack it from the backup on his USB stick with your own tools (John the Ripper or hashcat), then hack the intranet."
+    puzzles:
+      hack_intranet:
+        requires: [open_cabinet]
+        hints:
+          - "Mark finally rotated his password, so that WiFi card is no help now. But Mark backed everything up - and his backups are locked in the filing cabinet."
+          - "The USB stick holds a copy of the intranet server's password file: save it to your computer. The IT policy on the pinboard says how passwords are built here, and Mark's anniversary card says when he joined."
+          - "Make a wordlist from the room (start with the company name) + one of ! # $ % & * + 2019, and crack the mreyes hash with John the Ripper or hashcat (mode 1800). Don't guess on the login page: five misses lock the account. If you're stuck: it's Kestrel#2019."
+        gm_notes: >-
+          Hard mode. Office/Pinboard/WifiCardHard replaces the WiFi card (its back says the
+          password was rotated). The USB stick in the filing cabinet (so this thread now needs
+          open_cabinet) carries shadow.bak; the mreyes line is sha512crypt of Kestrel#2019.
+          Office/Pinboard/PasswordPolicy gives the pattern Word + symbol (! # $ % & *) + join
+          year; Office/Pinboard/AnniversaryCard gives 2019. The intranet locks mreyes for 3
+          minutes after 5 wrong passwords, so online guessing is slow. Players need their own
+          cracker (John, hashcat -m 1800, or an openssl passwd loop).
+    solution:
+      # Thread A: desk -> UV whiteboard -> filing cabinet (the USB stick is now the key to B)
+      - { act: interact, node: "Office/Desk/Drawer", verb: open }
+      - { act: pick_up, item: uv_torch }
+      - { act: examine, target: "Office/Whiteboard/UVInk" }
+      - { act: input_code, lock: "Office/FilingCabinet/Keypad", value: "{{cabinet_code}}" }
+      - { act: interact, node: "Office/FilingCabinet", verb: open }
+      - { act: examine, target: "Office/FilingCabinet/Drawer/Contents/NetworkDiagram" }
+      - { act: pick_up, item: usb_stick }
+      # Thread B: username + cracked hash -> intranet CTF -> cage
+      - { act: examine, target: "Office/Desk/StickyNote" }
+      - { act: examine, target: "Office/Pinboard/PasswordPolicy" }
+      - { act: examine, target: "Office/Pinboard/AnniversaryCard" }
+      - { act: submit_flag, challenge: intranet, value: "{{flags.intranet}}" }
+      - { act: interact, node: "Cage/Door", verb: open }
+      # Thread D: SITE + RACK
+      - { act: examine, target: "Office/FireCertificate" }
+      - { act: examine, target: "Cage/RackStencil" }
+      # Thread C and the meta
+      - { act: interact, node: "Cage/PatchPanel", verb: patch, value: "A:3,B:7,C:1,D:5" }
+      - { act: input_code, lock: "Office/ExitDoor/Keypad", value: "417062" }
+      - { act: interact, node: "Office/ExitDoor", verb: open }

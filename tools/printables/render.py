@@ -43,6 +43,8 @@ DOCUMENTS = {
     'rack_stencil': [('rack_stencil', 2048, 683, 'stencil')],
     'network_diagram_laminated': [('network_diagram_laminated', 2048, 1448, 'laminate')],
     'work_order': [('work_order', 1448, 2048, 'paper')],
+    'it_password_policy': [('it_password_policy', 1024, 1448, 'paper')],
+    'anniversary_card': [('anniversary_card', 1448, 1024, 'paper')],
 }
 CRITICAL = {
     'fire_inspection_certificate': ['FIRE SAFETY INSPECTION CERTIFICATE', 'SITE 417'],
@@ -57,6 +59,9 @@ CRITICAL = {
                                  'A', '3', 'B', '7', 'C', '1', 'D', '5'],
     'work_order': ['KESTREL LOGISTICS', 'CONTRACTOR WORK ORDER  KL-WO-2026-0417',
                    "Laptop + creds on Mark's desk - good luck! - J."],
+    'it_password_policy': ['2. One symbol:   !   #   $   %   &   *',
+                           'Example:  Falcon!2016'],
+    'anniversary_card': ['5 YEARS!', 'Mark Reyes - IT - with us since 2019'],
 }
 
 
@@ -327,6 +332,12 @@ def request_strings(doc_id):
             strings = re.findall(r'`([^`]+)`', request.split('A laminated A4 network diagram', 1)[1])
         elif doc_id == 'work_order':
             strings = re.findall(r'`([^`]+)`', request.split('Exact text', 1)[1])
+        elif doc_id in ('it_password_policy', 'anniversary_card'):
+            # These requests label printed and handwritten list items. Take
+            # only display-text bullets, not paths or prose repeats of clues.
+            bullets = [line for line in request.split('## Acceptance', 1)[0].splitlines()
+                       if line.startswith('- ')]
+            strings = [value for line in bullets for value in re.findall(r'`([^`]+)`', line)]
     return strings
 
 

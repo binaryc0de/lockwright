@@ -45,6 +45,8 @@ type Session struct {
 	Won         bool
 	ElapsedS    int
 	HintsUsed   int
+	// Difficulty is the room difficulty id chosen at creation ("" = default).
+	Difficulty string
 }
 
 // Instance is one running challenge for a session.
@@ -119,6 +121,7 @@ var migrations = []string{
 		host_port INTEGER NOT NULL,
 		PRIMARY KEY (session_id, challenge_id)
 	);`,
+	`ALTER TABLE sessions ADD COLUMN difficulty TEXT NOT NULL DEFAULT ''`,
 }
 
 // Open opens (creating if needed) the database at path and migrates it.
@@ -184,6 +187,12 @@ func (s *Store) migrate(ctx context.Context) error {
 
 // CreateSession makes a new idle session with a fresh id, invite code and server token.
 func (s *Store) CreateSession(ctx context.Context, roomID string) (Session, error) {
+	return s.CreateSessionWithDifficulty(ctx, roomID, "")
+}
+
+// CreateSessionWithDifficulty creates a session that plays the room at the
+// given difficulty id ("" = the room's default).
+func (s *Store) CreateSessionWithDifficulty(ctx context.Context, roomID, difficulty string) (Session, error) {
 	code, err := s.freeInviteCode(ctx)
 	if err != nil {
 		return Session{}, err
@@ -195,10 +204,11 @@ func (s *Store) CreateSession(ctx context.Context, roomID string) (Session, erro
 		ServerToken: RandomHex(32),
 		Status:      StatusIdle,
 		CreatedAt:   s.now().UTC().Truncate(time.Second),
+		Difficulty:  difficulty,
 	}
 	_, err = s.db.ExecContext(ctx,
-		`INSERT INTO sessions (id, room_id, invite_code, server_token, status, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
-		sess.ID, sess.RoomID, sess.InviteCode, sess.ServerToken, sess.Status, sess.CreatedAt.Unix())
+		`INSERT INTO sessions (id, room_id, invite_code, server_token, status, created_at, difficulty) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		sess.ID, sess.RoomID, sess.InviteCode, sess.ServerToken, sess.Status, sess.CreatedAt.Unix(), sess.Difficulty)
 	if err != nil {
 		return Session{}, fmt.Errorf("create session: %w", err)
 	}
@@ -242,8 +252,8 @@ func (s *Store) Session(ctx context.Context, id string) (Session, error) {
 	var created, finished int64
 	var won int
 	err := s.db.QueryRowContext(ctx,
-		`SELECT id, room_id, invite_code, server_token, status, created_at, finished_at, won, elapsed_s, hints_used FROM sessions WHERE id = ?`, id).
-		Scan(&sess.ID, &sess.RoomID, &sess.InviteCode, &sess.ServerToken, &sess.Status, &created, &finished, &won, &sess.ElapsedS, &sess.HintsUsed)
+		`SELECT id, room_id, invite_code, server_token, status, created_at, finished_at, won, elapsed_s, hints_used, difficulty FROM sessions WHERE id = ?`, id).
+		Scan(&sess.ID, &sess.RoomID, &sess.InviteCode, &sess.ServerToken, &sess.Status, &created, &finished, &won, &sess.ElapsedS, &sess.HintsUsed, &sess.Difficulty)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Session{}, ErrNotFound
 	}

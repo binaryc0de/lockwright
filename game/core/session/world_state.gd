@@ -21,6 +21,8 @@ var puzzles: Dictionary = {}
 var flags_accepted: Dictionary = {}
 ## Per-session room variables (room.yaml `variables`), resolved at session start.
 var vars: Dictionary = {}
+## The room difficulty this session plays (room.yaml `difficulties`).
+var difficulty: String = ""
 ## 0 until the clock starts (when the first player leaves the briefing).
 var started_at: float = 0.0
 var duration_s: int = 3600
@@ -76,6 +78,7 @@ func to_dict() -> Dictionary:
 		"puzzles": puzzles.duplicate(true),
 		"flags_accepted": flags_accepted.duplicate(),
 		"vars": vars.duplicate(),
+		"difficulty": difficulty,
 		"started_at": started_at,
 		"duration_s": duration_s,
 		"finished": finished,
@@ -104,6 +107,7 @@ static func from_dict(d: Dictionary) -> WorldState:
 		s.puzzles[id]["hints_revealed"] = int(s.puzzles[id]["hints_revealed"])
 	s.flags_accepted = d.get("flags_accepted", {}).duplicate()
 	s.vars = d.get("vars", {}).duplicate()
+	s.difficulty = str(d.get("difficulty", ""))
 	s.started_at = float(d.get("started_at", 0.0))
 	s.duration_s = int(d.get("duration_s", 3600))
 	s.finished = bool(d.get("finished", false))

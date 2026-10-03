@@ -4,13 +4,15 @@ extends Control
 ## or join a game server on the LAN (M2). The lobby/session browser arrives
 ## with the platform in M3.
 
-signal play_requested(room_id: String, pack_path: String)
+signal play_requested(room_id: String, pack_path: String, difficulty: String)
 ## `args` is a parsed client command line (AppArgs) so menu and CLI share
 ## validation.
 signal join_requested(args: AppArgs)
 
 var _name: LineEdit
 var _rooms: ItemList
+var _difficulty: OptionButton
+var _difficulty_note: Label
 var _pack: LineEdit
 var _pack_room: LineEdit
 var _status: Label
@@ -59,6 +61,22 @@ func _ready() -> void:
 		_rooms.select(0)
 	_rooms.item_activated.connect(func(_i: int) -> void: _play())
 	box.add_child(_rooms)
+
+	var drow := HBoxContainer.new()
+	var dlabel := Label.new()
+	dlabel.text = "Difficulty"
+	drow.add_child(dlabel)
+	_difficulty = OptionButton.new()
+	_difficulty.custom_minimum_size = Vector2(180, 0)
+	drow.add_child(_difficulty)
+	_difficulty_note = Label.new()
+	_difficulty_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_difficulty_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drow.add_child(_difficulty_note)
+	box.add_child(drow)
+	_rooms.item_selected.connect(func(_i: int) -> void: _refresh_difficulties())
+	_difficulty.item_selected.connect(func(_i: int) -> void: _refresh_difficulty_note())
+	_refresh_difficulties()
 
 	box.add_child(_caption("...or a room pack (.pck) and its room id"))
 	var row := HBoxContainer.new()
@@ -141,13 +159,40 @@ func _caption(text: String) -> Label:
 func _play() -> void:
 	_save_name()
 	if not _pack.text.strip_edges().is_empty():
-		play_requested.emit(_pack_room.text.strip_edges(), _pack.text.strip_edges())
+		play_requested.emit(_pack_room.text.strip_edges(), _pack.text.strip_edges(), "")
 		return
 	var sel := _rooms.get_selected_items()
 	if sel.is_empty():
 		show_error("Pick a room.")
 		return
-	play_requested.emit(_rooms.get_item_metadata(sel[0]), "")
+	play_requested.emit(_rooms.get_item_metadata(sel[0]), "", selected_difficulty())
+
+
+## The difficulty id picked for the selected room ("" = the room's default).
+func selected_difficulty() -> String:
+	if _difficulty == null or _difficulty.selected < 0:
+		return ""
+	return str(_difficulty.get_item_metadata(_difficulty.selected))
+
+
+func _refresh_difficulties() -> void:
+	_difficulty.clear()
+	var sel := _rooms.get_selected_items()
+	var m := RoomManifest.load_room(_rooms.get_item_metadata(sel[0])) if not sel.is_empty() else null
+	if m:
+		for d: Dictionary in m.difficulties:
+			_difficulty.add_item(str(d.get("title", d.get("id"))))
+			_difficulty.set_item_metadata(_difficulty.item_count - 1, str(d.get("id")))
+		_difficulty.select(0)
+	_refresh_difficulty_note()
+
+
+func _refresh_difficulty_note() -> void:
+	var sel := _rooms.get_selected_items()
+	var m := RoomManifest.load_room(_rooms.get_item_metadata(sel[0])) if not sel.is_empty() else null
+	_difficulty_note.text = ""
+	if m and _difficulty.selected >= 0:
+		_difficulty_note.text = str(m.difficulties[_difficulty.selected].get("description", ""))
 
 
 func _join() -> void:
@@ -201,7 +246,7 @@ func _host() -> void:
 		_platform.base_url = AppArgs.platform_http_url(server)
 	_host_btn.disabled = true
 	show_error("Creating a game on %s ..." % _platform.base_url)
-	_platform.request_async(HTTPClient.METHOD_POST, "/api/sessions", {"room_id": room_id}, func(code: int, data: Variant) -> void:
+	_platform.request_async(HTTPClient.METHOD_POST, "/api/sessions", {"room_id": room_id, "difficulty": selected_difficulty()}, func(code: int, data: Variant) -> void:
 		if not is_instance_valid(self):
 			return
 		_host_btn.disabled = false

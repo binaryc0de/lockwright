@@ -440,3 +440,86 @@ func test_inspect_skips_hidden_greybox_meshes() -> void:
 				if copy.mesh == m.mesh:
 					assert_bool(InspectPanel._shown_under(m, item)) \
 						.override_failure_message("%s: hidden mesh %s copied" % [path, m.name]).is_true()
+
+
+# --- Difficulty (ADR-0022) ------------------------------------------------------
+
+## Restarts the replay in a fresh copy of the room at difficulty `d`.
+func restart_at(d: String) -> void:
+	room.free()  # the standard copy from before_test
+	auth.free()
+	room = auto_free(loader.instantiate())
+	add_child(room)
+	auth = auto_free(RoomAuthority.new())
+	auth.allow_unpositioned = true
+	auth.clock = func() -> float: return now
+	auth.puzzle_solved.connect(func(id: String) -> void: solve_order.append(id))
+	manifest = loader.manifest.for_difficulty(d)
+	auth.setup(manifest, room, "replay-" + d)
+
+
+func test_room_offers_standard_and_hard() -> void:
+	var ids := loader.manifest.difficulties.map(func(x: Dictionary) -> String: return x["id"])
+	assert_array(ids).contains_exactly(["standard", "hard"])
+	assert_str(loader.manifest.default_difficulty).is_equal("standard")
+	assert_str(auth.state.difficulty).is_equal("standard")
+
+
+func test_standard_keeps_the_wifi_password_card() -> void:
+	assert_bool(auth._nodes.has("Office/Pinboard/WifiCard")).is_true()
+	assert_bool(auth._nodes.has("Office/Pinboard/WifiCardHard")).is_false()
+	assert_bool((room.get_node("Office/Pinboard/WifiCardHard") as Node3D).visible).is_false()
+	assert_array(manifest.puzzle("hack_intranet")["requires"]).is_empty()
+
+
+func test_hard_hides_the_password_and_needs_the_usb_stick() -> void:
+	restart_at("hard")
+	assert_str(auth.state.difficulty).is_equal("hard")
+	assert_bool(auth._nodes.has("Office/Pinboard/WifiCard")).is_false()
+	assert_bool((room.get_node("Office/Pinboard/WifiCard") as Node3D).visible).is_false()
+	assert_bool(auth._nodes.has("Office/Pinboard/WifiCardHard")).is_true()
+	var hard_card := room.get_node("Office/Pinboard/WifiCardHard") as Document
+	assert_str(hard_card.back_text_md).not_contains("Kestrel#2019**")
+	assert_array(manifest.puzzle("hack_intranet")["requires"]).contains_exactly(["open_cabinet"])
+	assert_str(str(manifest.puzzle("hack_intranet")["hints"][1])).contains("USB stick")
+	# The hard card cannot be read in standard's place: its shape is off too.
+	for cs: CollisionShape3D in room.get_node("Office/Pinboard/WifiCard").find_children("*", "CollisionShape3D", true, false):
+		assert_bool(cs.disabled).is_true()
+
+
+func test_hard_solution_replay_wins() -> void:
+	restart_at("hard")
+	var finished: Array = []
+	auth.session_finished.connect(func(w: bool) -> void: finished.append(w))
+	replay_all()
+	assert_array(finished).contains_exactly([true])
+	assert_int(solve_order.find("open_cabinet")).is_less(solve_order.find("hack_intranet"))
+
+
+func test_usb_stick_carries_the_password_backup() -> void:
+	var usb := room.get_node(item_path("usb_stick")) as Item
+	assert_str(usb.file_name).is_equal("shadow.bak")
+	var mreyes := Array(usb.file_text.split("\n")).filter(func(l: String) -> bool: return l.begins_with("mreyes:"))
+	assert_array(mreyes).has_size(1)
+	assert_str(str(mreyes[0])).starts_with("mreyes:$6$")
+	assert_str(usb.file_text).not_contains("Kestrel#2019")
+
+
+func test_difficulty_survives_a_snapshot() -> void:
+	restart_at("hard")
+	var snap := auth.state.to_dict()
+	var s2 := WorldState.from_dict(JSON.parse_string(JSON.stringify(snap)))
+	assert_str(s2.difficulty).is_equal("hard")
+	assert_str(loader.manifest.for_difficulty(s2.difficulty).difficulty).is_equal("hard")
+	assert_str(loader.manifest.for_difficulty("nope").difficulty).is_equal("standard")
+
+
+## Godot 4.7's export drops PackedStringArray properties from scenes (ADR-0022),
+## so SDK exports are Array[String]. This also runs from the pack (packroom
+## -verify), which is where the bug showed.
+func test_array_exports_survive_loading() -> void:
+	var panel := room.get_node("Cage/PatchPanel") as PatchPanel
+	assert_array(panel.cable_labels).has_size(4)
+	assert_str(panel.label_of("A")).contains("one stripe")
+	assert_array((room.get_node("Office/Pinboard/WifiCardHard") as EBNode).difficulties).contains_exactly(["hard"])
+	assert_array((room.get_node(item_path("usb_stick")) as Interactable).verbs).contains_exactly(["pick_up"])

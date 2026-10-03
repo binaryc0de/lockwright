@@ -6,9 +6,13 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 const testFlag = "TESTFLAG-not-a-real-format-123"
@@ -113,5 +117,70 @@ func TestOutputIsEscaped(t *testing.T) {
 	r := login(t, ts, c, "<script>x</script>", "nope")
 	if b := body(t, r); strings.Contains(b, "<script>x</script>") {
 		t.Fatal("username echoed unescaped")
+	}
+}
+
+func TestAccountLocksAfterFiveFailures(t *testing.T) {
+	srv := newServer(testFlag)
+	now := time.Unix(1_800_000_000, 0)
+	srv.now = func() time.Time { return now }
+	ts := httptest.NewServer(srv.routes())
+	t.Cleanup(ts.Close)
+	jar, _ := cookiejar.New(nil)
+	c := &http.Client{Jar: jar}
+	for i := 0; i < MaxFailures-1; i++ {
+		if r := login(t, ts, c, username, "nope"); r.StatusCode != http.StatusUnauthorized {
+			t.Fatalf("failure %d: %d", i+1, r.StatusCode)
+		}
+	}
+	r := login(t, ts, c, username, "nope")
+	if b := body(t, r); r.StatusCode != http.StatusTooManyRequests || !strings.Contains(b, "locked") {
+		t.Fatalf("5th failure should lock: %d", r.StatusCode)
+	}
+	// Even the right password is refused while locked.
+	r = login(t, ts, c, username, password)
+	if b := body(t, r); r.StatusCode != http.StatusTooManyRequests || strings.Contains(b, "My tickets") {
+		t.Fatalf("locked account let the right password in: %d", r.StatusCode)
+	}
+	now = now.Add(LockFor + time.Second)
+	r = login(t, ts, c, username, password)
+	if b := body(t, r); !strings.Contains(b, "My tickets") {
+		t.Fatalf("lock did not expire: %d", r.StatusCode)
+	}
+}
+
+func TestSuccessResetsTheFailureCount(t *testing.T) {
+	ts, c := setup(t)
+	for i := 0; i < MaxFailures-1; i++ {
+		body(t, login(t, ts, c, username, "nope"))
+	}
+	body(t, login(t, ts, c, username, password))
+	for i := 0; i < MaxFailures-1; i++ {
+		if r := login(t, ts, c, username, "nope"); r.StatusCode != http.StatusUnauthorized {
+			t.Fatalf("counter not reset: failure %d gave %d", i+1, r.StatusCode)
+		}
+	}
+}
+
+// The hard-mode USB stick (room.tscn, Item file shadow.bak) must hold the
+// sha512crypt hash of this challenge's password, or hard mode is unwinnable.
+func TestUSBStickHashIsThePassword(t *testing.T) {
+	if _, err := exec.LookPath("openssl"); err != nil {
+		t.Skip("openssl not installed")
+	}
+	scene, err := os.ReadFile("../../room.tscn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := regexp.MustCompile(`(?m)^mreyes:(\$6\$([^$]+)\$[^:]+):`).FindSubmatch(scene)
+	if m == nil {
+		t.Fatal("no mreyes sha512crypt line in room.tscn")
+	}
+	out, err := exec.Command("openssl", "passwd", "-6", "-salt", string(m[2]), password).Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.TrimSpace(string(out)) != string(m[1]) {
+		t.Fatal("the hash on the USB stick is not the intranet password's")
 	}
 }

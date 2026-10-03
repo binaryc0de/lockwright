@@ -386,7 +386,7 @@ func test_patch_panel_moves_plugs_to_their_ports() -> void:
 	panel.model = NodePath("Model")
 	panel.port1_offset = Vector3.ZERO
 	panel.port_step = Vector3(0.06, 0, 0)
-	panel.cable_ids = PackedStringArray(["A", "B"])
+	panel.cable_ids.assign(["A", "B"])
 	panel._apply_state({"state": "idle", "connections": {"A": 3}})
 	var pa := m.get_node("plug_a") as Node3D
 	assert_bool(pa.visible).is_true()
@@ -398,3 +398,14 @@ func test_patch_panel_moves_plugs_to_their_ports() -> void:
 	panel._apply_state({"state": "idle", "connections": {"A": 1, "B": 8}})
 	assert_vector(pa.position).is_equal_approx(Vector3(-0.21, 0.008, -0.103), Vector3.ONE * 1e-5)
 	assert_float((m.get_node("plug_b") as Node3D).position.x).is_equal_approx(0.21, 1e-5)
+
+
+func test_sdk_exports_avoid_packed_arrays() -> void:
+	# Godot 4.7's export drops PackedStringArray (and friends) from scene
+	# properties, so packed rooms silently lose them (ADR-0022). Use Array[T].
+	for f in DirAccess.get_files_at("res://addons/escapebox_sdk"):
+		if not f.ends_with(".gd"):
+			continue
+		for line in FileAccess.get_file_as_string("res://addons/escapebox_sdk/" + f).split("\n"):
+			if line.begins_with("@export") and line.contains("Packed") and line.contains("Array"):
+				fail("%s: %s" % [f, line])

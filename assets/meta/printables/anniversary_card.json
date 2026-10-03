@@ -1,0 +1,69 @@
+{
+  "asset_id": "anniversary_card",
+  "blender_version": "5.2.2 LTS",
+  "outputs": [
+    {
+      "color_space": "sRGB",
+      "opaque": true,
+      "path": "game/rooms/night_shift/assets/docs/anniversary_card.png",
+      "preview": "assets/previews/printables/anniversary_card_25.png",
+      "preview_background": "document",
+      "preview_sha256": "b6be07f71ac3f9ebba500886593c09e5ed1701712f1ef4a3a0dbbd2218eb51ea",
+      "rgba": true,
+      "sha256": "c8a6b13325f2af259727147a8113a3cabcb710bcb1719366811e1a943189aa23",
+      "size": [
+        1448,
+        1024
+      ],
+      "text": [
+        {
+          "cap_height_25_px": 38.75,
+          "cap_height_px": 155.0,
+          "id": "five_years",
+          "text": "5 YEARS!",
+          "width_px": 929.271844222232
+        },
+        {
+          "cap_height_25_px": 11.5,
+          "cap_height_px": 46.0,
+          "id": "greeting",
+          "text": "Happy Kestrel anniversary, Mark",
+          "width_px": 966.5557348373476
+        },
+        {
+          "cap_height_25_px": 9.5,
+          "cap_height_px": 38.0,
+          "id": "joined_year",
+          "text": "Mark Reyes - IT - with us since 2019",
+          "width_px": 930.7961166868647
+        },
+        {
+          "cap_height_25_px": 9.0,
+          "cap_height_px": 36.0,
+          "id": "priya_message",
+          "text": "Cheers for fixing the printer (again) - Priya",
+          "width_px": 961.5599999999995
+        },
+        {
+          "cap_height_25_px": 9.75,
+          "cap_height_px": 39.0,
+          "id": "dale_message",
+          "text": "Here's to 5 more! - Dale (security)",
+          "width_px": 804.18
+        },
+        {
+          "cap_height_25_px": 9.5,
+          "cap_height_px": 38.0,
+          "id": "j_message",
+          "text": "Cake in the kitchen at 3 - J.",
+          "width_px": 644.8599999999999
+        }
+      ]
+    }
+  ],
+  "printed_font": "Blender 5.2 bundled Inter.woff2 (OFL-1.1)",
+  "renderer": "CPU SVG rasterizer; Blender-bundled Inter outlines / original stroke alphabet; 2x AA",
+  "request_sha256": "83ffd78e3d53cb1e9faf26183aff683b9a974777bffa229e3c5b369930188c4d",
+  "seed": 417,
+  "source_sha256": "f7fcb05bd4d39e3c2f31d126ed99bf78d5e5d0d816474cf1ef5d9b6cd4f49631"
+}

@@ -279,3 +279,32 @@ func TestJoinByCode(t *testing.T) {
 		t.Fatalf("unknown code: %d %v", code, out)
 	}
 }
+
+func TestDifficultyInCatalogAndSessions(t *testing.T) {
+	e := setup(t)
+	resp, err := http.Get(e.ts.URL + "/api/catalog")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cat []struct {
+		RoomID       string `json:"room_id"`
+		Difficulties []struct {
+			ID string `json:"id"`
+		} `json:"difficulties"`
+	}
+	_ = json.NewDecoder(resp.Body).Decode(&cat)
+	resp.Body.Close()
+	if len(cat) != 1 || len(cat[0].Difficulties) != 2 || cat[0].Difficulties[1].ID != "hard" {
+		t.Fatalf("catalog difficulties: %+v", cat)
+	}
+	code, out := e.call(t, "POST", "/api/sessions", "", map[string]string{"room_id": "night_shift", "difficulty": "hard"})
+	if code != 201 {
+		t.Fatalf("create hard session: %d %v", code, out)
+	}
+	if s, _ := e.st.Session(context.Background(), out["session_id"].(string)); s.Difficulty != "hard" {
+		t.Fatalf("stored difficulty %q", s.Difficulty)
+	}
+	if code, out := e.call(t, "POST", "/api/sessions", "", map[string]string{"room_id": "night_shift", "difficulty": "insane"}); code != 400 || out["error"] != "unknown_difficulty" {
+		t.Fatalf("unknown difficulty: %d %v", code, out)
+	}
+}

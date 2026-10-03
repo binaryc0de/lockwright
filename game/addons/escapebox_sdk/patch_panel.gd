@@ -7,9 +7,9 @@ extends Interactable
 ## State: {state: "idle" | "solved", connections: {cable_id: port}}
 
 ## Cable ids, e.g. ["A", "B", "C", "D"].
-@export var cable_ids: PackedStringArray = ["A", "B", "C", "D"]
+@export var cable_ids: Array[String] = ["A", "B", "C", "D"]
 ## Player-facing cable labels; never colour alone, e.g. "A - red, striped".
-@export var cable_labels: PackedStringArray = []
+@export var cable_labels: Array[String] = []
 @export var port_count: int = 8
 ## Correct mapping, "A:3,B:1,C:4,D:2". Server-only.
 @export var solution: String = ""

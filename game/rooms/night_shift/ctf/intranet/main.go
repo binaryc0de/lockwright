@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -34,6 +35,15 @@ var templateFS embed.FS
 const (
 	username = "mreyes"
 	password = "Kestrel#2019"
+)
+
+// Account lockout (the room's IT password policy): after MaxFailures wrong
+// passwords in a row for mreyes, the account is locked for LockFor. This
+// keeps guessing on the login page impractical, so hard mode's way in is
+// cracking the hash on the USB stick offline (ADR-0022).
+const (
+	MaxFailures = 5
+	LockFor     = 3 * time.Minute
 )
 
 // FlagTicketID is the facilities ticket holding the flag: two below the
@@ -81,6 +91,11 @@ type server struct {
 	key     []byte
 	tickets map[int]ticket
 	tmpl    *template.Template
+
+	mu          sync.Mutex
+	failures    int
+	lockedUntil time.Time
+	now         func() time.Time
 }
 
 func newServer(flag string) *server {
@@ -93,6 +108,7 @@ func newServer(flag string) *server {
 		key:     key,
 		tickets: tickets(),
 		tmpl:    template.Must(template.ParseFS(templateFS, "templates/*.html")),
+		now:     time.Now,
 	}
 }
 
@@ -169,6 +185,29 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 	p := r.FormValue("password")
 	okUser := subtle.ConstantTimeCompare([]byte(u), []byte(username)) == 1
 	okPass := subtle.ConstantTimeCompare([]byte(p), []byte(password)) == 1
+	if okUser {
+		s.mu.Lock()
+		locked := s.now().Before(s.lockedUntil)
+		switch {
+		case locked:
+		case okPass:
+			s.failures = 0
+		default:
+			s.failures++
+			if s.failures >= MaxFailures {
+				s.failures = 0
+				s.lockedUntil = s.now().Add(LockFor)
+				locked = true
+			}
+		}
+		s.mu.Unlock()
+		if locked {
+			time.Sleep(300 * time.Millisecond)
+			s.render(w, http.StatusTooManyRequests, "login.html", map[string]any{
+				"Error": "Account locked after too many failed sign-ins (IT policy). Try again in a few minutes.", "Username": u})
+			return
+		}
+	}
 	if !okUser || !okPass {
 		time.Sleep(300 * time.Millisecond) // slow down guessing; brute force is not the intended path
 		s.render(w, http.StatusUnauthorized, "login.html", map[string]any{"Error": "Invalid username or password.", "Username": u})

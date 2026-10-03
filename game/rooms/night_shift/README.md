@@ -49,6 +49,8 @@ Offline (M1) the laptop's flag field accepts any non-empty value (`DevFlagValida
 | `restore_power` | hack_intranet, open_cabinet | `Cage/PatchPanel` solved |
 | `override_door` (exit) | restore_power | `Office/ExitDoor/Keypad` unlocked |
 
+**Hard mode** (`difficulty: hard`, ADR-0022): the WiFi card's back no longer gives the password (`Office/Pinboard/WifiCardHard`), and `hack_intranet` requires `open_cabinet`. The USB stick in the cabinet holds `shadow.bak`. Players save it, build a wordlist from the IT password policy (Word + one of `! # $ % & *` + join year) and Mark's anniversary card (2019), then crack the `mreyes` sha512crypt hash offline. The intranet locks the account for 3 minutes after 5 wrong passwords, so guessing online doesn't pay. The cracked password is the same `Kestrel#2019`.
+
 ## SDK nodes (public paths; keep stable)
 
 | Path | Node | Notes |

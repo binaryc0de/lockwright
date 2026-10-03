@@ -104,9 +104,10 @@ func Validate(dir, resRoot string, schema *jsonschema.Schema) *Report {
 
 	checkFiles(rep, l, resRoot)
 	puzzles := checkGraph(rep, m)
-	checkConditions(rep, l, resRoot, puzzles)
+	checkConditions(rep, m, resRoot, puzzles)
 	checkChallenges(rep, l)
 	checkTemplates(rep, m)
+	checkDifficulties(rep, m, resRoot)
 	checkSources(rep, dir)
 	checkJSON(rep, l)
 	return rep
@@ -240,8 +241,50 @@ func findCycle(puzzles []Puzzle, byID map[string]Puzzle) []string {
 	return nil
 }
 
-func checkConditions(rep *Report, l *Loaded, resRoot string, puzzles map[string]Puzzle) {
-	m := l.Manifest
+// checkDifficulties validates every difficulty as its own room: ids unique,
+// overrides name real puzzles and challenges, and the varied graph, solution
+// and templates pass the same checks as the base.
+func checkDifficulties(rep *Report, m Manifest, resRoot string) {
+	seen := map[string]bool{}
+	puzzles := map[string]bool{}
+	for _, p := range m.Puzzles {
+		puzzles[p.ID] = true
+	}
+	challenges := map[string]bool{}
+	for _, c := range m.CTF.Challenges {
+		challenges[c.ID] = true
+	}
+	for _, d := range m.Difficulties {
+		if seen[d.ID] {
+			rep.add(Error, "difficulty", "duplicate difficulty id %q", d.ID)
+			continue
+		}
+		seen[d.ID] = true
+		for id := range d.Puzzles {
+			if !puzzles[id] {
+				rep.add(Error, "difficulty", "difficulty %q overrides unknown puzzle %q", d.ID, id)
+			}
+		}
+		for id := range d.Challenges {
+			if !challenges[id] {
+				rep.add(Error, "difficulty", "difficulty %q overrides unknown challenge %q", d.ID, id)
+			}
+		}
+		if d.Puzzles == nil && d.Challenges == nil && d.Solution == nil {
+			continue // same as the base, already checked
+		}
+		sub := &Report{}
+		v := m.Variant(d.ID)
+		byID := checkGraph(sub, v)
+		checkConditions(sub, v, resRoot, byID)
+		checkTemplates(sub, v)
+		for _, is := range sub.Issues {
+			rep.add(is.Level, is.Code, "difficulty %s: %s", d.ID, is.Msg)
+		}
+	}
+}
+
+func checkConditions(rep *Report, m Manifest, resRoot string, puzzles map[string]Puzzle) {
 	challenges := map[string]bool{}
 	for _, c := range m.CTF.Challenges {
 		challenges[c.ID] = true

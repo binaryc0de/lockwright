@@ -18,6 +18,9 @@ var eb_path: String = ""
 var authority: RoomAuthority = null
 ## The room scene root (RoomRoot) this node belongs to.
 var room_root: Node = null
+## Room difficulties this node exists in (room.yaml `difficulties` ids);
+## empty = all. In other difficulties it is hidden, inert and unregistered.
+@export var difficulties: Array[String] = []
 
 
 ## Every SDK node in `root`'s subtree, in tree order.
@@ -101,14 +104,27 @@ func room_path_of(target: NodePath) -> String:
 
 ## Assigns eb_path/room_root (and authority on the server) to every SDK node
 ## under `room`. Returns path -> node.
-static func register_all(room: Node, p_authority: RoomAuthority) -> Dictionary:
+static func register_all(room: Node, p_authority: RoomAuthority, difficulty: String = "") -> Dictionary:
 	var out := {}
 	for n in find_all(room):
+		if not n.difficulties.is_empty() and not difficulty in n.difficulties:
+			n._deactivate()
+			continue
 		n.eb_path = str(room.get_path_to(n))
 		n.room_root = room
 		n.authority = p_authority
 		out[n.eb_path] = n
 	return out
+
+
+## Takes a node out of play for this session's difficulty.
+func _deactivate() -> void:
+	set_meta("eb_inactive", true)
+	if self is Node3D:
+		(self as Node3D).visible = false
+	process_mode = Node.PROCESS_MODE_DISABLED
+	for cs: CollisionShape3D in find_children("*", "CollisionShape3D", true, false):
+		cs.disabled = true
 
 
 ## Called by the session layer; not for room scripts.

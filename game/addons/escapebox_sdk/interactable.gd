@@ -18,7 +18,7 @@ const VERB_LABELS := {
 ## Name shown in prompts, e.g. "Open Filing cabinet".
 @export var display_name: String = "Thing"
 ## Verbs this node supports; the first is the default action.
-@export var verbs: PackedStringArray = ["use"]
+@export var verbs: Array[String] = ["use"]
 ## True if players can use an inventory item on this node ("Use UV torch on ...").
 @export var accepts_items: bool = false
 

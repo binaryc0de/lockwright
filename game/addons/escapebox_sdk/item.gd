@@ -11,6 +11,11 @@ extends Interactable
 @export_multiline var description: String = ""
 ## Text only readable with a UV torch active (shown in the inspect view).
 @export_multiline var uv_text: String = ""
+## Optional file "on" the item (a USB stick's backup, a photo's EXIF dump):
+## the inspect view shows it and lets players copy it or save it to their own
+## computer for real tools. `file_text` may use {{vars}}.
+@export var file_name: String = ""
+@export_multiline var file_text: String = ""
 
 
 func _init() -> void:

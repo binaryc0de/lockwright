@@ -75,6 +75,36 @@ def verify_briefing(record, request, png, small):
         print('PASS exact text/word wrapping/cap sizes: all ten work-order strings')
 
 
+def verify_password_clues(record, request):
+    """Checks confined to the two password-clue printable requests."""
+    doc_id = record['asset_id']
+    if doc_id not in ('it_password_policy', 'anniversary_card'):
+        return
+    assert record['request_sha256'] == hashlib.sha256(request.encode()).hexdigest(), 'Stale request metadata'
+    required = []
+    for line in request.split('## Acceptance', 1)[0].splitlines():
+        if line.startswith('- ') and '`' in line:
+            required.extend(line.split('`')[1::2])
+    text = record['outputs'][0]['text']
+    assert [item['text'] for item in text] == required, 'Display text differs from request order/wording'
+    assert len(text) == (9 if doc_id == 'it_password_policy' else 6), 'Missing text fields'
+    for item in text:
+        assert item['cap_height_25_px'] >= 7.5, 'Undersized quarter-size text'
+        if 'lines' in item:
+            assert re.sub(r'\s+', ' ', ' '.join(item['lines'])) == re.sub(r'\s+', ' ', item['text']), 'Wrapped text lost words'
+    by_id = {item['id']: item for item in text}
+    if doc_id == 'it_password_policy':
+        symbols = by_id['symbol_rule']
+        assert symbols['text'] == '2. One symbol:   !   #   $   %   &   *', 'Symbol order/spacing'
+        assert symbols['cap_height_25_px'] >= 11, 'Small symbols'
+        assert 'lines' not in symbols, 'Symbol row must remain on one line'
+        assert by_id['example']['text'] == 'Example:  Falcon!2016', 'Example punctuation/case/spacing'
+    else:
+        assert by_id['joined_year']['text'] == 'Mark Reyes - IT - with us since 2019', 'Wrong join year'
+        assert by_id['joined_year']['cap_height_25_px'] >= 9.5, 'Small join year'
+    print(f'PASS exact text/wrapped words/clue sizes: {doc_id}')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
@@ -123,6 +153,7 @@ def main():
             small = read_png(preview)
             assert small.shape[:2] == (round(h/4), round(w/4)), preview
             verify_briefing(record, request, png, small)
+            verify_password_clues(record, request)
             for artifact, key in ((path, 'sha256'), (preview, 'preview_sha256')):
                 digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
                 assert digest == output[key], artifact

@@ -30,7 +30,7 @@ func _ready() -> void:
 	if args.is_remote_client():
 		_join(args)
 	elif not args.room_id.is_empty():
-		_play(args.room_id, args.pack_path)
+		_play(args.room_id, args.pack_path, args.difficulty)
 	else:
 		_show_menu()
 
@@ -45,13 +45,13 @@ func _show_menu(error: String = "") -> void:
 		_menu.show_error(error)
 
 
-func _play(room_id: String, pack_path: String) -> void:
+func _play(room_id: String, pack_path: String, difficulty: String = "") -> void:
 	if _menu:
 		_menu.queue_free()
 		_menu = null
 	var session := PlaySession.new()
 	add_child(session)
-	if not session.start(room_id, pack_path):
+	if not session.start(room_id, pack_path, "", difficulty):
 		var err := session.error
 		session.queue_free()
 		push_error(err)
@@ -110,9 +110,9 @@ func _run_server(args: AppArgs) -> void:
 		push_error("cannot start: %s" % snapshot["_error"])
 		get_tree().quit(1)
 		return
-	Game.start_server_session(loader.manifest, room, args.session_id, snapshot, flags)
-	print("escapebox server: %s snapshot %s" % ["restored" if not snapshot.is_empty() else "fresh",
-		args.platform_url if platform else store.path])
+	Game.start_server_session(loader.manifest, room, args.session_id, snapshot, flags, args.difficulty)
+	print("escapebox server: %s snapshot %s, difficulty %s" % ["restored" if not snapshot.is_empty() else "fresh",
+		args.platform_url if platform else store.path, Game.difficulty()])
 	var server := SessionServer.new()
 	server.name = "SessionServer"
 	server.session_id = args.session_id

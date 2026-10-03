@@ -17,13 +17,15 @@ enum Mode { CLIENT, SERVER }
 
 const VALUE_FLAGS: PackedStringArray = [
 	"session", "room", "pack", "port", "platform", "token", "transport",
-	"connect", "name", "snapshot", "bot-steps", "join", "code", "bot-flag",
+	"connect", "name", "snapshot", "bot-steps", "join", "code", "bot-flag", "difficulty",
 ]
 
 var mode: Mode = Mode.CLIENT
 var session_id: String = ""
 var room_id: String = ""
 var pack_path: String = ""
+## Room difficulty id (room.yaml `difficulties`; "" = the room's default).
+var difficulty: String = ""
 var port: int = 7777
 var platform_url: String = "http://127.0.0.1:8080"
 ## True when --platform was given: the server reports to the platform (M3)
@@ -92,6 +94,8 @@ func _apply(key: String, value: String) -> void:
 			room_id = value
 		"pack":
 			pack_path = value
+		"difficulty":
+			difficulty = value.strip_edges().to_lower()
 		"port":
 			if value.is_valid_int() and int(value) > 0 and int(value) < 65536:
 				port = int(value)

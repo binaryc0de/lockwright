@@ -75,6 +75,10 @@
 [ext_resource type="PackedScene" path="res://assets/core/props/usb_stick.glb" id="87_usb"]
 [ext_resource type="PackedScene" path="res://assets/core/props/exit_sign_lightbox.glb" id="88_exitsign"]
 [ext_resource type="Material" path="res://assets/core/materials/mat_rack_led_blink.tres" id="89_ledblink"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_password_policy.tres" id="90_doc_policy"]
+[ext_resource type="Material" path="res://rooms/night_shift/assets/materials/doc_anniversary_card.tres" id="91_doc_anniv"]
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/it_password_policy.png" id="92_tex_policy"]
+[ext_resource type="Texture2D" path="res://rooms/night_shift/assets/docs/anniversary_card.png" id="93_tex_anniv"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbox"]
 size = Vector3(0.39, 0.34, 0.52)
 
@@ -106,6 +110,18 @@ size = Vector3(0.22, 0.31, 0.01)
 
 [sub_resource type="QuadMesh" id="QuadMesh_netdiag"]
 size = Vector2(0.297, 0.21)
+
+[sub_resource type="QuadMesh" id="QuadMesh_policy"]
+size = Vector2(0.148, 0.21)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_policy"]
+size = Vector3(0.155, 0.215, 0.01)
+
+[sub_resource type="QuadMesh" id="QuadMesh_anniv"]
+size = Vector2(0.148, 0.105)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_anniv"]
+size = Vector3(0.155, 0.11, 0.01)
 
 [sub_resource type="Environment" id="Environment_vrwxm"]
 background_mode = 1
@@ -1190,7 +1206,7 @@ contents = NodePath("Slide/Contents")
 moving_part = NodePath("Slide")
 open_offset = Vector3(0, 0, 0.4)
 display_name = "Top desk drawer"
-verbs = PackedStringArray("open", "close")
+verbs = Array[String](["open", "close"])
 
 [node name="Slide" type="Node3D" parent="Office/Desk/Drawer" unique_id=1233633006]
 
@@ -1230,7 +1246,7 @@ script = ExtResource("3_hbjcy")
 item_id = "uv_torch"
 description = "A pocket UV torch, the kind used to check banknotes. Select it to see UV ink nearby."
 display_name = "UV torch"
-verbs = PackedStringArray("pick_up")
+verbs = Array[String](["pick_up"])
 
 [node name="Mesh" type="MeshInstance3D" parent="Office/Desk/Drawer/Slide/Contents/UVTorch" unique_id=1174891060]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
@@ -1258,7 +1274,7 @@ user: **mreyes**
 
 pw: same as the guest wifi one :)"
 display_name = "Sticky note"
-verbs = PackedStringArray("read")
+verbs = Array[String](["read"])
 
 [node name="Paper" type="MeshInstance3D" parent="Office/Desk/StickyNote" unique_id=947431957]
 mesh = SubResource("QuadMesh_sticky")
@@ -1276,7 +1292,7 @@ banner = "KESTREL LOGISTICS - IT ASSET KL-LT-0332 (M. Reyes)
 Intranet session expired. Sign in again from your own browser using the connection card below.
 Maglock vendor override tokens are filed as facilities tickets. Paste one into the flag field to release the cage."
 display_name = "Mark's laptop"
-verbs = PackedStringArray("terminal")
+verbs = Array[String](["terminal"])
 
 [node name="Base" type="MeshInstance3D" parent="Office/Desk/Laptop" unique_id=1991148932]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
@@ -1343,7 +1359,7 @@ locked_by = NodePath("Keypad")
 moving_part = NodePath("Drawer")
 open_offset = Vector3(0, 0, 0.4)
 display_name = "Filing cabinet"
-verbs = PackedStringArray("open", "close")
+verbs = Array[String](["open", "close"])
 
 [node name="Carcass" type="MeshInstance3D" parent="Office/FilingCabinet" unique_id=1922231185]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0.3)
@@ -1405,7 +1421,7 @@ _Laminated. Do not remove from the cabinet._
 
 If the mains fail, patching P1 as above hands the door panels to the UPS."
 display_name = "Network diagram (laminated)"
-verbs = PackedStringArray("read")
+verbs = Array[String](["read"])
 texture = ExtResource("84_tex_netdiag")
 
 [node name="Sheet" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Contents/NetworkDiagram" unique_id=588390716]
@@ -1432,9 +1448,19 @@ visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.015, 0.05)
 script = ExtResource("7_8kqgp")
 item_id = "usb_stick"
-description = "A scuffed orange USB stick labelled \"MR - backups\" in marker. Whatever is on it will need a proper computer."
+description = "A scuffed orange USB stick labelled \"MR - backups\" in marker. One file on it: a backup of the intranet server's password file. Whatever is in there will need a proper computer."
 display_name = "USB stick"
-verbs = PackedStringArray("pick_up")
+verbs = Array[String](["pick_up"])
+file_name = "shadow.bak"
+file_text = "root:$6$aa6b9d6ed85df586$yrS/WQlNzsC29dyC4XqA5ZAukDUquD3rM/Xvxfh.DEJgsopswL2RNuURhoCg6HVOOcz9Jo8c6LbBJZSnZC2Q9.:20150:0:99999:7:::
+daemon:*:20150:0:99999:7:::
+www-data:*:20150:0:99999:7:::
+backup:*:20150:0:99999:7:::
+jpatel:$6$198fedd327cf06c0$VOTc163GcXufYLVfvC8xgQZIbnUsJqQICY4IzRbOr7IbLEe0RvABBTYtQ/kfObXez0Aq3irSGIB4961d9DtN0.:20301:0:365:7:::
+dmorgan:$6$d61137ac796c25a2$1Q0u.XCaLQHH2i7a0X25kM99Q2HQHHUlkiDvTD9Ukmt.b8ntKLjgAa484KAIF3.dxOBeGUXV3/uEhFhDiFNSx/:20155:0:365:7:::
+lchen:$6$25c348b40bba003c$ZNIYQJO6tv.lgJkclZ3TJbXnoKU.u4AWQ84G8YXTS/gF6KZF0SiHR/FzOYngc6l0d6OslXidii4RsuLP02naw/:20290:0:365:7:::
+mreyes:$6$q8NvR2kWzT4hLm7c$zDZQdZJkkekot1KYgIDskeebk2huS8jE8qmdBHN1ZoyNVf8v9YOQoESjgAOQBWZeIsaMgYivxhmbaTCxp7xB81:20333:0:365:7:::
+"
 
 [node name="Mesh" type="MeshInstance3D" parent="Office/FilingCabinet/Drawer/Contents/UsbStick" unique_id=1802005156]
 mesh = SubResource("BoxMesh_pnt3d")
@@ -1452,7 +1478,7 @@ code = "{{cabinet_code}}"
 status_light = NodePath("Model/led_status")
 status_label = NodePath("Status")
 display_name = "Cabinet keypad"
-verbs = PackedStringArray("enter_code")
+verbs = Array[String](["enter_code"])
 
 [node name="Pad" type="MeshInstance3D" parent="Office/FilingCabinet/Keypad" unique_id=1670299549]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.011)
@@ -1495,7 +1521,8 @@ back_text_md = "Password: **Kestrel#2019**
 
 _(same as my intranet one - IT, rotate this!! - M. Reyes)_"
 display_name = "Guest WiFi card"
-verbs = PackedStringArray("read")
+verbs = Array[String](["read"])
+difficulties = Array[String](["standard"])
 
 [node name="Card" type="MeshInstance3D" parent="Office/Pinboard/WifiCard" unique_id=1150384289]
 mesh = SubResource("QuadMesh_wifi")
@@ -1519,7 +1546,7 @@ Inspected: March 2026 - **PASS**
 
 Next inspection due: March 2027"
 display_name = "Fire inspection certificate"
-verbs = PackedStringArray("read")
+verbs = Array[String](["read"])
 
 [node name="Border" type="MeshInstance3D" parent="Office/FireCertificate" unique_id=1784108623]
 
@@ -1539,7 +1566,7 @@ locked_by = NodePath("Keypad")
 moving_part = NodePath("Hinge")
 open_rotation_deg = Vector3(0, -90, 0)
 display_name = "Exit door"
-verbs = PackedStringArray("open", "close")
+verbs = Array[String](["open", "close"])
 start_open = true
 
 [node name="Hinge" type="Node3D" parent="Office/ExitDoor" unique_id=1120518406]
@@ -1575,7 +1602,7 @@ starts_powered = false
 status_light = NodePath("Model/led_status")
 status_label = NodePath("Status")
 display_name = "Door override panel"
-verbs = PackedStringArray("enter_code")
+verbs = Array[String](["enter_code"])
 
 [node name="Pad" type="MeshInstance3D" parent="Office/ExitDoor/Keypad" unique_id=1494681865]
 
@@ -1643,7 +1670,7 @@ locked_by = NodePath("Maglock")
 moving_part = NodePath("Hinge")
 open_rotation_deg = Vector3(0, -100, 0)
 display_name = "Cage door"
-verbs = PackedStringArray("open", "close")
+verbs = Array[String](["open", "close"])
 
 [node name="Hinge" type="Node3D" parent="Cage/Door" unique_id=1376184102]
 
@@ -1662,7 +1689,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 2.05, -0.85)
 script = ExtResource("12_1brxc")
 status_light = NodePath("../Model/maglock_led")
 display_name = "Cage maglock"
-verbs = PackedStringArray("examine")
+verbs = Array[String](["examine"])
 
 [node name="Housing" type="MeshInstance3D" parent="Cage/Door/Maglock" unique_id=1714513496]
 
@@ -1704,12 +1731,12 @@ shape = SubResource("BoxShape3D_miniw")
 [node name="PatchPanel" type="Node3D" parent="Cage" unique_id=1969586604]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 7.385, 1.25, 1.8)
 script = ExtResource("14_fnm6y")
-cable_ids = PackedStringArray("A", "B", "C", "D")
-cable_labels = PackedStringArray("A - red, one stripe", "B - blue, two stripes", "C - yellow, three stripes", "D - green, no stripe")
+cable_ids = Array[String](["A", "B", "C", "D"])
+cable_labels = Array[String](["A - red, one stripe", "B - blue, two stripes", "C - yellow, three stripes", "D - green, no stripe"])
 solution = "A:3,B:7,C:1,D:5"
 targets = Array[NodePath]([NodePath("../../Office/ExitDoor/Keypad")])
 display_name = "Patch panel P1"
-verbs = PackedStringArray("patch")
+verbs = Array[String](["patch"])
 model = NodePath("Model")
 port1_offset = Vector3(0.42, 0, 0)
 port_step = Vector3(-0.06, 0, 0)
@@ -1730,7 +1757,7 @@ text_md = "Stencilled on the rack frame in white paint:
 
 # RACK 062"
 display_name = "Rack ID stencil"
-verbs = PackedStringArray("read")
+verbs = Array[String](["read"])
 
 [node name="Plate" type="MeshInstance3D" parent="Cage/RackStencil" unique_id=1089880150]
 mesh = SubResource("QuadMesh_stencil")
@@ -2287,7 +2314,7 @@ script = ExtResource("4_7mnw5")
 title = "Contractor work order"
 text_md = "# Kestrel Logistics - contractor work order KL-WO-2026-0417\n\n**Site:** regional office, Unit 4 Harbour Road - sysadmin office\n\n**Window:** 22:30 - 02:00. **Task:** core switch migration, night 2 of 2; cutover at 23:30.\n\nSysadmin **M. Reyes is off site tonight**; his notes are on the office whiteboard.\n\n**Security:** Dale (night guard) - use the office intercom.\n\nBadge doors run on the maglock system. If the mains fail, the UPS keeps the door panels alive for about an hour.\n\nSign in at the door, then go straight in.\n\n_Handwritten:_ Laptop + creds on Mark's desk - good luck! - J."
 display_name = "Work order"
-verbs = PackedStringArray("read")
+verbs = Array[String](["read"])
 texture = ExtResource("85_tex_wo")
 
 [node name="Paper" type="MeshInstance3D" parent="Office/WorkOrder"]
@@ -2399,3 +2426,87 @@ transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.695, 2.2, 2.5)
 
 [node name="leds" parent="Cage/RackModel"]
 surface_material_override/0 = ExtResource("89_ledblink")
+
+[node name="WifiCardHard" type="Node3D" parent="Office/Pinboard"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.45, 0.0185)
+script = ExtResource("4_7mnw5")
+title = "Guest WiFi"
+texture = ExtResource("67_tex_wifi")
+text_md = "# Guest WiFi
+Network: **KESTREL-GUEST**
+
+Password: see back
+
+_Please do not share with visitors._"
+back_text_md = "~~Password: Kestrel#2019~~ (crossed out)
+
+_Rotated it at last. New one follows the IT policy like everyone else's, and I'm NOT writing it down this time. Guests: ask reception. - M. Reyes_"
+display_name = "Guest WiFi card"
+verbs = Array[String](["read"])
+difficulties = Array[String](["hard"])
+
+[node name="Card" type="MeshInstance3D" parent="Office/Pinboard/WifiCardHard"]
+mesh = SubResource("QuadMesh_wifi")
+
+[node name="Body" type="StaticBody3D" parent="Office/Pinboard/WifiCardHard/Card"]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Pinboard/WifiCardHard/Card/Body"]
+shape = SubResource("BoxShape3D_5o2un")
+
+[node name="PasswordPolicy" type="Node3D" parent="Office/Pinboard"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 1.5, 0.0185)
+script = ExtResource("4_7mnw5")
+title = "IT password policy"
+text_md = "# Kestrel Logistics - IT
+## Password policy (rev 3)
+All staff passwords must follow this pattern:
+
+1. One word you will remember, starting with a capital letter
+2. One symbol: **!  #  $  %  &  ***
+3. The year you joined Kestrel (4 digits)
+
+Example: **Falcon!2016**
+
+Change your password every 12 months. Never write it down.
+
+_Five failed logins lock your account. IT will never ask for your password._"
+display_name = "IT password policy"
+verbs = Array[String](["read"])
+texture = ExtResource("92_tex_policy")
+
+[node name="Paper" type="MeshInstance3D" parent="Office/Pinboard/PasswordPolicy"]
+mesh = SubResource("QuadMesh_policy")
+material_override = ExtResource("90_doc_policy")
+
+[node name="Body" type="StaticBody3D" parent="Office/Pinboard/PasswordPolicy/Paper"]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Pinboard/PasswordPolicy/Paper/Body"]
+shape = SubResource("BoxShape3D_policy")
+
+[node name="AnniversaryCard" type="Node3D" parent="Office/Pinboard"]
+transform = Transform3D(0.9945, -0.1045, 0, 0.1045, 0.9945, 0, 0, 0, 1, -0.05, 1.33, 0.0185)
+script = ExtResource("4_7mnw5")
+title = "Anniversary card"
+text_md = "# 5 YEARS!
+Happy Kestrel anniversary, Mark
+
+_Mark Reyes - IT - with us since **2019**_
+
+---
+_Cheers for fixing the printer (again) - Priya_
+
+_Here's to 5 more! - Dale (security)_
+
+_Cake in the kitchen at 3 - J._"
+display_name = "Anniversary card"
+verbs = Array[String](["read"])
+texture = ExtResource("93_tex_anniv")
+
+[node name="Paper" type="MeshInstance3D" parent="Office/Pinboard/AnniversaryCard"]
+mesh = SubResource("QuadMesh_anniv")
+material_override = ExtResource("91_doc_anniv")
+
+[node name="Body" type="StaticBody3D" parent="Office/Pinboard/AnniversaryCard/Paper"]
+
+[node name="Shape" type="CollisionShape3D" parent="Office/Pinboard/AnniversaryCard/Paper/Body"]
+shape = SubResource("BoxShape3D_anniv")

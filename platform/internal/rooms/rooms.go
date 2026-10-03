@@ -30,10 +30,34 @@ type Room struct {
 		Challenges []orchestrator.Challenge `json:"challenges"`
 	} `json:"ctf"`
 	// Dir is the room's directory (challenge build contexts live under it).
-	Dir string `json:"-"`
+	// Difficulties the room offers (room.yaml `difficulties`); the first is
+	// the default. Empty for rooms with a single level.
+	Difficulties []Difficulty `json:"difficulties"`
+	Dir          string       `json:"-"`
 }
 
 // Challenge returns a challenge by id.
+// Difficulty is one level of a room, as listed in the catalog.
+type Difficulty struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+// HasDifficulty reports whether id is one of the room's levels; "" always is
+// (the default).
+func (r Room) HasDifficulty(id string) bool {
+	if id == "" {
+		return true
+	}
+	for _, d := range r.Difficulties {
+		if d.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
 func (r Room) Challenge(id string) (orchestrator.Challenge, bool) {
 	for _, c := range r.CTF.Challenges {
 		if c.ID == id {
