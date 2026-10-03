@@ -2438,7 +2438,7 @@ Network: **KESTREL-GUEST**
 Password: see back
 
 _Please do not share with visitors._"
-back_text_md = "~~Password: Kestrel#2019~~ (crossed out)
+back_text_md = "Password: _(scribbled out, unreadable)_
 
 _Rotated it at last. New one follows the IT policy like everyone else's, and I'm NOT writing it down this time. Guests: ask reception. - M. Reyes_"
 display_name = "Guest WiFi card"

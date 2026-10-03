@@ -479,7 +479,7 @@ func test_hard_hides_the_password_and_needs_the_usb_stick() -> void:
 	assert_bool((room.get_node("Office/Pinboard/WifiCard") as Node3D).visible).is_false()
 	assert_bool(auth._nodes.has("Office/Pinboard/WifiCardHard")).is_true()
 	var hard_card := room.get_node("Office/Pinboard/WifiCardHard") as Document
-	assert_str(hard_card.back_text_md).not_contains("Kestrel#2019**")
+	assert_str(hard_card.back_text_md).not_contains("Kestrel#2019")
 	assert_array(manifest.puzzle("hack_intranet")["requires"]).contains_exactly(["open_cabinet"])
 	assert_str(str(manifest.puzzle("hack_intranet")["hints"][1])).contains("USB stick")
 	# The hard card cannot be read in standard's place: its shape is off too.
@@ -536,3 +536,22 @@ func test_instanced_model_overrides_survive_loading() -> void:
 	assert_int(hidden).override_failure_message("unused notepad variants are showing").is_greater_equal(8)
 	var leds := room.get_node("Cage/RackModel/leds") as MeshInstance3D
 	assert_object(leds.get_surface_override_material(0)).override_failure_message("rack LEDs lost their blink material").is_instanceof(ShaderMaterial)
+
+
+## Hard mode's whole point is cracking the password: nothing a player can read
+## in the hard room (documents, item text and files, UV text, labels) may
+## contain it. Hints are exempt (tier 3 gives it, by design).
+func test_hard_mode_never_shows_the_password() -> void:
+	restart_at("hard")
+	var leaks: Array[String] = []
+	for n: EBNode in auth.nodes():
+		var texts: Array[String] = []
+		for prop in ["text_md", "back_text_md", "uv_text", "description", "file_text", "title", "text"]:
+			if prop in n:
+				texts.append(str(n.get(prop)))
+		for l: Label3D in n.find_children("*", "Label3D", true, false):
+			texts.append(l.text)
+		for s: String in texts:
+			if s.contains("Kestrel#2019"):
+				leaks.append(n.eb_path)
+	assert_array(leaks).override_failure_message("password readable in hard mode at %s" % [leaks]).is_empty()
