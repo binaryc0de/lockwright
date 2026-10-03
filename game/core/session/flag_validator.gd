@@ -15,5 +15,5 @@ func validate(_session_id: String, _challenge_id: String, _value: String, _playe
 func start_challenges(_session_id: String, challenges: Array) -> Dictionary:
 	var out := {}
 	for c: Dictionary in challenges:
-		out[c["id"]] = {"note": "Dev mode: this challenge's service is not running. Any non-empty flag is accepted."}
+		out[c["id"]] = {"note": "Practice mode: the real challenge only runs when the game is hosted on the platform (run tools/play.sh). Here, any non-empty flag is accepted."}
 	return out
