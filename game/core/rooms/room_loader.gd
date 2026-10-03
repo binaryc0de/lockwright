@@ -67,7 +67,12 @@ func load_room_async(room_id: String, pack_path: String, tree: SceneTree) -> boo
 	if not _prepare(room_id, pack_path):
 		return false
 	var path := manifest.entry_scene
-	if ResourceLoader.load_threaded_request(path, "PackedScene", true) != OK:
+	if DisplayServer.get_name() == "headless":
+		# Headless clients (bots, tests) use the dummy renderer, whose material
+		# storage is not safe to fill from loader threads: it corrupted memory
+		# and aborted at exit in the m2 smoke. They have no frame to keep alive.
+		return load_room(room_id, "")
+	if ResourceLoader.load_threaded_request(path, "PackedScene", false) != OK:
 		return load_room(room_id, "")  # pack already mounted; plain load
 	while true:
 		var st := ResourceLoader.load_threaded_get_status(path)
