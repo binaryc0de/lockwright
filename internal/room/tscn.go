@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -103,4 +104,69 @@ func join(prefix, rel string) string {
 		return rel
 	}
 	return prefix + "/" + rel
+}
+
+var editableRe = regexp.MustCompile(`^\[editable path="([^"]*)"\]`)
+
+// UneditableOverrides lists instanced nodes in a text scene whose children are
+// overridden (`[node name=.. parent="Inst/.."]` with no type or instance)
+// without an `[editable path="Inst"]` line. Godot applies such overrides when
+// it loads the text scene, but its export repacks scenes and drops them, so a
+// room pack silently loses them (hidden variants reappear; ADR-0024 notes).
+func UneditableOverrides(scenePath string) ([]string, error) {
+	f, err := os.Open(scenePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	instances := map[string]bool{}
+	editable := map[string]bool{}
+	var overrideParents []string
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 1<<20), 1<<24)
+	for sc.Scan() {
+		line := sc.Text()
+		if m := editableRe.FindStringSubmatch(line); m != nil {
+			editable[m[1]] = true
+			continue
+		}
+		m := nodeRe.FindStringSubmatch(line)
+		if m == nil {
+			continue
+		}
+		attrs := map[string]string{}
+		for _, a := range attrRe.FindAllStringSubmatch(m[1], -1) {
+			attrs[a[1]] = strings.Trim(a[2], `"`)
+		}
+		parent, hasParent := attrs["parent"]
+		if !hasParent {
+			continue
+		}
+		path := join(strings.TrimPrefix(strings.TrimPrefix(parent, "."), "/"), attrs["name"])
+		switch {
+		case attrs["instance"] != "":
+			instances[path] = true
+		case attrs["type"] == "":
+			overrideParents = append(overrideParents, strings.TrimPrefix(strings.TrimPrefix(parent, "."), "/"))
+		}
+	}
+	missing := map[string]bool{}
+	for _, p := range overrideParents {
+		parts := strings.Split(p, "/")
+		for i := len(parts); i > 0; i-- {
+			cand := strings.Join(parts[:i], "/")
+			if instances[cand] {
+				if !editable[cand] {
+					missing[cand] = true
+				}
+				break
+			}
+		}
+	}
+	out := make([]string, 0, len(missing))
+	for k := range missing {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out, sc.Err()
 }

@@ -211,3 +211,15 @@ The platform serves the web build gzip-compressed.
 - the desktop client joined through the HTTPS platform and the direct game port;
 - the CTF login page answered over Tailscale.
 On HTTPS the clipboard works too. ufw needs 8090 only for local access; Tailscale serve reaches the platform over loopback.
+
+## ADR-0027: Instanced-scene overrides need [editable] markers; the pack cache is only trusted after a hash check (2026-10-03)
+
+**Context.** In the owner's browser, Night Shift showed loose papers, sticky pads and stacks of wall trim. Two bugs combined.
+- **Lost overrides.** The room hides the unused variants inside CC0 kit models (notepads, trim, fixtures, cage panels, trays) with overrides on the instance's children. Our hand-written `room.tscn` had no `[editable path=...]` lines (the editor adds them), so Godot's export dropped all 133 such overrides from the room pack: only 6 of 139 hidden nodes stayed hidden. Material overrides on model parts, such as the rack LEDs' blink shader, were lost the same way.
+- **Stale cache.** `RoomLoader.find_local_pack` also searched `user://packs/`, the fetcher's download cache, without checking the platform's current hash, so the browser kept loading the broken pack after it was fixed.
+**Decision.**
+- `room.tscn` marks the 34 instances it overrides as editable.
+- `roomcheck` rejects child overrides on a non-editable instance.
+- A room test (also run from the pack by `packroom -verify`) checks hidden variants and the LED material.
+- `find_local_pack` only looks next to the executable, and never on the web. `user://packs/` is used only through `RoomPackFetcher`, which verifies the SHA-256 against the catalog first.
+**Consequences.** Verified in the owner's Chrome over the Tailscale HTTPS link: the pack downloads fresh and the desk and walls match the desktop build. Room authors who edit scenes by hand must keep the markers, and roomcheck tells them.

@@ -351,3 +351,17 @@ func TestDifficultyChecksTheVariedGraphAndSolution(t *testing.T) {
 		t.Fatalf("expected duplicate id, got %v", r.Issues)
 	}
 }
+
+func TestRejectsOverridesOnNonEditableInstances(t *testing.T) {
+	dir, res := writeRoom(t, goodYAML)
+	scene := filepath.Join(res, "rooms", "test_room", "room.tscn")
+	_ = os.WriteFile(scene, []byte(roomScene+"\n[node name=\"Led\" parent=\"Cabinet/Keypad\"]\nvisible = false\n"), 0o644)
+	r := Validate(dir, res, nil)
+	if !hasIssue(r, Error, "editable", `instance "Cabinet"`) {
+		t.Fatalf("expected an editable error, got %v", r.Issues)
+	}
+	_ = os.WriteFile(scene, []byte(roomScene+"\n[node name=\"Led\" parent=\"Cabinet/Keypad\"]\nvisible = false\n\n[editable path=\"Cabinet\"]\n"), 0o644)
+	if r := Validate(dir, res, nil); hasIssue(r, Error, "editable", "") {
+		t.Fatalf("editable instance still rejected: %v", r.Issues)
+	}
+}

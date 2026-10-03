@@ -523,3 +523,16 @@ func test_array_exports_survive_loading() -> void:
 	assert_str(panel.label_of("A")).contains("one stripe")
 	assert_array((room.get_node("Office/Pinboard/WifiCardHard") as EBNode).difficulties).contains_exactly(["hard"])
 	assert_array((room.get_node(item_path("usb_stick")) as Interactable).verbs).contains_exactly(["pick_up"])
+
+
+## Overrides on parts of instanced models survive loading, including from the
+## exported pack (packroom -verify): Godot's export drops them unless the
+## instance is marked [editable] (roomcheck enforces it).
+func test_instanced_model_overrides_survive_loading() -> void:
+	var hidden := 0
+	for n: Node in room.get_node("Office/Decor/StickyPad").get_children():
+		if n is Node3D and not (n as Node3D).visible:
+			hidden += 1
+	assert_int(hidden).override_failure_message("unused notepad variants are showing").is_greater_equal(8)
+	var leds := room.get_node("Cage/RackModel/leds") as MeshInstance3D
+	assert_object(leds.get_surface_override_material(0)).override_failure_message("rack LEDs lost their blink material").is_instanceof(ShaderMaterial)

@@ -33,11 +33,14 @@ func instantiate() -> RoomRoot:
 
 ## Exported builds without --pack (ADR-0021): the newest
 ## `<room_id>.pck` or `<room_id>-<version>.pck` in a `packs/` directory next to
-## the executable, or in user://packs/. "" if none. (Download from the platform
-## comes with /download in M5.)
+## the executable. "" if none. Not user://packs/: that is RoomPackFetcher's
+## download cache, which is only trusted after checking the platform's current
+## hash (a stale cached pack once kept a browser on an outdated room).
 static func find_local_pack(room_id: String, dirs: PackedStringArray = []) -> String:
 	if dirs.is_empty():
-		dirs = [OS.get_executable_path().get_base_dir().path_join("packs"), ProjectSettings.globalize_path("user://packs")]
+		if OS.has_feature("web"):
+			return ""  # browsers have no executable directory
+		dirs = [OS.get_executable_path().get_base_dir().path_join("packs")]
 	var re := RegEx.create_from_string("^%s(-(\\d+)\\.(\\d+)\\.(\\d+))?\\.pck$" % room_id)
 	var best := ""
 	var best_ver := -1

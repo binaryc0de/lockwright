@@ -103,6 +103,7 @@ func Validate(dir, resRoot string, schema *jsonschema.Schema) *Report {
 	}
 
 	checkFiles(rep, l, resRoot)
+	checkEditable(rep, m, resRoot)
 	puzzles := checkGraph(rep, m)
 	checkConditions(rep, m, resRoot, puzzles)
 	checkChallenges(rep, l)
@@ -432,4 +433,19 @@ func WriteJSON(dir string) error {
 		return err
 	}
 	return os.WriteFile(filepath.Join(dir, "room.json"), b, 0o644)
+}
+
+// checkEditable rejects overrides on parts of instanced scenes that Godot's
+// export would drop (missing [editable path=...] lines).
+func checkEditable(rep *Report, m Manifest, resRoot string) {
+	if !strings.HasPrefix(m.EntryScene, "res://") {
+		return
+	}
+	missing, err := UneditableOverrides(ResToFS(m.EntryScene, resRoot))
+	if err != nil {
+		return // checkFiles reports a missing scene
+	}
+	for _, p := range missing {
+		rep.add(Error, "editable", "%s overrides children of instance %q without [editable path=%q]; the exported pack would drop them", m.EntryScene, p, p)
+	}
 }
