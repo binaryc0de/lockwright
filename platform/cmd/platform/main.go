@@ -130,7 +130,7 @@ func run() error {
 	defer mgr.Close()
 
 	deps.Servers = mgr
-	if orch, err := startOrchestrator(ctx, host, cmin, cmax, secret, st); err != nil {
+	if orch, err := startOrchestrator(ctx, host, cmin, cmax, secret, st, orchestrator.OwnerFor(*dataDir)); err != nil {
 		slog.Warn("challenge containers disabled: Docker is not reachable", "err", err)
 	} else {
 		deps.Orchestrator = orch
@@ -182,7 +182,7 @@ func run() error {
 	return nil
 }
 
-func startOrchestrator(ctx context.Context, host string, pmin, pmax int, secret []byte, st *store.Store) (*orchestrator.Orchestrator, error) {
+func startOrchestrator(ctx context.Context, host string, pmin, pmax int, secret []byte, st *store.Store, owner string) (*orchestrator.Orchestrator, error) {
 	dc, err := docker.FromEnv()
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func startOrchestrator(ctx context.Context, host string, pmin, pmax int, secret 
 	if err := dc.Ping(pctx); err != nil {
 		return nil, err
 	}
-	o := orchestrator.New(orchestrator.Config{AdvertiseHost: host, BindAddr: "0.0.0.0", PortMin: pmin, PortMax: pmax, Secret: secret}, dc, st)
+	o := orchestrator.New(orchestrator.Config{AdvertiseHost: host, BindAddr: "0.0.0.0", PortMin: pmin, PortMax: pmax, Secret: secret, Owner: owner}, dc, st)
 	if err := o.Cleanup(ctx); err != nil {
 		slog.Warn("cleanup of old challenge containers", "err", err)
 	}

@@ -257,6 +257,40 @@ func TestCleanupRemovesLeftovers(t *testing.T) {
 	}
 }
 
+// A platform only cleans up what it created: a test platform starting beside
+// the always-on service must not remove the service's live challenges.
+func TestCleanupLeavesOtherPlatformsAlone(t *testing.T) {
+	ctx := context.Background()
+	o, f, _ := setup(t)
+	o.cfg.Owner = OwnerFor("data-a")
+	f.containers["mine"] = docker.ContainerSpec{Labels: map[string]string{LabelManaged: "1", LabelOwner: o.cfg.Owner}}
+	f.containers["other"] = docker.ContainerSpec{Labels: map[string]string{LabelManaged: "1", LabelOwner: OwnerFor("data-b")}}
+	f.containers["unlabelled"] = docker.ContainerSpec{Labels: map[string]string{LabelManaged: "1"}}
+	if err := o.Cleanup(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := f.containers["mine"]; ok {
+		t.Fatal("own leftover not removed")
+	}
+	for _, id := range []string{"other", "unlabelled"} {
+		if _, ok := f.containers[id]; !ok {
+			t.Fatalf("%s removed by another platform's cleanup", id)
+		}
+	}
+	ch, _ := fakeChallenge(t, true)
+	if _, err := o.Start(ctx, "s1", "room", "1.0.0", roomDir(t), []Challenge{ch}); err != nil {
+		t.Fatal(err)
+	}
+	for id, c := range f.containers {
+		if c.Labels[LabelSession] == "s1" && c.Labels[LabelOwner] != o.cfg.Owner {
+			t.Fatalf("container %s started without the owner label: %v", id, c.Labels)
+		}
+	}
+	if OwnerFor("data-a") == OwnerFor("data-b") || OwnerFor("data") != OwnerFor("./data") {
+		t.Fatal("owner ids not stable per data directory")
+	}
+}
+
 func TestConcurrentStartsAndStopDoNotInterleave(t *testing.T) {
 	ctx := context.Background()
 	o, f, _ := setup(t)

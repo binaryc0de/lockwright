@@ -81,13 +81,28 @@ type Config struct {
 	PortMin       int
 	PortMax       int
 	Secret        []byte // platform secret for per-instance flags
+	// Owner identifies this platform instance (OwnerFor its data directory).
+	// Everything it creates carries it, and Cleanup removes only what carries
+	// it, so a second platform on the same Docker (a test run beside the
+	// always-on service) never tears down another's live challenges.
+	Owner string
 }
 
 // Labels on everything the orchestrator creates.
 const (
 	LabelManaged = "escapebox.managed"
 	LabelSession = "escapebox.session"
+	LabelOwner   = "escapebox.owner"
 )
+
+// OwnerFor is a stable owner id for a platform whose data lives in dataDir.
+func OwnerFor(dataDir string) string {
+	if abs, err := filepath.Abs(dataDir); err == nil {
+		dataDir = abs
+	}
+	sum := sha256.Sum256([]byte(dataDir))
+	return hex.EncodeToString(sum[:6])
+}
 
 // Orchestrator manages challenge instances. Safe for concurrent use.
 type Orchestrator struct {
@@ -159,6 +174,9 @@ func (o *Orchestrator) Start(ctx context.Context, sessionID, roomID, roomVersion
 		}
 	}()
 	labels := map[string]string{LabelManaged: "1", LabelSession: sessionID}
+	if o.cfg.Owner != "" {
+		labels[LabelOwner] = o.cfg.Owner
+	}
 	netName := "esc_" + sessionID
 	netID, err := o.eng.CreateNetwork(ctx, docker.NetworkSpec{Name: netName, Internal: true, Labels: labels})
 	if err != nil {
@@ -312,7 +330,11 @@ func (o *Orchestrator) teardown(ctx context.Context, sessionID string, r *runnin
 // Cleanup removes everything a previous platform process left behind
 // (its proxies died with it). Call once at start-up.
 func (o *Orchestrator) Cleanup(ctx context.Context) error {
-	cs, ns, err := o.eng.ListByLabel(ctx, LabelManaged, "1")
+	label, value := LabelManaged, "1"
+	if o.cfg.Owner != "" {
+		label, value = LabelOwner, o.cfg.Owner
+	}
+	cs, ns, err := o.eng.ListByLabel(ctx, label, value)
 	if err != nil {
 		return err
 	}

@@ -251,6 +251,12 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - `tools/test.sh` exit 0: go test, roomcheck, assetcheck, gdUnit4 (29 room tests incl. the pack replay), m2 + m3 smoke (real Docker) and the browser smoke (headless Chrome downloads Night Shift's pack through the narrowed `/download/packs/` and plays to the win).
 - Not run: the always-on service was not restarted or redeployed; it still runs the previous build, which has no drafts to hide.
 
+### 2026-10-03, live incident: a test run removed a public game's challenge (ADR-0032)
+- Friend reported the public game broken. Journal: from 15:36 every `/ctf/` request got "connection reset". `docker events`: the live session's intranet container was killed at 15:30:50, the moment `tools/test.sh`'s m3 smoke platform started and ran its start-up cleanup; the live platform still proxied port 20000 to nothing.
+- Recovered: the game idle-stopped at 15:49:02 (teardown cleared the dead handle); a rejoin through the API restarted the game server from its snapshot ("restored snapshot", "challenges ready") and a fresh container: `/healthz` HTTP 200 on the proxy and on the public `/ctf/x2yii4np8e4w/intranet/` path.
+- Also found: the service runs game servers from the main checkout, which held uncommitted SDK work at the time. Main checkout restored to `m5-browser` (clean); development moved to the worktree `../escapebox-clockmaker`.
+- Fix: owner-scoped cleanup; `go test -race ./platform/internal/orchestrator/` passes incl. `TestCleanupLeavesOtherPlatformsAlone`. The service still runs the old build until redeployed (its containers are unlabelled, which the new cleanup leaves alone).
+
 ## Handoff (2026-10-03, end of the M4/M5 working session)
 - **Branches:** `m5-browser` is stacked on `m4-polish`; neither is merged to `main` (M4 still waits for its blind play-tests, M5 for the friends test). New work should branch from `m5-browser`, or merge both first if the owner agrees.
 - **Running:**
