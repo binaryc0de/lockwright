@@ -2,7 +2,9 @@
 # One command to play a room with everything real (platform, game server,
 # Docker CTF challenge): starts the platform, creates a session, opens the
 # game joined to it, and shuts it all down when you quit the game.
-#   tools/play.sh [--hard | --difficulty <id>] [--tailscale] [room_id] [your name]
+#   tools/play.sh [--hard | --difficulty <id>] [--tailscale] [--serve] [room_id] [your name]
+# --serve hosts the game for others without opening it yourself: it prints the
+# link and join code and runs until Ctrl+C.
 # --tailscale advertises this machine's Tailscale address, so friends you have
 # shared the machine with can open the printed link (needs `tailscale up`).
 # Friends on the LAN join from their main menu with this PC's address
@@ -12,10 +14,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 DIFFICULTY=""
 ADVERTISE=""
+SERVE=0
 POS=()
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--hard) DIFFICULTY=hard ;;
+		--serve) SERVE=1 ;;
 		--tailscale) ADVERTISE="$(tailscale ip -4 2>/dev/null | head -1)"
 			[ -n "$ADVERTISE" ] || { echo "Tailscale is not up: run 'sudo tailscale up' first"; exit 1; } ;;
 		--difficulty) DIFFICULTY="${2:?--difficulty needs an id}"; shift ;;
@@ -67,4 +71,10 @@ if [ ${#WEB[@]} -gt 0 ]; then
 		echo "== in a browser on this PC: http://127.0.0.1:$PORT/play/?code=$CODE"
 	fi
 fi
-"$GODOT" --path game -- --join "127.0.0.1:$PORT" --code "$CODE" --name "$NAME" > "$LOG/game.log" 2>&1 || true
+if [ "$SERVE" = 1 ]; then
+	echo "== hosting only; players join with the link or code above. Press Ctrl+C to stop."
+	echo "   (another game: curl -X POST http://127.0.0.1:$PORT/api/sessions -d '{\"room_id\":\"$ROOM\"}')"
+	wait "$PLATFORM_PID" || true
+else
+	"$GODOT" --path game -- --join "127.0.0.1:$PORT" --code "$CODE" --name "$NAME" > "$LOG/game.log" 2>&1 || true
+fi
