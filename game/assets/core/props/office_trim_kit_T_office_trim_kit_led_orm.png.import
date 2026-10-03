@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dlq6pt1bbrpve"
-path="res://.godot/imported/office_trim_kit_T_office_trim_kit_led_orm.png-e87a01f1ca0b8b6dea17fb1b7b26620e.ctex"
+path.s3tc="res://.godot/imported/office_trim_kit_T_office_trim_kit_led_orm.png-e87a01f1ca0b8b6dea17fb1b7b26620e.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "dc1d6ee04e8389d1d4d01c1551141bd7"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/office_trim_kit_T_office_trim_kit_led_orm.png"
-dest_files=["res://.godot/imported/office_trim_kit_T_office_trim_kit_led_orm.png-e87a01f1ca0b8b6dea17fb1b7b26620e.ctex"]
+dest_files=["res://.godot/imported/office_trim_kit_T_office_trim_kit_led_orm.png-e87a01f1ca0b8b6dea17fb1b7b26620e.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -39,5 +40,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=1024
 detect_3d/compress_to=1

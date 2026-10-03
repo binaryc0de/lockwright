@@ -20,6 +20,9 @@ go run ./tools/roomcheck
 step "assetcheck"
 go run ./tools/assetcheck
 
+step "texture budget (browser build, ADR-0024)"
+python3 tools/texture_budget.py --check
+
 step "room CTF challenges (go test in each challenge module)"
 for mod in game/rooms/*/ctf/*/go.mod; do
   [[ -f "$mod" ]] || continue

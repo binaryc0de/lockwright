@@ -177,3 +177,14 @@ Short records: context, decision, consequences. Newest at the bottom. Never edit
 - A browser client becomes a planned milestone, not an option. Godot 4.7's web export uses the Compatibility renderer (WebGL 2), so rooms need a browser-grade lighting setup (baked lighting) besides the desktop look. Assets need a size diet; game connections must be WSS, platform calls HTTPS, and room packs must be downloadable (`/download`).
 - Night Shift is a hacker room: its CTF steps may need player setup at any difficulty (Hard already expects a cracker).
 - Hosting plans follow from this. A browser page needs HTTPS and WSS end to end, which matters both for the friends test and for the cloud.
+
+## ADR-0024: Texture budget for the browser build (2026-10-02)
+
+**Context.** The first web export was 280 MB. Every 3D texture was imported lossless: Godot's editor switches 3D textures to VRAM compression only after seeing them used in 3D, and our headless workflow never does that. Lossless is the biggest format on disk and is uploaded to the GPU uncompressed, which is heavy for integrated GPUs.
+**Decision.** `tools/texture_budget.py` sets the import options, and `tools/test.sh` fails when an asset is over budget:
+- every 3D texture is VRAM-compressed (S3TC/BPTC; normal maps as RGTC);
+- normal, ORM/ARM, AO, roughness and metal maps are capped at 1024 px;
+- tiling CC0 surfaces and prop colour maps are also capped at 1024 px, except props whose textures carry text players read (patch panel, keypads, intercom, wall clock, laptop, UPS, rack, filing-cabinet keypad, monitor);
+- printables stay lossless.
+The platform serves the web build gzip-compressed.
+**Consequences.** The web pack goes from 280 MB to 256 MB raw and 88 MB gzipped; with the 10 MB engine, the first load is about 98 MB, then cached. Desktop builds shrink the same way and use far less GPU memory. Close-up detail on non-text props is slightly softer (checked in renders). New text-bearing props must be added to `TEXT_PROPS`.

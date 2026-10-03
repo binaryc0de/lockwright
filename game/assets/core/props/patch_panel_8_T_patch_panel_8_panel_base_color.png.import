@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ffmtwx5wbujk"
-path="res://.godot/imported/patch_panel_8_T_patch_panel_8_panel_base_color.png-586fa72fc55455b093ebe495a2f4940c.ctex"
+path.s3tc="res://.godot/imported/patch_panel_8_T_patch_panel_8_panel_base_color.png-586fa72fc55455b093ebe495a2f4940c.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "d294cca8177772b8d44c57880aab4c2e"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/patch_panel_8_T_patch_panel_8_panel_base_color.png"
-dest_files=["res://.godot/imported/patch_panel_8_T_patch_panel_8_panel_base_color.png-586fa72fc55455b093ebe495a2f4940c.ctex"]
+dest_files=["res://.godot/imported/patch_panel_8_T_patch_panel_8_panel_base_color.png-586fa72fc55455b093ebe495a2f4940c.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c42o21b67lmmd"
-path="res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_normal.png-abfab63b2d37ee8e85a172bdaa3ef567.ctex"
+path.s3tc="res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_normal.png-abfab63b2d37ee8e85a172bdaa3ef567.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "20d96d2ce45839f0644fb13b3122b74a"
@@ -14,17 +15,17 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/server_rack_42u_T_server_rack_42u_cabinet_normal.png"
-dest_files=["res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_normal.png-abfab63b2d37ee8e85a172bdaa3ef567.ctex"]
+dest_files=["res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_normal.png-abfab63b2d37ee8e85a172bdaa3ef567.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
@@ -39,5 +40,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=1024
 detect_3d/compress_to=1

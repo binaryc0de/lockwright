@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://iraio1lm2hs5"
-path="res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.ctex"
+path.s3tc="res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "a8b6c9e6d0e40557ea8e2fc443cb9161"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/office_chair_T_office_chair_metal_orm.png"
-dest_files=["res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.ctex"]
+dest_files=["res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -39,5 +40,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=1024
 detect_3d/compress_to=1

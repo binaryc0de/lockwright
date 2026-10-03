@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bjw6xgl11qyug"
-path="res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_normal.png-57d53a48d4193370be3afbbeea13c8c1.ctex"
+path.s3tc="res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_normal.png-57d53a48d4193370be3afbbeea13c8c1.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "8ecd6abab0c02e43b269e7f910f0540f"
@@ -14,17 +15,17 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/desk_3drawer_T_desk_3drawer_carcass_normal.png"
-dest_files=["res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_normal.png-57d53a48d4193370be3afbbeea13c8c1.ctex"]
+dest_files=["res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_normal.png-57d53a48d4193370be3afbbeea13c8c1.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
@@ -39,5 +40,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=1024
 detect_3d/compress_to=1

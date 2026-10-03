@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bq8t7a5r0ny0v"
-path="res://.godot/imported/office_trim_kit_T_office_trim_kit_paint_base_color.png-6dac6de6f813961e92b885ad6eed7226.ctex"
+path.s3tc="res://.godot/imported/office_trim_kit_T_office_trim_kit_paint_base_color.png-6dac6de6f813961e92b885ad6eed7226.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "2e6e235aa0c3b39da86a1c539cd66a4e"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/office_trim_kit_T_office_trim_kit_paint_base_color.png"
-dest_files=["res://.godot/imported/office_trim_kit_T_office_trim_kit_paint_base_color.png-6dac6de6f813961e92b885ad6eed7226.ctex"]
+dest_files=["res://.godot/imported/office_trim_kit_T_office_trim_kit_paint_base_color.png-6dac6de6f813961e92b885ad6eed7226.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -39,5 +40,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=1024
 detect_3d/compress_to=1

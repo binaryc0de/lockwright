@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b5oguf4b82q8l"
-path="res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.ctex"
+path.s3tc="res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "3ab59add0dd5d5e1c09f864e323f93cf"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png"
-dest_files=["res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.ctex"]
+dest_files=["res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

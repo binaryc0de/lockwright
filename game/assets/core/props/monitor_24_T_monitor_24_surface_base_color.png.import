@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bkqfgyqhg88bd"
-path="res://.godot/imported/monitor_24_T_monitor_24_surface_base_color.png-08b577547eae963babb59d50f06032af.ctex"
+path.s3tc="res://.godot/imported/monitor_24_T_monitor_24_surface_base_color.png-08b577547eae963babb59d50f06032af.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "6dbb5c39c59603c85f876a2ebc81b5d5"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/monitor_24_T_monitor_24_surface_base_color.png"
-dest_files=["res://.godot/imported/monitor_24_T_monitor_24_surface_base_color.png-08b577547eae963babb59d50f06032af.ctex"]
+dest_files=["res://.godot/imported/monitor_24_T_monitor_24_surface_base_color.png-08b577547eae963babb59d50f06032af.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

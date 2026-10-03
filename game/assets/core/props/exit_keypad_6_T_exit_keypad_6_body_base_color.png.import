@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b82yg274jxidl"
-path="res://.godot/imported/exit_keypad_6_T_exit_keypad_6_body_base_color.png-252233714ffdc0e21fe252890d6f3fba.ctex"
+path.s3tc="res://.godot/imported/exit_keypad_6_T_exit_keypad_6_body_base_color.png-252233714ffdc0e21fe252890d6f3fba.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "0046875c8d885aa9fd80af5eda4bd438"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/exit_keypad_6_T_exit_keypad_6_body_base_color.png"
-dest_files=["res://.godot/imported/exit_keypad_6_T_exit_keypad_6_body_base_color.png-252233714ffdc0e21fe252890d6f3fba.ctex"]
+dest_files=["res://.godot/imported/exit_keypad_6_T_exit_keypad_6_body_base_color.png-252233714ffdc0e21fe252890d6f3fba.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

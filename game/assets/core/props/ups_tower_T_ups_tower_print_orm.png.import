@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b5pof6r8dm14c"
-path="res://.godot/imported/ups_tower_T_ups_tower_print_orm.png-ee25165fd70960957f25d84fd6b5ef1d.ctex"
+path.s3tc="res://.godot/imported/ups_tower_T_ups_tower_print_orm.png-ee25165fd70960957f25d84fd6b5ef1d.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "8e0018513c0044cb7a8898960ab191a1"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/ups_tower_T_ups_tower_print_orm.png"
-dest_files=["res://.godot/imported/ups_tower_T_ups_tower_print_orm.png-ee25165fd70960957f25d84fd6b5ef1d.ctex"]
+dest_files=["res://.godot/imported/ups_tower_T_ups_tower_print_orm.png-ee25165fd70960957f25d84fd6b5ef1d.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -39,5 +40,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=1024
 detect_3d/compress_to=1
