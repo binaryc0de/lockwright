@@ -31,7 +31,7 @@ status)
 	if tailscale funnel status 2>/dev/null | grep -qi "funnel on"; then
 		echo "PUBLIC: https://$NAME/ (anyone with the link)"
 	else
-		echo "private: https://$NAME/ (tailnet only)"
+		echo "private: https://$NAME/ (tailnet only). To make it public: $0 on"
 	fi
 	tailscale funnel status 2>/dev/null || true
 	;;
