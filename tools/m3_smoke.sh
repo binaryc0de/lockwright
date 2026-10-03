@@ -29,7 +29,7 @@ trap cleanup EXIT
 say "workdir $WORK"
 go build -o "$WORK/platform" ./platform/cmd/platform || exit 1
 "$WORK/platform" -addr "127.0.0.1:$HTTP" -data "$WORK/data" -rooms game/rooms -game game -godot "$GODOT" \
-	-advertise 127.0.0.1 -game-ports "$GP-$((GP + 10))" -challenge-ports "$CP-$((CP + 20))" \
+	-advertise 127.0.0.1 -public-url "http://127.0.0.1:$HTTP" -game-ports "$GP-$((GP + 10))" -challenge-ports "$CP-$((CP + 20))" \
 	-test-trust-positions > "$WORK/platform.log" 2>&1 &
 PIDS+=($!)
 for _ in $(seq 1 40); do curl -fs "$URL/healthz" >/dev/null && break; sleep 0.25; done
@@ -59,7 +59,8 @@ if [ $DOCKER -eq 1 ] && [ -z "$CARD" ]; then
 	CARD=$(grep -o 'BOT: challenge intranet url=[^ ]*' "$WORK/watcher.log" | tail -1 | sed 's/.*url=//')
 fi
 if [ $DOCKER -eq 1 ] && [ -n "$CARD" ]; then
-	say "attacking $CARD with curl (login + IDOR)"
+	case "$CARD" in */ctf/*) ;; *) bad "the card does not go through the platform's /ctf/ proxy: $CARD";; esac
+	say "attacking $CARD with curl (login + IDOR, through the platform proxy)"
 	curl -fs -c "$WORK/jar" -b "$WORK/jar" -o /dev/null -X POST --data-urlencode "username=mreyes" --data-urlencode 'password=Kestrel#2019' "${CARD}login" || bad "intranet login failed"
 	curl -fs -b "$WORK/jar" "${CARD}tickets/view?id=1042" | grep -q "FLAG{" && bad "flag on mreyes's own ticket"
 	FLAG=$(curl -fs -b "$WORK/jar" "${CARD}tickets/view?id=1040" | grep -o 'FLAG{[0-9a-f]*}' | head -1)

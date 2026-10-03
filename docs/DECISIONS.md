@@ -234,3 +234,13 @@ On HTTPS the clipboard works too. ufw needs 8090 only for local access; Tailscal
 - **Always on.** `tools/install-service.sh` installs a systemd user service (port 8090, Tailscale address advertised) and makes sure `tailscale serve` provides HTTPS. `tools/play.sh` stays for development and points to the service when it holds the port.
 - **Division of work.** Claude built the backend, the tests and the service; Codex (gpt-6.1-sol) built the site's front end from `SPEC.md` and reviews the milestone.
 **Consequences.** Anyone the owner shares the machine with can start a game from a browser. Without `loginctl enable-linger` (sudo) the service stops at logout.
+
+## ADR-0029: A public switch with Tailscale Funnel; everything behind one HTTPS address (2026-10-03)
+
+**Context.** The owner does not want friends to install anything (no Tailscale for them), and is fine with the machine being reachable for short windows they control. Sharing the machine on the tailnet would expose SSH, remote desktop and other local services to friends. Funnel exposes only one HTTPS handler, but web challenges used per-game ports (`http://<ip>:200NN`) that a tunnel does not carry.
+**Decision.**
+- **CTF through the platform.** With `-public-url`, challenge cards point at `/ctf/{session}/{challenge}/`, which the platform proxies to the running challenge with `X-Forwarded-Prefix`. Night Shift's intranet builds links, redirects and its cookie path from a validated prefix, so different games' logins never mix. Rule for room authors: ROOM_AUTHORING design rule 10.
+- **Hardening for public exposure.** Internal endpoints accept only direct loopback calls. Joins and code lookups are limited to 30 per minute per client. Game creation was already capped and limited (ADR-0028).
+- **The switch.** `tools/public.sh on|off|status` turns Funnel on for the platform (the site, the browser game, `/ws/` game connections, `/ctf/` challenges) and back to tailnet-only. Nothing else on the machine is exposed. `install-service.sh` sets `-public-url` to the `.ts.net` address, so the tailnet and the public use the same links.
+- **Tunnel choice.** Funnel over ngrok for this: ngrok's free plan has a small monthly transfer allowance (a new player downloads about 92 MB) and shows browsers an interstitial page. The platform is tunnel-agnostic, so `ngrok http 8090` with `-public-url` works too.
+**Consequences.** Friends need only the link and a browser. Verified: the m3 smoke attacks the real challenge container through `/ctf/`. Turning Funnel on is the owner's action (the first time, Tailscale asks to allow Funnel for the machine). The site is public while it is on.

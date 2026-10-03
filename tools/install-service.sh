@@ -44,7 +44,12 @@ go build -o build/platform ./platform/cmd/platform
 GODOT_BIN="$(command -v "${GODOT:-godot}")" || { echo "godot not found"; exit 1; }
 TS_IP="$(tailscale ip -4 2>/dev/null | head -1 || true)"
 ADV=()
-[ -n "$TS_IP" ] && ADV=(-advertise "$TS_IP")
+if [ -n "$TS_IP" ]; then
+	TS_NAME="$(tailscale status --json | jq -r '.Self.DNSName' | sed 's/\.$//')"
+	# Challenge cards go through the HTTPS site (ADR-0029), for the tailnet and
+	# for Funnel alike.
+	ADV=(-advertise "$TS_IP" -public-url "https://$TS_NAME")
+fi
 mkdir -p "$(dirname "$UNIT_FILE")"
 cat > "$UNIT_FILE" <<UNITEOF
 [Unit]

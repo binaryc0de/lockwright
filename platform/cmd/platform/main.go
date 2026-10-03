@@ -51,6 +51,7 @@ func run() error {
 	maxGames := flag.Int("max-games", 4, "most games (sessions not finished) at once; 0 = no cap")
 	expireAfter := flag.Duration("expire-unjoined", 30*time.Minute, "finish games nobody joined after this long")
 	abandonAfter := flag.Duration("expire-abandoned", 12*time.Hour, "finish idle games (players left, no server) this long after they were created")
+	publicURL := flag.String("public-url", "", "HTTPS origin players use (e.g. https://host.tailnet.ts.net); challenge cards then go through this platform's /ctf/ proxy (ADR-0029)")
 	webDir := flag.String("web", "", "serve the exported browser client from this directory at /play/ (ADR-0023)")
 	testTrust := flag.Bool("test-trust-positions", false, "TEST ONLY: start game servers with --trust-positions so headless bots can teleport")
 	flag.Parse()
@@ -102,7 +103,8 @@ func run() error {
 		extra = append(extra, "--trust-positions")
 	}
 	deps := &api.Deps{Store: st, Rooms: cat, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host, WebDir: *webDir, PacksDir: *packsDir,
-		MaxGames: *maxGames, CreateLimit: &api.RateLimit{Max: 6, Window: 10 * time.Minute}}
+		MaxGames: *maxGames, CreateLimit: &api.RateLimit{Max: 6, Window: 10 * time.Minute},
+		JoinLimit: &api.RateLimit{Max: 30, Window: time.Minute}, PublicURL: *publicURL}
 	mgr := sessions.New(sessions.Config{
 		Command:     []string{*godot, "--headless", "--path", gameAbs, "--"},
 		PortMin:     gmin,

@@ -2,7 +2,7 @@
 <h1>Kestrel Intranet</h1>
 <p class="warn">Your session has expired. Please sign in again.</p>
 {{if .Error}}<p class="err">{{.Error}}</p>{{end}}
-<form method="post" action="/login">
+<form method="post" action="{{.Base}}/login">
 <label for="u">Username</label><input id="u" name="username" value="{{.Username}}" autocomplete="username" autofocus>
 <label for="p">Password</label><input id="p" name="password" type="password" autocomplete="current-password">
 <button>Sign in</button>

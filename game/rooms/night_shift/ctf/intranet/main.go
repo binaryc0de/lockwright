@@ -20,6 +20,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -45,6 +46,24 @@ const (
 	MaxFailures = 5
 	LockFor     = 3 * time.Minute
 )
+
+// prefixRe is what a proxy may put in X-Forwarded-Prefix: a plain path
+// (the escapebox platform uses /ctf/<session>/<challenge>). Anything else is
+// ignored, so the header cannot turn redirects into open redirects.
+var prefixRe = regexp.MustCompile(`^(/[A-Za-z0-9_-]{1,64}){1,4}$`)
+
+// base is the path prefix the app is served under ("" when served at /),
+// from the proxy's X-Forwarded-Prefix (ADR-0029).
+func base(r *http.Request) string {
+	if p := strings.TrimSuffix(r.Header.Get("X-Forwarded-Prefix"), "/"); prefixRe.MatchString(p) {
+		return p
+	}
+	return ""
+}
+
+// cookiePath scopes the session cookie to this app's prefix, so challenges of
+// different games on one public host never see each other's logins.
+func cookiePath(r *http.Request) string { return base(r) + "/" }
 
 // FlagTicketID is the facilities ticket holding the flag: two below the
 // ticket mreyes is shown first (1042), so changing the id is enough.
@@ -159,7 +178,7 @@ func (s *server) authed(h func(http.ResponseWriter, *http.Request, string)) http
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		if u == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, base(r)+"/login", http.StatusSeeOther)
 			return
 		}
 		h(w, r, u)
@@ -170,14 +189,14 @@ func (s *server) authed(h func(http.ResponseWriter, *http.Request, string)) http
 
 func (s *server) home(w http.ResponseWriter, r *http.Request) {
 	if s.user(r) != "" {
-		http.Redirect(w, r, "/tickets", http.StatusSeeOther)
+		http.Redirect(w, r, base(r)+"/tickets", http.StatusSeeOther)
 		return
 	}
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, base(r)+"/login", http.StatusSeeOther)
 }
 
 func (s *server) loginForm(w http.ResponseWriter, r *http.Request) {
-	s.render(w, http.StatusOK, "login.html", map[string]any{"Expired": r.URL.Query().Has("expired")})
+	s.render(w, r, http.StatusOK, "login.html", map[string]any{"Expired": r.URL.Query().Has("expired")})
 }
 
 func (s *server) login(w http.ResponseWriter, r *http.Request) {
@@ -203,26 +222,26 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 		s.mu.Unlock()
 		if locked {
 			time.Sleep(300 * time.Millisecond)
-			s.render(w, http.StatusTooManyRequests, "login.html", map[string]any{
+			s.render(w, r, http.StatusTooManyRequests, "login.html", map[string]any{
 				"Error": "Account locked after too many failed sign-ins (IT policy). Try again in a few minutes.", "Username": u})
 			return
 		}
 	}
 	if !okUser || !okPass {
 		time.Sleep(300 * time.Millisecond) // slow down guessing; brute force is not the intended path
-		s.render(w, http.StatusUnauthorized, "login.html", map[string]any{"Error": "Invalid username or password.", "Username": u})
+		s.render(w, r, http.StatusUnauthorized, "login.html", map[string]any{"Error": "Invalid username or password.", "Username": u})
 		return
 	}
-	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: s.sign(username), Path: "/", HttpOnly: true, SameSite: http.SameSiteLaxMode})
-	http.Redirect(w, r, "/tickets", http.StatusSeeOther)
+	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: s.sign(username), Path: cookiePath(r), HttpOnly: true, SameSite: http.SameSiteLaxMode})
+	http.Redirect(w, r, base(r)+"/tickets", http.StatusSeeOther)
 }
 
 func (s *server) logout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: "/", MaxAge: -1})
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: cookiePath(r), MaxAge: -1})
+	http.Redirect(w, r, base(r)+"/login", http.StatusSeeOther)
 }
 
-func (s *server) list(w http.ResponseWriter, _ *http.Request, user string) {
+func (s *server) list(w http.ResponseWriter, r *http.Request, user string) {
 	var mine []ticket
 	for _, t := range s.tickets {
 		if t.Owner == user {
@@ -230,7 +249,7 @@ func (s *server) list(w http.ResponseWriter, _ *http.Request, user string) {
 		}
 	}
 	sort.Slice(mine, func(i, j int) bool { return mine[i].ID > mine[j].ID })
-	s.render(w, http.StatusOK, "list.html", map[string]any{"User": user, "Tickets": mine})
+	s.render(w, r, http.StatusOK, "list.html", map[string]any{"User": user, "Tickets": mine})
 }
 
 // view shows any ticket by id. THE VULNERABILITY: it never checks that the
@@ -239,17 +258,18 @@ func (s *server) view(w http.ResponseWriter, r *http.Request, user string) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	t, ok := s.tickets[id]
 	if err != nil || !ok {
-		s.render(w, http.StatusNotFound, "view.html", map[string]any{"User": user, "Missing": true})
+		s.render(w, r, http.StatusNotFound, "view.html", map[string]any{"User": user, "Missing": true})
 		return
 	}
 	data := map[string]any{"User": user, "T": t}
 	if t.HasToken {
 		data["Token"] = s.flag
 	}
-	s.render(w, http.StatusOK, "view.html", data)
+	s.render(w, r, http.StatusOK, "view.html", data)
 }
 
-func (s *server) render(w http.ResponseWriter, status int, name string, data map[string]any) {
+func (s *server) render(w http.ResponseWriter, r *http.Request, status int, name string, data map[string]any) {
+	data["Base"] = base(r)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	if err := s.tmpl.ExecuteTemplate(w, name, data); err != nil {

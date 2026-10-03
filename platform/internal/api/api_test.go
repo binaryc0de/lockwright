@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -585,5 +586,72 @@ func TestCapHoldsUnderConcurrencyAndOnResume(t *testing.T) {
 	resp.Body.Close()
 	if out["expired"] != true {
 		t.Fatalf("game view of an expired game: %v", out)
+	}
+}
+
+func TestCTFProxyAndPublicHardening(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	sess, _ := e.st.CreateSession(ctx, "night_shift")
+	// A stand-in challenge: echoes the path and prefix it was given.
+	ch := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "path=%s prefix=%s", r.URL.Path, r.Header.Get("X-Forwarded-Prefix"))
+	}))
+	defer ch.Close()
+	port := ch.Listener.Addr().(*net.TCPAddr).Port
+	if err := e.st.PutInstance(ctx, store.Instance{SessionID: sess.ID, ChallengeID: "intranet", ContainerID: "c", NetworkID: "n", HostPort: port}); err != nil {
+		t.Fatal(err)
+	}
+	get := func(path string, hdr map[string]string) (int, string) {
+		req, _ := http.NewRequest("GET", e.ts.URL+path, nil)
+		for k, v := range hdr {
+			req.Header.Set(k, v)
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		b, _ := io.ReadAll(resp.Body)
+		return resp.StatusCode, string(b)
+	}
+	code, b := get("/ctf/"+sess.ID+"/intranet/tickets/view?id=1040", nil)
+	if code != 200 || !strings.Contains(b, "path=/tickets/view") || !strings.Contains(b, "prefix=/ctf/"+sess.ID+"/intranet") {
+		t.Fatalf("proxy: %d %q", code, b)
+	}
+	if code, _ := get("/ctf/"+sess.ID+"/other/", nil); code != 404 {
+		t.Fatalf("unknown challenge: %d", code)
+	}
+	_ = e.st.Finish(ctx, sess.ID, false, 0, 0)
+	if code, _ := get("/ctf/"+sess.ID+"/intranet/", nil); code != 404 {
+		t.Fatalf("finished game's challenge still served: %d", code)
+	}
+	// Internal endpoints refuse anything that came through a proxy or tunnel,
+	// even with the right server token.
+	live, _ := e.st.CreateSession(ctx, "night_shift")
+	for _, h := range []map[string]string{{"X-Forwarded-For": "203.0.113.9"}, {"Tailscale-Funnel-Request": "?1"}} {
+		h["Authorization"] = "Bearer " + live.ServerToken
+		if code, _ := get("/internal/sessions/"+live.ID+"/snapshot", h); code != 403 {
+			t.Fatalf("internal via proxy %v: %d", h, code)
+		}
+	}
+	if code, _ := get("/internal/sessions/"+live.ID+"/snapshot", map[string]string{"Authorization": "Bearer " + live.ServerToken}); code == 403 {
+		t.Fatal("direct local internal call refused")
+	}
+}
+
+func TestJoinAttemptsAreLimited(t *testing.T) {
+	e := setup(t)
+	cat, _ := rooms.Load("../../../game/rooms")
+	ts := httptest.NewServer(NewHandler(&Deps{Store: e.st, Rooms: cat, Servers: e.servers, JoinLimit: &RateLimit{Max: 3, Window: time.Minute}}))
+	defer ts.Close()
+	last := 0
+	for i := 0; i < 4; i++ {
+		resp, _ := http.Get(ts.URL + "/api/games/ZZZZZ" + strconv.Itoa(i))
+		resp.Body.Close()
+		last = resp.StatusCode
+	}
+	if last != 429 {
+		t.Fatalf("4th lookup in a minute: %d", last)
 	}
 }

@@ -15,6 +15,6 @@ table{width:100%;border-collapse:collapse} td,th{text-align:left;padding:8px;bor
 .token{font:16px/1.4 ui-monospace,Menlo,Consolas,monospace;background:#f2f4f7;border:1px dashed #98a2b3;padding:12px;border-radius:4px;word-break:break-all}
 </style></head><body>
 <header><b>KESTREL LOGISTICS</b><span>Intranet</span>{{if .User}}<span>signed in as {{.User}}</span>
-<form method="post" action="/logout"><button>Sign out</button></form>{{end}}</header>
+<form method="post" action="{{.Base}}/logout"><button>Sign out</button></form>{{end}}</header>
 <main>{{end}}
 {{define "foot"}}</main></body></html>{{end}}

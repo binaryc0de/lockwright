@@ -184,3 +184,44 @@ func TestUSBStickHashIsThePassword(t *testing.T) {
 		t.Fatal("the hash on the USB stick is not the intranet password's")
 	}
 }
+
+func TestServedUnderAProxyPrefix(t *testing.T) {
+	srv := newServer(testFlag)
+	prefix := "/ctf/s3ss10n/intranet"
+	// Stand in for the platform's proxy: strip the prefix, set the header.
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r2 := r.Clone(r.Context())
+		r2.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
+		if r2.URL.Path == "" {
+			r2.URL.Path = "/"
+		}
+		r2.Header.Set("X-Forwarded-Prefix", prefix)
+		srv.routes().ServeHTTP(w, r2)
+	}))
+	defer proxy.Close()
+	jar, _ := cookiejar.New(nil)
+	c := &http.Client{Jar: jar}
+	r, err := c.PostForm(proxy.URL+prefix+"/login", url.Values{"username": {username}, "password": {password}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := body(t, r)
+	if r.Request.URL.Path != prefix+"/tickets" || !strings.Contains(b, `href="`+prefix+`/tickets/view?id=1042"`) || !strings.Contains(b, `action="`+prefix+`/logout"`) {
+		t.Fatalf("not prefixed: landed on %s", r.Request.URL.Path)
+	}
+	u, _ := url.Parse(proxy.URL + prefix + "/tickets")
+	if len(jar.Cookies(u)) != 1 {
+		t.Fatal("session cookie not scoped to the prefix")
+	}
+	if other, _ := url.Parse(proxy.URL + "/ctf/othergame/intranet/tickets"); len(jar.Cookies(other)) != 0 {
+		t.Fatal("cookie leaks to another game's prefix")
+	}
+	// A hostile header is ignored rather than turned into a redirect.
+	req := httptest.NewRequest("GET", "/", nil)
+	req.Header.Set("X-Forwarded-Prefix", "//evil.example")
+	rec := httptest.NewRecorder()
+	srv.routes().ServeHTTP(rec, req)
+	if loc := rec.Header().Get("Location"); loc != "/login" {
+		t.Fatalf("redirect with a hostile prefix: %q", loc)
+	}
+}

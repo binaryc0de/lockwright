@@ -79,6 +79,13 @@ type Deps struct {
 	MaxGames int
 	// CreateLimit limits how often one client may create games (nil = none).
 	CreateLimit *RateLimit
+	// JoinLimit limits joins and game lookups by code per client, so codes
+	// cannot be guessed by brute force when the site is public (nil = none).
+	JoinLimit *RateLimit
+	// PublicURL is the HTTPS origin players use (Tailscale serve/Funnel, a
+	// cloud load balancer). When set, challenge cards point at this
+	// platform's /ctf/ proxy instead of per-challenge ports (ADR-0029).
+	PublicURL string
 }
 
 // RateLimit allows Max events per Window per key (in memory).
@@ -161,10 +168,14 @@ func NewHandler(d *Deps) http.Handler {
 	}
 	mux.HandleFunc("POST /api/sessions", a.createSession)
 	mux.HandleFunc("GET /api/sessions/{id}", a.getSession)
-	mux.HandleFunc("GET /api/games/{code}", a.getGame)
+	mux.HandleFunc("GET /api/games/{code}", a.limitJoins(a.getGame))
+	mux.HandleFunc("/ctf/{session}/{challenge}/{rest...}", a.ctfProxy)
+	mux.HandleFunc("/ctf/{session}/{challenge}", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, r.URL.Path+"/", http.StatusMovedPermanently)
+	})
 	mux.HandleFunc("GET /api/status", a.status)
-	mux.HandleFunc("POST /api/sessions/{id}/join", a.join)
-	mux.HandleFunc("POST /api/join", a.joinByCode)
+	mux.HandleFunc("POST /api/sessions/{id}/join", a.limitJoins(a.join))
+	mux.HandleFunc("POST /api/join", a.limitJoins(a.joinByCode))
 	mux.HandleFunc("POST /internal/sessions/{id}/verify", a.internal(a.verify))
 	mux.HandleFunc("GET /internal/sessions/{id}/snapshot", a.internal(a.getSnapshot))
 	mux.HandleFunc("PUT /internal/sessions/{id}/snapshot", a.internal(a.putSnapshot))
@@ -367,6 +378,13 @@ type internalHandler func(w http.ResponseWriter, r *http.Request, sess store.Ses
 // internal authenticates a game server with its session's server token.
 func (a *app) internal(h internalHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Game servers call the platform directly on this host. Requests that
+		// came through a proxy or tunnel (Funnel, serve, a load balancer) never
+		// reach internal endpoints, whatever token they carry.
+		if !directLocal(r) {
+			writeErr(w, http.StatusForbidden, "internal_only", "Internal endpoint.")
+			return
+		}
 		sess, err := a.d.Store.Session(r.Context(), r.PathValue("id"))
 		got, hasBearer := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
 		if err != nil || !hasBearer || subtle.ConstantTimeCompare([]byte(got), []byte(sess.ServerToken)) != 1 {
@@ -514,6 +532,14 @@ func (a *app) startChallenges(w http.ResponseWriter, r *http.Request, sess store
 		slog.Error("challenge start failed", "session", sess.ID, "err", err)
 		writeErr(w, http.StatusBadGateway, "challenge_failed", "The challenge could not start.")
 		return
+	}
+	if a.d.PublicURL != "" {
+		for id, h := range hs {
+			if h.URL != "" {
+				h.URL = strings.TrimSuffix(a.d.PublicURL, "/") + "/ctf/" + sess.ID + "/" + id + "/"
+				hs[id] = h
+			}
+		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"handles": hs})
 }
@@ -758,4 +784,76 @@ func (a *app) status(w http.ResponseWriter, r *http.Request) {
 		"max_games": a.d.MaxGames,
 		"free":      free,
 	})
+}
+
+// directLocal: a loopback connection that did not come through a proxy.
+func directLocal(r *http.Request) bool {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return false
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback() && r.Header.Get("X-Forwarded-For") == "" &&
+		r.Header.Get("Tailscale-Funnel-Request") == "" && r.Header.Get("Forwarded") == ""
+}
+
+func (a *app) limitJoins(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if a.d.JoinLimit != nil && !a.d.JoinLimit.Allow(clientKey(r)) {
+			writeErr(w, http.StatusTooManyRequests, "too_many_joins", "Too many attempts. Wait a minute and try again.")
+			return
+		}
+		h(w, r)
+	}
+}
+
+var ctfIDRe = regexp.MustCompile(`^[a-z0-9_]{1,64}$`)
+
+// ctfProxy serves a running game's web challenge at
+// /ctf/{session}/{challenge}/..., forwarding to the challenge's local proxy
+// port with X-Forwarded-Prefix so the app builds links under it (ADR-0029).
+// Nothing is served for finished games or challenges that are not running.
+func (a *app) ctfProxy(w http.ResponseWriter, r *http.Request) {
+	sid, cid := r.PathValue("session"), r.PathValue("challenge")
+	if !ctfIDRe.MatchString(sid) || !ctfIDRe.MatchString(cid) {
+		http.NotFound(w, r)
+		return
+	}
+	sess, err := a.d.Store.Session(r.Context(), sid)
+	if err != nil || sess.Status == store.StatusFinished {
+		http.NotFound(w, r)
+		return
+	}
+	insts, err := a.d.Store.Instances(r.Context(), sid)
+	if err != nil {
+		internalErr(w, err)
+		return
+	}
+	port := 0
+	for _, in := range insts {
+		if in.ChallengeID == cid {
+			port = in.HostPort
+		}
+	}
+	if port == 0 {
+		http.Error(w, "This challenge is not running (yet). It starts with the game.", http.StatusNotFound)
+		return
+	}
+	prefix := "/ctf/" + sid + "/" + cid
+	target := &url.URL{Scheme: "http", Host: net.JoinHostPort("127.0.0.1", strconv.Itoa(port))}
+	p := httputil.NewSingleHostReverseProxy(target)
+	p.Director = func(req *http.Request) {
+		req.URL.Scheme, req.URL.Host = target.Scheme, target.Host
+		req.URL.Path = "/" + r.PathValue("rest")
+		req.URL.RawPath = ""
+		req.Host = target.Host
+		req.Header.Set("X-Forwarded-Prefix", prefix)
+		req.Header.Del("Cookie")
+		for _, c := range r.Cookies() {
+			if !strings.HasPrefix(c.Name, "escapebox") {
+				req.AddCookie(c)
+			}
+		}
+	}
+	p.ServeHTTP(w, r)
 }
