@@ -53,6 +53,9 @@ type Deps struct {
 	Limiter       *flags.Limiter
 	Secret        []byte // platform secret for per-instance flags
 	AdvertiseHost string // host players' clients connect to
+	// WebDir, if set, holds the exported browser client (index.html, .wasm,
+	// .pck); it is served at /play/ on the API's own origin (ADR-0023).
+	WebDir string
 }
 
 // NewHandler returns the platform's HTTP handler. d may be nil (health and
@@ -72,6 +75,10 @@ func NewHandler(d *Deps) http.Handler {
 		d.Limiter = flags.NewLimiter()
 	}
 	a := &app{d}
+	if d.WebDir != "" {
+		mux.Handle("GET /play/", webClient(d.WebDir))
+		mux.Handle("GET /{$}", http.RedirectHandler("/play/", http.StatusFound))
+	}
 	mux.HandleFunc("GET /api/catalog", a.catalog)
 	mux.HandleFunc("POST /api/sessions", a.createSession)
 	mux.HandleFunc("GET /api/sessions/{id}", a.getSession)
@@ -457,3 +464,17 @@ func internalErr(w http.ResponseWriter, err error) {
 
 // Compile-time check that sessions.Manager satisfies GameServers.
 var _ GameServers = (*sessions.Manager)(nil)
+
+// webClient serves the exported browser client. index.html is never cached
+// (it names the current build); the large .wasm/.pck files are revalidated.
+func webClient(dir string) http.Handler {
+	files := http.StripPrefix("/play/", http.FileServer(http.Dir(dir)))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") || strings.HasSuffix(r.URL.Path, ".html") {
+			w.Header().Set("Cache-Control", "no-store")
+		} else {
+			w.Header().Set("Cache-Control", "no-cache")
+		}
+		files.ServeHTTP(w, r)
+	})
+}

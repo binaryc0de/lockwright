@@ -6,7 +6,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 GODOT="${GODOT:-godot}"
-for p in client-linux client-win server-linux; do
+for p in client-linux client-win server-linux client-web; do
 	dir="build/$p"
 	rm -rf "$dir"; mkdir -p "$dir/packs"
 	echo "== export $p"

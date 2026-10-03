@@ -31,7 +31,12 @@ docker info >/dev/null 2>&1 || echo "WARNING: Docker is not reachable; the CTF c
 
 echo "== building the platform"
 go build -o "$LOG/platform" ./platform/cmd/platform
-"$LOG/platform" -addr ":$PORT" -data data -rooms game/rooms -game game -godot "$GODOT" > "$LOG/platform.log" 2>&1 &
+# WebSocket game servers: browsers cannot use ENet, and desktop clients speak
+# WebSocket too. The browser client is served at /play/ when it was exported
+# (tools/export.sh).
+WEB=()
+[ -f build/client-web/index.html ] && WEB=(-web build/client-web)
+"$LOG/platform" -addr ":$PORT" -data data -rooms game/rooms -game game -godot "$GODOT" -transport ws "${WEB[@]}" > "$LOG/platform.log" 2>&1 &
 PLATFORM_PID=$!
 cleanup() { kill "$PLATFORM_PID" 2>/dev/null; wait "$PLATFORM_PID" 2>/dev/null; echo "== platform stopped (logs in $LOG)"; }
 trap cleanup EXIT
@@ -42,4 +47,5 @@ CODE="$(curl -sf -X POST "http://127.0.0.1:$PORT/api/sessions" -d "{\"room_id\":
 [ -n "$CODE" ] || { echo "could not create a session for $ROOM"; tail -5 "$LOG/platform.log"; exit 1; }
 IP="$(grep -o 'advertise=[0-9.]*' "$LOG/platform.log" | head -1 | cut -d= -f2)"
 echo "== $ROOM (${DIFFICULTY:-default difficulty}) is ready. Join code: $CODE   (friends: ${IP:-this-pc}:$PORT + code $CODE)"
+[ ${#WEB[@]} -gt 0 ] && echo "== in a browser: http://${IP:-127.0.0.1}:$PORT/play/?code=$CODE"
 "$GODOT" --path game -- --join "127.0.0.1:$PORT" --code "$CODE" --name "$NAME" > "$LOG/game.log" 2>&1 || true

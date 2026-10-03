@@ -39,3 +39,4 @@ common/physics_ticks_per_second=60
 [rendering]
 
 renderer/rendering_method="forward_plus"
+renderer/rendering_method.web="gl_compatibility"

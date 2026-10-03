@@ -10,8 +10,10 @@ var _menu: MainMenu
 
 
 func _ready() -> void:
-	var args := AppArgs.parse(OS.get_cmdline_user_args() + OS.get_cmdline_args(),
-		OS.has_feature("dedicated_server"))
+	var argv := OS.get_cmdline_user_args() + OS.get_cmdline_args()
+	if OS.has_feature("web"):
+		argv.append_array(AppArgs.web_query_args(str(JavaScriptBridge.eval("location.origin")), str(JavaScriptBridge.eval("location.search"))))
+	var args := AppArgs.parse(argv, OS.has_feature("dedicated_server"))
 	for e in args.errors:
 		push_error(e)
 	print("escapebox %s mode, sdk %s, godot %s" % [

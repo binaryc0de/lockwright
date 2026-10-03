@@ -32,7 +32,8 @@ var platform_url: String = "http://127.0.0.1:8080"
 ## and --token is its server token, not a shared invite.
 var platform_set: bool = false
 var server_token: String = ""
-var transport: String = "enet"
+## Browsers cannot use ENet (UDP); web builds default to WebSocket.
+var transport: String = "ws" if OS.has_feature("web") else "enet"
 var smoke_test: bool = false
 ## Client: server to join ("" = play offline).
 var connect_host: String = ""
@@ -172,12 +173,34 @@ func via_platform() -> bool:
 ## "192.168.1.20" -> "http://192.168.1.20:8080"; keeps an explicit scheme/port.
 static func platform_http_url(addr: String) -> String:
 	var a := addr.strip_edges().trim_suffix("/")
-	if not a.begins_with("http://") and not a.begins_with("https://"):
-		a = "http://" + a
-	var hostpart := a.substr(a.find("//") + 2)
-	if not ":" in hostpart:
+	if a.begins_with("http://") or a.begins_with("https://"):
+		return a  # a full URL keeps its own (or the scheme's default) port
+	if not ":" in a:
 		a += ":8080"
-	return a
+	return "http://" + a
+
+
+## Browser builds (ADR-0023): the page URL carries the join details, e.g.
+## /play/?code=AB3K9Z&name=Riley (bot=1 for automated tests,
+## difficulty/room for offline play). `origin` is the page's origin, which
+## serves the platform API too. Returns command-line style arguments.
+static func web_query_args(origin: String, query: String) -> PackedStringArray:
+	var q := {}
+	for pair in query.trim_prefix("?").split("&", false):
+		var kv := pair.split("=", true, 1)
+		q[kv[0].uri_decode()] = kv[1].uri_decode().replace("+", " ") if kv.size() > 1 else ""
+	var out := PackedStringArray()
+	if q.has("code"):
+		out.append_array(["--join", origin, "--code", str(q["code"])])
+	elif q.has("room"):
+		out.append_array(["--room", str(q["room"])])
+	if q.has("name"):
+		out.append_array(["--name", str(q["name"])])
+	if q.has("difficulty"):
+		out.append_array(["--difficulty", str(q["difficulty"])])
+	if q.get("bot", "") == "1":
+		out.append_array(["--bot", "--bot-wait-win"])
+	return out
 
 
 func is_server() -> bool:

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -306,5 +307,30 @@ func TestDifficultyInCatalogAndSessions(t *testing.T) {
 	}
 	if code, out := e.call(t, "POST", "/api/sessions", "", map[string]string{"room_id": "night_shift", "difficulty": "insane"}); code != 400 || out["error"] != "unknown_difficulty" {
 		t.Fatalf("unknown difficulty: %d %v", code, out)
+	}
+}
+
+func TestServesTheWebClient(t *testing.T) {
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "index.html"), []byte("<title>escapebox</title>"), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "index.wasm"), []byte("\x00asm"), 0o644)
+	ts := httptest.NewServer(NewHandler(&Deps{WebDir: dir}))
+	defer ts.Close()
+	resp, err := http.Get(ts.URL + "/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != 200 || !strings.Contains(string(b), "escapebox") || resp.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("/ -> %d %q %q", resp.StatusCode, b, resp.Header.Get("Cache-Control"))
+	}
+	resp, _ = http.Get(ts.URL + "/play/index.wasm")
+	resp.Body.Close()
+	if ct := resp.Header.Get("Content-Type"); ct != "application/wasm" {
+		t.Fatalf("wasm content type %q", ct)
+	}
+	if resp, _ := http.Get(ts.URL + "/play/../secret.key"); resp.StatusCode == 200 {
+		t.Fatal("path escaped the web dir")
 	}
 }
