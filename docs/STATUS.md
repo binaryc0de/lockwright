@@ -235,3 +235,12 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - `tools/test.sh` exit 0 afterwards: go test (incl. `-race` on the API), roomcheck, assetcheck 24/24, texture budget, gdUnit4 100 + 28 from the pack, m2 + m3 + browser smoke.
 - Public switch (ADR-0029, owner: "no installs for friends; a switch I control"): `tools/public.sh on|off|status` (Tailscale Funnel exposes only the platform's HTTPS site). CTF challenges go through the platform at `/ctf/{session}/{challenge}/` (intranet honours `X-Forwarded-Prefix`; cookie scoped per game); internal endpoints are loopback-only; joins limited to 30/min per client. `tools/test.sh` exit 0 (m3 smoke now attacks the real container through `/ctf/`). Funnel itself not yet switched on: the owner's call.
 - Owner feedback after the first public test (2026-10-03), fixed: the laptop's challenge link has **Open in new tab** and **Copy link**; the Esc menu has **Copy invite link** (the site's `/g/<code>` in the browser, the code on desktop); leaving the room in the browser returns to the game's page (or the lobby) instead of the in-engine menu. Checked in the owner's Chrome over HTTPS: Copy invite showed "Copied.", Leave room landed on `/g/VWDRW8`.
+
+## Handoff (2026-10-03, end of the M4/M5 working session)
+- **Branches:** `m5-browser` is stacked on `m4-polish`; neither is merged to `main` (M4 still waits for its blind play-tests, M5 for the friends test). New work should branch from `m5-browser`, or merge both first if the owner agrees.
+- **Running:**
+  - The always-on platform is a systemd user service (`tools/install-service.sh --status`) at `https://<machine>.<tailnet>.ts.net/`, tailnet-only by default.
+  - `tools/public.sh on|off` publishes it via Tailscale Funnel; that switch is the owner's.
+  - Redeploy after changes with `tools/install-service.sh`, which re-exports when game files changed.
+- **Open:** friends test (M5 acceptance); 3 blind play-tests (M4); browser lighting pass; Windows build untested; join retry when a tab is hidden mid-join.
+- **Next requested by the owner:** a second room. Start from `docs/ROOM_AUTHORING.md` (design rules 1-10, incl. 9: standard rooms are browser-only, hacker rooms may need setup for CTF parts; 10: web challenges honour `X-Forwarded-Prefix`), `game/rooms/night_shift/` as the worked example, and `docs/ASSET_PIPELINE.md` for Codex asset requests. Hand-written `.tscn` edits must keep `[editable path=...]` for instance overrides (ADR-0027; roomcheck enforces it).
