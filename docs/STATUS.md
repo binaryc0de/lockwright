@@ -201,3 +201,5 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - Two players (Omarchy steps 0-8, Alienware steps 9-end, both wait for the win): first run, Omarchy's client dropped right after joining. Its synchronous room load took 7.0 s (timestamped), longer than ENet's 5 s minimum timeout. Fixed with threaded room loading on clients (ADR-0021 update). After the fix, 3/3 runs passed and both players saw the win.
 - `tools/test.sh` exit 0 (gdUnit4 88 + 20 room, assetcheck 24/24, m2 + m3 smoke) and `tools/export_smoke.sh` PASS after the fix.
 
+- Owner enabled NordVPN LAN discovery and opened ufw on Omarchy. Raw UDP probes from the Alienware: 7777 arrives, 7790 and 7799 do not (only 7777 appears open; the platform hands out 7777-7799 per session, so the M5 host needs the whole range).
+- Server on Omarchy (exported, headless, port 7777), players on both machines (Omarchy steps 0-8 over loopback, Alienware steps 9-end over Wi-Fi): 3/3 runs won, both players joined and saw the win.
