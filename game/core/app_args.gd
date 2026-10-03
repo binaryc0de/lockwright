@@ -200,6 +200,8 @@ static func web_query_args(origin: String, query: String) -> PackedStringArray:
 		out.append_array(["--difficulty", str(q["difficulty"])])
 	if q.get("bot", "") == "1":
 		out.append_array(["--bot", "--bot-wait-win"])
+		if q.has("flag"):
+			out.append_array(["--bot-flag", str(q["flag"])])  # tests only
 	return out
 
 

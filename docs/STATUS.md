@@ -103,10 +103,10 @@ Continued on branch `m4-polish`:
 Branch `m5-browser` (stacked on `m4-polish`; M4 stays open for its blind play-tests, which will run in the browser).
 - [x] Spike: web export (`client-web`, Compatibility renderer, no threads) served by the platform at `/play/` (`-web`); the page URL carries the join details (`?code=- [ ] Spike: web export boots, loads Night Shift and joins a game server over WebSocket in a real browsername=`, `bot=1` for tests). Headless Chrome on the integrated Radeon 680M loaded Night Shift and rendered the corridor (work order readable); a bot client in headless Chrome joined through the platform over WebSocket and played steps 0-8 (step 9 needs the real flag). `tools/webshot.py` captures browser screenshots and console.
 - [ ] Per-platform renderer + browser-grade lighting for Night Shift
-- [ ] Asset size diet (first load <= 100 MB)
-- [ ] Platform serves the web client and room packs; browser downloads and mounts the pack
+- [x] Asset size diet: VRAM-compressed textures with 1K caps (ADR-0024); web first load ~92 MB gzipped (82 MB pack + 10 MB engine), then cached
+- [x] Platform serves the web client (`-web`, gzip) and room packs (`-packs`, catalog + `/download/packs/`); the browser downloads, verifies and mounts the pack (ADR-0025). `tools/web_smoke.sh` (headless Chrome, Radeon 680M): standard and hard both played to the win, platform recorded it
 - [ ] HTTPS/WSS path (Tailscale certs for the friends test)
-- [ ] Browser checks: pointer lock, audio, clipboard/save, frame rate
+- [ ] Browser checks: pointer lock, audio, clipboard/save, frame rate, a web start screen (without a link the browser shows the desktop menu with an empty room list)
 - [ ] Friends test in browsers (owner + friends over Tailscale), CTF included
 
 ## M6: Deployment and prototype sign-off (was M5)

@@ -12,7 +12,11 @@ import (
 	"io"
 	"log/slog"
 	"math"
+	"mime"
 	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -56,6 +60,10 @@ type Deps struct {
 	// WebDir, if set, holds the exported browser client (index.html, .wasm,
 	// .pck); it is served at /play/ on the API's own origin (ADR-0023).
 	WebDir string
+	// PacksDir, if set, holds room packs built by tools/packroom
+	// (<room>-<version>.pck plus its .json entry). The catalog lists each
+	// room's pack and /download/packs/{file} serves it (ADR-0025).
+	PacksDir string
 }
 
 // NewHandler returns the platform's HTTP handler. d may be nil (health and
@@ -80,6 +88,9 @@ func NewHandler(d *Deps) http.Handler {
 		mux.Handle("GET /{$}", http.RedirectHandler("/play/", http.StatusFound))
 	}
 	mux.HandleFunc("GET /api/catalog", a.catalog)
+	if d.PacksDir != "" {
+		mux.HandleFunc("GET /download/packs/{file}", a.downloadPack)
+	}
 	mux.HandleFunc("POST /api/sessions", a.createSession)
 	mux.HandleFunc("GET /api/sessions/{id}", a.getSession)
 	mux.HandleFunc("POST /api/sessions/{id}/join", a.join)
@@ -108,6 +119,7 @@ func (a *app) catalog(w http.ResponseWriter, _ *http.Request) {
 		Players         [2]int             `json:"players"`
 		Challenges      int                `json:"challenges"`
 		Difficulties    []rooms.Difficulty `json:"difficulties"`
+		Pack            *packInfo          `json:"pack,omitempty"`
 	}
 	out := []entry{}
 	for _, r := range a.d.Rooms.All() {
@@ -115,7 +127,7 @@ func (a *app) catalog(w http.ResponseWriter, _ *http.Request) {
 		if ds == nil {
 			ds = []rooms.Difficulty{}
 		}
-		out = append(out, entry{r.ID, r.Title, r.Version, r.Mode.DurationMinutes, [2]int{r.Mode.Players.Min, r.Mode.Players.Max}, len(r.CTF.Challenges), ds})
+		out = append(out, entry{r.ID, r.Title, r.Version, r.Mode.DurationMinutes, [2]int{r.Mode.Players.Min, r.Mode.Players.Max}, len(r.CTF.Challenges), ds, a.pack(r)})
 	}
 	writeJSON(w, http.StatusOK, out)
 }
@@ -467,6 +479,8 @@ var _ GameServers = (*sessions.Manager)(nil)
 
 // webClient serves the exported browser client. index.html is never cached
 // (it names the current build); the large .wasm/.pck files are revalidated.
+// A precompressed <file>.gz next to a file (tools/export.sh) is sent instead
+// to browsers that accept gzip (ADR-0024).
 func webClient(dir string) http.Handler {
 	files := http.StripPrefix("/play/", http.FileServer(http.Dir(dir)))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -475,6 +489,69 @@ func webClient(dir string) http.Handler {
 		} else {
 			w.Header().Set("Cache-Control", "no-cache")
 		}
+		w.Header().Add("Vary", "Accept-Encoding")
+		rel := strings.TrimPrefix(r.URL.Path, "/play/")
+		if rel != "" && !strings.HasSuffix(rel, "/") && strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			clean := filepath.Clean("/" + rel)
+			gz := filepath.Join(dir, filepath.FromSlash(clean)+".gz")
+			if f, err := os.Open(gz); err == nil {
+				defer f.Close()
+				if st, err := f.Stat(); err == nil && !st.IsDir() {
+					ct := mime.TypeByExtension(filepath.Ext(clean))
+					if ct == "" {
+						ct = "application/octet-stream"
+					}
+					w.Header().Set("Content-Type", ct)
+					w.Header().Set("Content-Encoding", "gzip")
+					http.ServeContent(w, r, "", st.ModTime(), f)
+					return
+				}
+			}
+		}
 		files.ServeHTTP(w, r)
 	})
+}
+
+// packInfo is a room pack as clients download it.
+type packInfo struct {
+	File   string `json:"file"`
+	SHA256 string `json:"sha256"`
+	Size   int64  `json:"size"`
+	URL    string `json:"url"`
+}
+
+var packFileRe = regexp.MustCompile(`^[a-z0-9_]+-[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?\.pck$`)
+
+// pack reads the packroom entry for the room's current version, if built.
+func (a *app) pack(r rooms.Room) *packInfo {
+	if a.d.PacksDir == "" {
+		return nil
+	}
+	b, err := os.ReadFile(filepath.Join(a.d.PacksDir, r.ID+"-"+r.Version+".json"))
+	if err != nil {
+		return nil
+	}
+	var e struct {
+		File   string `json:"pack_file"`
+		SHA256 string `json:"sha256"`
+		Size   int64  `json:"size"`
+	}
+	if json.Unmarshal(b, &e) != nil || !packFileRe.MatchString(e.File) {
+		return nil
+	}
+	if st, err := os.Stat(filepath.Join(a.d.PacksDir, e.File)); err != nil || st.Size() != e.Size {
+		return nil // entry and pack disagree: rebuild with tools/packroom
+	}
+	return &packInfo{File: e.File, SHA256: e.SHA256, Size: e.Size, URL: "/download/packs/" + e.File}
+}
+
+func (a *app) downloadPack(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("file")
+	if !packFileRe.MatchString(name) {
+		writeErr(w, http.StatusNotFound, "not_found", "No such pack.")
+		return
+	}
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	http.ServeFile(w, r, filepath.Join(a.d.PacksDir, name))
 }

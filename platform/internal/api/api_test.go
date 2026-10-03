@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"io"
@@ -332,5 +333,65 @@ func TestServesTheWebClient(t *testing.T) {
 	}
 	if resp, _ := http.Get(ts.URL + "/play/../secret.key"); resp.StatusCode == 200 {
 		t.Fatal("path escaped the web dir")
+	}
+}
+
+func TestServesPrecompressedWebFiles(t *testing.T) {
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "index.pck"), []byte("plain"), 0o644)
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+	_, _ = zw.Write([]byte("plain"))
+	_ = zw.Close()
+	_ = os.WriteFile(filepath.Join(dir, "index.pck.gz"), buf.Bytes(), 0o644)
+	ts := httptest.NewServer(NewHandler(&Deps{WebDir: dir}))
+	defer ts.Close()
+	// Go's client sends Accept-Encoding: gzip and decodes transparently.
+	resp, err := http.Get(ts.URL + "/play/index.pck")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if string(b) != "plain" || !resp.Uncompressed {
+		t.Fatalf("gzip not served: %q uncompressed=%v", b, resp.Uncompressed)
+	}
+	req, _ := http.NewRequest("GET", ts.URL+"/play/index.pck", nil)
+	req.Header.Set("Accept-Encoding", "identity")
+	resp, _ = http.DefaultTransport.RoundTrip(req)
+	b, _ = io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if string(b) != "plain" || resp.Header.Get("Content-Encoding") != "" {
+		t.Fatalf("identity request got %q %q", b, resp.Header.Get("Content-Encoding"))
+	}
+}
+
+func TestCatalogListsAndServesRoomPacks(t *testing.T) {
+	e := setup(t)
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "night_shift-0.1.0.pck"), []byte("GDPC-pack"), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "night_shift-0.1.0.json"), []byte(`{"pack_file":"night_shift-0.1.0.pck","sha256":"abc","size":9}`), 0o644)
+	cat, _ := rooms.Load("../../../game/rooms")
+	ts := httptest.NewServer(NewHandler(&Deps{Store: e.st, Rooms: cat, PacksDir: dir}))
+	defer ts.Close()
+	resp, _ := http.Get(ts.URL + "/api/catalog")
+	var out []struct {
+		Pack *struct{ File, SHA256, URL string } `json:"pack"`
+	}
+	_ = json.NewDecoder(resp.Body).Decode(&out)
+	resp.Body.Close()
+	if len(out) != 1 || out[0].Pack == nil || out[0].Pack.URL != "/download/packs/night_shift-0.1.0.pck" {
+		t.Fatalf("catalog pack: %+v", out)
+	}
+	resp, _ = http.Get(ts.URL + out[0].Pack.URL)
+	b, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if string(b) != "GDPC-pack" {
+		t.Fatalf("pack body %q", b)
+	}
+	for _, bad := range []string{"/download/packs/..%2Fsecret.key", "/download/packs/night_shift-0.1.0.json", "/download/packs/x.pck"} {
+		if resp, _ := http.Get(ts.URL + bad); resp.StatusCode == 200 {
+			t.Fatalf("%s served", bad)
+		}
 	}
 }

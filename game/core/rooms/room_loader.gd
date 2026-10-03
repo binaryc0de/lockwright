@@ -107,6 +107,11 @@ func _prepare(room_id: String, pack_path: String = "") -> bool:
 	return true
 
 
+## True if the room is in the project or a local pack is available.
+static func has_local(room_id: String) -> bool:
+	return FileAccess.file_exists("res://rooms/%s/room.json" % room_id) or not find_local_pack(room_id).is_empty()
+
+
 static func valid_id(id: String) -> bool:
 	return RegEx.create_from_string("^[a-z0-9_]+$").search(id) != null
 

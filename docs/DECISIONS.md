@@ -188,3 +188,12 @@ Short records: context, decision, consequences. Newest at the bottom. Never edit
 - printables stay lossless.
 The platform serves the web build gzip-compressed.
 **Consequences.** The web pack goes from 280 MB to 256 MB raw and 88 MB gzipped; with the 10 MB engine, the first load is about 98 MB, then cached. Desktop builds shrink the same way and use far less GPU memory. Close-up detail on non-text props is slightly softer (checked in renders). New text-bearing props must be added to `TEXT_PROPS`.
+
+## ADR-0025: Room packs are downloaded from the platform (2026-10-02)
+
+**Context.** Browser builds carry no rooms (ADR-0023), and desktop builds needed packs copied next to the executable by hand. PLAN.md planned `/download` for M5.
+**Decision.**
+- **Platform.** With `-packs <dir>` (the output of `tools/packroom`), the catalog lists each room's current pack as `{file, sha256, size, url}`, and `GET /download/packs/{file}` serves it. Only `<room>-<semver>.pck` names are accepted, and an entry whose size disagrees with its file is hidden.
+- **Client.** `RoomPackFetcher` downloads a pack the game lacks into `user://packs/`, verifies the SHA-256 and reuses a cached copy that still matches. It runs on join via the platform (any build) and for local play in the browser. It writes the response body itself, because the web build's `HTTPRequest.download_file` leaves the file empty.
+- **Web serving.** `-web <dir>` serves the browser client at `/play/` on the API's own origin. The page URL carries the join details (`?code=&name=`, plus `room`/`difficulty` for local play; `bot`/`flag` are for tests only). Precompressed `.gz` copies (`tools/export.sh`) are sent to browsers that accept gzip.
+**Consequences.** A friend needs only the link `http://<host>:<port>/play/?code=XXXXXX`. `tools/web_smoke.sh` plays both difficulties to the win in headless Chrome on the integrated GPU; `tools/test.sh` runs it when Chrome is installed. Packs are verified but not signed; signing is on the roadmap (PLAN.md 12.2).

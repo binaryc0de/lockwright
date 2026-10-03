@@ -47,6 +47,7 @@ func run() error {
 	gamePorts := flag.String("game-ports", "7777-7799", "UDP/TCP port range for game servers")
 	challengePorts := flag.String("challenge-ports", "20000-20999", "TCP port range for challenge proxies")
 	transport := flag.String("transport", "enet", "game transport for clients: enet or ws")
+	packsDir := flag.String("packs", "", "serve room packs built by tools/packroom from this directory (catalog + /download/packs/, ADR-0025)")
 	webDir := flag.String("web", "", "serve the exported browser client from this directory at /play/ (ADR-0023)")
 	testTrust := flag.Bool("test-trust-positions", false, "TEST ONLY: start game servers with --trust-positions so headless bots can teleport")
 	flag.Parse()
@@ -92,7 +93,7 @@ func run() error {
 		slog.Warn("TEST MODE: game servers accept teleporting positions (--test-trust-positions)")
 		extra = append(extra, "--trust-positions")
 	}
-	deps := &api.Deps{Store: st, Rooms: cat, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host, WebDir: *webDir}
+	deps := &api.Deps{Store: st, Rooms: cat, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host, WebDir: *webDir, PacksDir: *packsDir}
 	mgr := sessions.New(sessions.Config{
 		Command:     []string{*godot, "--headless", "--path", gameAbs, "--"},
 		PortMin:     gmin,

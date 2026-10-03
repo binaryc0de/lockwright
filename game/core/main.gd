@@ -51,6 +51,16 @@ func _play(room_id: String, pack_path: String, difficulty: String = "") -> void:
 	if _menu:
 		_menu.queue_free()
 		_menu = null
+	if pack_path.is_empty() and OS.has_feature("web") and not RoomLoader.has_local(room_id):
+		# The browser build carries no rooms: fetch the pack from the platform
+		# that serves this page (ADR-0025).
+		var fetcher := RoomPackFetcher.new()
+		add_child(fetcher)
+		pack_path = await fetcher.fetch(str(JavaScriptBridge.eval("location.origin")), room_id)
+		fetcher.queue_free()
+		if pack_path.is_empty():
+			_show_menu("Could not get the room: %s" % fetcher.error)
+			return
 	var session := PlaySession.new()
 	add_child(session)
 	if not session.start(room_id, pack_path, "", difficulty):

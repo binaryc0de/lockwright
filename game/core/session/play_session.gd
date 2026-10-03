@@ -14,6 +14,9 @@ var error: String = ""
 
 var _pack_path: String = ""
 var _loading := false
+## The platform this client joined through ("" for a direct --connect); room
+## packs the game lacks are downloaded from it.
+var _platform_url: String = ""
 var _late_welcome: Dictionary = {}
 var _bot: SolutionBot = null
 var _remote := false
@@ -39,6 +42,7 @@ func start(room_id: String, pack_path: String = "", session_id: String = "", dif
 ## `bot` makes this a headless test client instead of a player.
 func start_remote(args: AppArgs) -> bool:
 	_pack_path = args.pack_path
+	_platform_url = args.join_url
 	_remote = true
 	Game.display_name = args.display_name if not args.display_name.is_empty() else Settings.display_name
 	Game.net.welcomed.connect(_on_welcomed)
@@ -87,6 +91,20 @@ func _on_welcomed(info: Dictionary) -> void:
 	# Load on a worker thread: a multi-second freeze here outlasts ENet's
 	# timeouts on slower PCs and drops the link we just joined on.
 	_loading = true
+	var room_id := str(info["room_id"])
+	if _pack_path.is_empty() and not _platform_url.is_empty() and not RoomLoader.has_local(room_id):
+		var fetched := await _fetch_pack(room_id)
+		if fetched.is_empty():
+			_loading = false
+			error = "Joined, but could not get the room: %s" % error
+			push_error(error)
+			Game.net.disconnect_client()
+			if _bot:
+				_bot._finish(2, error)
+			else:
+				leave()
+			return
+		_pack_path = fetched
 	var loader := RoomLoader.new()
 	var ok: bool = await loader.load_room_async(str(info["room_id"]), _pack_path, get_tree())
 	_loading = false
@@ -205,6 +223,21 @@ func _spawn_player_and_hud() -> void:
 	hud.setup(player)
 	hud.leave_requested.connect(leave)
 	hud.open_briefing()
+
+
+## Downloads the room's pack from the platform, showing progress.
+func _fetch_pack(room_id: String) -> String:
+	var fetcher := RoomPackFetcher.new()
+	add_child(fetcher)
+	fetcher.progressed.connect(func(f: float) -> void:
+		if _overlay_label:
+			_overlay_label.text = "Downloading the room ... %d%%" % int(f * 100))
+	var path := await fetcher.fetch(_platform_url, room_id)
+	error = fetcher.error
+	fetcher.queue_free()
+	if not path.is_empty():
+		print("room pack: %s" % path)
+	return path
 
 
 func _show_overlay(text: String) -> void:

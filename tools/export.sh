@@ -22,4 +22,9 @@ done
 for p in client-linux client-win server-linux; do
 	cp build/packs/*.pck "build/$p/packs/"
 done
+rmdir build/client-web/packs 2>/dev/null || true
+# Precompressed copies the platform sends to browsers that accept gzip.
+for f in build/client-web/*.pck build/client-web/*.wasm build/client-web/*.js; do
+	gzip -9 -k -f "$f"
+done
 ls -la build/client-linux build/client-win build/server-linux build/*/packs
