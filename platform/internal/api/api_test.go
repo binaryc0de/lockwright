@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/binaryc0de/escapebox/platform/internal/flags"
 	"github.com/binaryc0de/escapebox/platform/internal/orchestrator"
@@ -323,14 +324,22 @@ func TestServesTheWebClient(t *testing.T) {
 	_ = os.WriteFile(filepath.Join(dir, "index.wasm"), []byte("\x00asm"), 0o644)
 	ts := httptest.NewServer(NewHandler(&Deps{WebDir: dir}))
 	defer ts.Close()
-	resp, err := http.Get(ts.URL + "/")
+	resp, err := http.Get(ts.URL + "/play/")
 	if err != nil {
 		t.Fatal(err)
 	}
 	b, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != 200 || !strings.Contains(string(b), "escapebox") || resp.Header.Get("Cache-Control") != "no-store" {
-		t.Fatalf("/ -> %d %q %q", resp.StatusCode, b, resp.Header.Get("Cache-Control"))
+		t.Fatalf("/play/ -> %d %q %q", resp.StatusCode, b, resp.Header.Get("Cache-Control"))
+	}
+	// The site root is the lobby (ADR-0028), and game pages exist per code.
+	for _, p := range []string{"/", "/g/AB3K9Z"} {
+		resp, _ = http.Get(ts.URL + p)
+		resp.Body.Close()
+		if resp.StatusCode != 200 || !strings.HasPrefix(resp.Header.Get("Content-Type"), "text/html") {
+			t.Fatalf("%s -> %d %s", p, resp.StatusCode, resp.Header.Get("Content-Type"))
+		}
 	}
 	resp, _ = http.Get(ts.URL + "/play/index.wasm")
 	resp.Body.Close()
@@ -447,5 +456,70 @@ func TestWebSocketProxyReachesTheGameServer(t *testing.T) {
 	e.servers.port = 0
 	if code, _ := e.call(t, "GET", "/ws/abc", "", nil); code != 404 {
 		t.Fatalf("no game server: %d", code)
+	}
+}
+
+func TestGameViewStatusAndGuardrails(t *testing.T) {
+	e := setup(t)
+	cat, _ := rooms.Load("../../../game/rooms")
+	limit := &RateLimit{Max: 2, Window: time.Minute}
+	ts := httptest.NewServer(NewHandler(&Deps{Store: e.st, Rooms: cat, Servers: e.servers, MaxGames: 2, CreateLimit: limit}))
+	defer ts.Close()
+	post := func(body string, xff string) (int, map[string]any) {
+		req, _ := http.NewRequest("POST", ts.URL+"/api/sessions", strings.NewReader(body))
+		if xff != "" {
+			req.Header.Set("X-Forwarded-For", xff)
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		var out map[string]any
+		_ = json.NewDecoder(resp.Body).Decode(&out)
+		return resp.StatusCode, out
+	}
+	code, out := post(`{"room_id":"night_shift","difficulty":"hard"}`, "100.64.0.1")
+	if code != 201 {
+		t.Fatalf("create: %d %v", code, out)
+	}
+	inv := out["invite_code"].(string)
+	resp, _ := http.Get(ts.URL + "/api/games/" + strings.ToLower(inv))
+	var g map[string]any
+	_ = json.NewDecoder(resp.Body).Decode(&g)
+	resp.Body.Close()
+	if g["title"] != "Night Shift" || g["difficulty_title"] != "Hard" || g["status"] != "idle" || g["hacker_room"] != true {
+		t.Fatalf("game view %v", g)
+	}
+	for _, secret := range []string{"server_token", "session_id", "join_token"} {
+		if _, ok := g[secret]; ok {
+			t.Fatalf("game view leaks %s", secret)
+		}
+	}
+	if resp, _ := http.Get(ts.URL + "/api/games/NOPE00"); resp.StatusCode != 404 {
+		t.Fatalf("unknown code: %d", resp.StatusCode)
+	}
+	if code, _ := post(`{"room_id":"night_shift"}`, "100.64.0.1"); code != 201 {
+		t.Fatalf("second game: %d", code)
+	}
+	if code, out := post(`{"room_id":"night_shift"}`, "100.64.0.2"); code != 503 || out["error"] != "games_full" {
+		t.Fatalf("cap: %d %v", code, out)
+	}
+	if code, out := post(`{"room_id":"night_shift"}`, "100.64.0.1"); code != 429 || out["error"] != "too_many_games" {
+		t.Fatalf("rate limit: %d %v", code, out)
+	}
+	resp, _ = http.Get(ts.URL + "/api/status")
+	var st map[string]any
+	_ = json.NewDecoder(resp.Body).Decode(&st)
+	resp.Body.Close()
+	if st["waiting"] != float64(2) || st["max_games"] != float64(2) || st["free"] != float64(0) {
+		t.Fatalf("status %v", st)
+	}
+	resp, _ = http.Get(ts.URL + "/api/catalog")
+	var catOut []map[string]any
+	_ = json.NewDecoder(resp.Body).Decode(&catOut)
+	resp.Body.Close()
+	if s, _ := catOut[0]["summary"].(string); !strings.Contains(s, "Kestrel") {
+		t.Fatalf("catalog summary %q", s)
 	}
 }

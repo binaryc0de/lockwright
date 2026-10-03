@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/binaryc0de/escapebox/platform/internal/orchestrator"
 )
@@ -29,11 +30,16 @@ type Room struct {
 	CTF struct {
 		Challenges []orchestrator.Challenge `json:"challenges"`
 	} `json:"ctf"`
-	// Dir is the room's directory (challenge build contexts live under it).
 	// Difficulties the room offers (room.yaml `difficulties`); the first is
 	// the default. Empty for rooms with a single level.
 	Difficulties []Difficulty `json:"difficulties"`
-	Dir          string       `json:"-"`
+	Briefing     struct {
+		IntroMD string `json:"intro_md"`
+	} `json:"briefing"`
+	// Summary is the opening of the intro briefing, plain text, for the lobby.
+	Summary string `json:"-"`
+	// Dir is the room's directory (challenge build contexts live under it).
+	Dir string `json:"-"`
 }
 
 // Challenge returns a challenge by id.
@@ -92,6 +98,11 @@ func Load(dir string) (*Catalog, error) {
 			return nil, fmt.Errorf("%s: id %q does not match its directory", m, r.ID)
 		}
 		r.Dir = filepath.Dir(m)
+		if r.Briefing.IntroMD != "" && !strings.Contains(r.Briefing.IntroMD, "..") {
+			if b, err := os.ReadFile(filepath.Join(r.Dir, r.Briefing.IntroMD)); err == nil {
+				r.Summary = summarize(string(b), 320)
+			}
+		}
 		c.rooms[r.ID] = r
 	}
 	return c, nil
@@ -111,4 +122,30 @@ func (c *Catalog) All() []Room {
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
 	return out
+}
+
+// summarize turns the start of a markdown briefing into plain text: headings
+// dropped, emphasis markers removed, paragraphs joined, cut at a word.
+func summarize(md string, max int) string {
+	var parts []string
+	for _, para := range strings.Split(strings.ReplaceAll(md, "\r\n", "\n"), "\n\n") {
+		p := strings.TrimSpace(para)
+		if p == "" || strings.HasPrefix(p, "#") {
+			continue
+		}
+		p = strings.NewReplacer("**", "", "__", "", "*", "", "_", "", "\n", " ").Replace(p)
+		parts = append(parts, p)
+		if len(strings.Join(parts, " ")) >= max {
+			break
+		}
+	}
+	s := strings.Join(parts, " ")
+	if len(s) > max {
+		cut := strings.LastIndex(s[:max], " ")
+		if cut < max/2 {
+			cut = max
+		}
+		s = strings.TrimRight(s[:cut], ",.;:") + " ..."
+	}
+	return s
 }

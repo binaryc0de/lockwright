@@ -3,6 +3,7 @@ package rooms
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -31,5 +32,16 @@ func TestRejectsMismatchedID(t *testing.T) {
 	os.WriteFile(filepath.Join(dir, "a", "room.json"), []byte(`{"id":"b"}`), 0o644)
 	if _, err := Load(dir); err == nil {
 		t.Fatal("mismatched id accepted")
+	}
+}
+
+func TestSummaryComesFromTheIntroBriefing(t *testing.T) {
+	c, err := Load("../../../game/rooms")
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, _ := c.Room("night_shift")
+	if !strings.HasPrefix(r.Summary, "23:10, Kestrel Logistics regional office.") || strings.Contains(r.Summary, "**") || len(r.Summary) > 330 {
+		t.Fatalf("summary %q", r.Summary)
 	}
 }

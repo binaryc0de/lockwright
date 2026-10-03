@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ESCAPEBOX · Escape rooms you play together</title>
+  <meta name="description" content="Cooperative online escape rooms. Start a game, send your friends the code, play in the browser.">
+  <link rel="stylesheet" href="/site/style.css">
+  <script type="module" src="/site/lobby.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>ESCAPEBOX</a>
+      <span class="status-pill" aria-live="polite"><span class="led on" aria-hidden="true"></span><span id="platform-status">Checking the building…</span></span>
+    </div>
+  </header>
+
+  <main class="wrap lobby-grid">
+    <section class="hero">
+      <p class="eyebrow">Cooperative escape rooms · in your browser</p>
+      <h1>Locked in together.<br><span class="dim">Get out together.</span></h1>
+      <p class="lede">Start a room, send your friends the code, and work the clues as a team. Nothing to install: everyone plays in their browser.</p>
+
+      <div class="access">
+        <div>
+          <label class="field-label" for="player-name">Your name</label>
+          <input class="input" id="player-name" data-player-name maxlength="24" autocomplete="nickname" placeholder="What should your team call you?">
+        </div>
+        <form id="join-form" novalidate>
+          <label class="field-label" for="join-code">Have a code? Join your team</label>
+          <div class="row">
+            <input class="input code-input" id="join-code" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="AB3K9Z" aria-describedby="join-error">
+            <button class="btn btn-primary" type="submit">Join</button>
+          </div>
+          <p class="error" id="join-error" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="rooms-col" aria-labelledby="rooms-title">
+      <div class="section-head">
+        <h2 id="rooms-title">Rooms</h2>
+        <span class="count">Pick one and start a game</span>
+      </div>
+      <p class="notice" id="catalog-message" aria-live="polite"></p>
+      <button class="btn btn-ghost" id="catalog-retry" type="button" hidden>Try again</button>
+      <ul class="rooms" id="room-list"></ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">ESCAPEBOX prototype · games run on this host and close by themselves when they end.</div>
+  </footer>
+
+  <template id="room-template">
+    <li class="case">
+      <div class="case-strip"><span class="case-id">Room</span><span class="badge badge-hacker" data-hacker hidden>Hacker room</span></div>
+      <div class="case-body">
+        <h3></h3>
+        <p class="room-facts"></p>
+        <p class="room-summary"></p>
+        <p class="hacker-note" data-hacker hidden>Has a real hacking challenge: you'll open it in a second browser tab. Harder levels may expect your own tools.</p>
+        <div class="difficulty" hidden>
+          <span class="field-label" aria-hidden="true">Difficulty</span>
+          <select aria-label="Difficulty"></select>
+          <p class="difficulty-description"></p>
+        </div>
+      </div>
+      <div class="case-foot">
+        <button class="btn btn-primary btn-block btn-big start-button" type="button">Start a game</button>
+        <p class="error card-error" aria-live="polite"></p>
+      </div>
+    </li>
+  </template>
+</body>
+</html>

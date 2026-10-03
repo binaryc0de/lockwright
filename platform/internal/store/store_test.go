@@ -193,3 +193,82 @@ func TestConcurrentJoinsOnAFileDatabase(t *testing.T) {
 		t.Fatalf("players %v", names)
 	}
 }
+
+func TestExpireUnjoinedAndCounts(t *testing.T) {
+	ctx := context.Background()
+	s, _ := Open(ctx, ":memory:")
+	defer s.Close()
+	base := time.Unix(1_800_000_000, 0)
+	now := base
+	s.now = func() time.Time { return now }
+	old, _ := s.CreateSession(ctx, "r")
+	joined, _ := s.CreateSession(ctx, "r")
+	if _, _, err := s.MintJoinToken(ctx, joined.ID, "Ann"); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.ConsumeJoinToken(ctx, joined.ID, mustToken(t, s, joined.ID)); err != nil {
+		t.Fatal(err)
+	}
+	now = base.Add(45 * time.Minute)
+	fresh, _ := s.CreateSession(ctx, "r")
+	// Two waiting for their first player hold slots; the joined idle one is
+	// restorable and holds none.
+	if n, _ := s.CountActive(ctx); n != 2 {
+		t.Fatalf("active %d", n)
+	}
+	ids, err := s.ExpireUnjoined(ctx, now.Add(-30*time.Minute))
+	if err != nil || len(ids) != 1 || ids[0] != old.ID {
+		t.Fatalf("expired %v %v (want only %s)", ids, err, old.ID)
+	}
+	if st, _ := s.Session(ctx, fresh.ID); st.Status != StatusIdle {
+		t.Fatal("fresh session expired")
+	}
+	counts, _ := s.CountByStatus(ctx)
+	if counts[StatusFinished] != 1 || counts[StatusIdle] != 2 {
+		t.Fatalf("counts %v", counts)
+	}
+}
+
+func mustToken(t *testing.T, s *Store, sessionID string) string {
+	t.Helper()
+	tok, _, err := s.MintJoinToken(context.Background(), sessionID, "Ann2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return tok
+}
+
+func TestRestartResetsLiveGamesAndCapCountsHolders(t *testing.T) {
+	ctx := context.Background()
+	s, _ := Open(ctx, ":memory:")
+	defer s.Close()
+	base := time.Unix(1_800_000_000, 0)
+	now := base
+	s.now = func() time.Time { return now }
+	played, _ := s.CreateSession(ctx, "r")
+	tok, _, _ := s.MintJoinToken(ctx, played.ID, "Ann")
+	if _, _, err := s.ConsumeJoinToken(ctx, played.ID, tok); err != nil {
+		t.Fatal(err)
+	}
+	_ = s.SetStatus(ctx, played.ID, StatusRunning)
+	waiting, _ := s.CreateSession(ctx, "r")
+	if n, _ := s.CountActive(ctx); n != 2 {
+		t.Fatalf("active before restart %d", n)
+	}
+	if n, _ := s.ResetLiveStatuses(ctx); n != 1 {
+		t.Fatalf("reset %d", n)
+	}
+	// The played game is restorable but holds nothing; the waiting one counts.
+	if n, _ := s.CountActive(ctx); n != 1 {
+		t.Fatalf("active after restart %d", n)
+	}
+	now = base.Add(13 * time.Hour)
+	if n, _ := s.ExpireAbandoned(ctx, now.Add(-12*time.Hour)); n != 2 {
+		t.Fatalf("abandoned %d", n)
+	}
+	for _, id := range []string{played.ID, waiting.ID} {
+		if st, _ := s.Session(ctx, id); st.Status != StatusFinished {
+			t.Fatalf("%s still %s", id, st.Status)
+		}
+	}
+}

@@ -223,3 +223,14 @@ On HTTPS the clipboard works too. ufw needs 8090 only for local access; Tailscal
 - A room test (also run from the pack by `packroom -verify`) checks hidden variants and the LED material.
 - `find_local_pack` only looks next to the executable, and never on the web. `user://packs/` is used only through `RoomPackFetcher`, which verifies the SHA-256 against the catalog first.
 **Consequences.** Verified in the owner's Chrome over the Tailscale HTTPS link: the pack downloads fresh and the desk and walls match the desktop build. Room authors who edit scenes by hand must keep the markers, and roomcheck tells them.
+
+## ADR-0028: Lobby site and an always-on platform (2026-10-03)
+
+**Context.** The owner wants a front-facing site where a game can be started on demand, instead of a terminal command. Spawning, isolation and teardown already existed (sessions start game servers on first join; challenges start and stop with the game).
+**Decision.**
+- **Site.** Plain HTML/CSS/JS embedded in the platform (`platform/internal/web`, spec in `SPEC.md`), served at `/` (rooms, Start a game, Join with a code) and `/g/{code}` (shareable game page: invite link, players, status, Play). No framework or build step. Accounts and payments come later, on the same API.
+- **API.** `GET /api/games/{code}` (a public view: no tokens) and `GET /api/status` (counts only).
+- **Guardrails.** `-max-games` (default 4) caps unfinished games; one client may create 6 games per 10 minutes; games nobody joins finish after 30 minutes (a one-minute sweeper).
+- **Always on.** `tools/install-service.sh` installs a systemd user service (port 8090, Tailscale address advertised) and makes sure `tailscale serve` provides HTTPS. `tools/play.sh` stays for development and points to the service when it holds the port.
+- **Division of work.** Claude built the backend, the tests and the service; Codex (gpt-6.1-sol) built the site's front end from `SPEC.md` and reviews the milestone.
+**Consequences.** Anyone the owner shares the machine with can start a game from a browser. Without `loginctl enable-linger` (sudo) the service stops at logout.

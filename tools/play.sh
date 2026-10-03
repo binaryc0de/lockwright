@@ -34,7 +34,13 @@ GODOT="${GODOT:-godot}"
 LOG="$(mktemp -d "${TMPDIR:-/tmp}/escapebox-play-XXXXXX")"
 
 if ss -ltn 2>/dev/null | grep -q ":$PORT "; then
-	echo "Port $PORT is in use (something else is listening). Try: PLATFORM_PORT=8091 $0"; exit 1
+	if systemctl --user is-active --quiet escapebox-platform.service 2>/dev/null; then
+		echo "The always-on escapebox service already runs on port $PORT: open its lobby and press Start a game"
+		echo "(tools/install-service.sh --status shows the address). Or use another port: PLATFORM_PORT=8091 $0"
+	else
+		echo "Port $PORT is in use (something else is listening). Try: PLATFORM_PORT=8091 $0"
+	fi
+	exit 1
 fi
 docker info >/dev/null 2>&1 || echo "WARNING: Docker is not reachable; the CTF challenge will not start (the laptop will say so)."
 

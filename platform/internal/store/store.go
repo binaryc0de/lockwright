@@ -514,3 +514,86 @@ func randomFrom(alphabet string, n int) string {
 	}
 	return string(b)
 }
+
+// CountActive counts the games that hold resources (the lobby's cap): those
+// starting or running, plus new games waiting for their first player.
+// Idle games that had players are restorable but use nothing until a rejoin.
+func (s *Store) CountActive(ctx context.Context) (int, error) {
+	var n int
+	err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM sessions WHERE status IN (?, ?)
+		OR (status = ? AND id NOT IN (SELECT DISTINCT session_id FROM players))`,
+		StatusStarting, StatusRunning, StatusIdle).Scan(&n)
+	return n, err
+}
+
+// ResetLiveStatuses marks every starting/running session idle. Called when
+// the platform starts: game servers die with the previous platform process,
+// and an idle session restarts from its snapshot on the next join. Returns
+// how many were reset.
+func (s *Store) ResetLiveStatuses(ctx context.Context) (int, error) {
+	res, err := s.db.ExecContext(ctx, `UPDATE sessions SET status = ? WHERE status IN (?, ?)`, StatusIdle, StatusStarting, StatusRunning)
+	if err != nil {
+		return 0, err
+	}
+	n, _ := res.RowsAffected()
+	return int(n), nil
+}
+
+// ExpireAbandoned finishes idle sessions created before cutoff that had
+// players but were left (nobody came back to them).
+func (s *Store) ExpireAbandoned(ctx context.Context, cutoff time.Time) (int, error) {
+	res, err := s.db.ExecContext(ctx, `UPDATE sessions SET status = ?, finished_at = ? WHERE status = ? AND created_at < ?`,
+		StatusFinished, s.now().Unix(), StatusIdle, cutoff.Unix())
+	if err != nil {
+		return 0, err
+	}
+	n, _ := res.RowsAffected()
+	return int(n), nil
+}
+
+// CountByStatus counts sessions per status (the public status view).
+func (s *Store) CountByStatus(ctx context.Context) (map[string]int, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT status, COUNT(*) FROM sessions GROUP BY status`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]int{}
+	for rows.Next() {
+		var st string
+		var n int
+		if err := rows.Scan(&st, &n); err != nil {
+			return nil, err
+		}
+		out[st] = n
+	}
+	return out, rows.Err()
+}
+
+// ExpireUnjoined finishes idle sessions nobody ever joined that were created
+// before cutoff, so abandoned "Start a game" clicks do not hold a slot or a
+// join code. Returns their ids.
+func (s *Store) ExpireUnjoined(ctx context.Context, cutoff time.Time) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT id FROM sessions WHERE status = ? AND created_at < ?
+		AND id NOT IN (SELECT DISTINCT session_id FROM players)`, StatusIdle, cutoff.Unix())
+	if err != nil {
+		return nil, err
+	}
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	rows.Close()
+	for _, id := range ids {
+		if _, err := s.db.ExecContext(ctx, `UPDATE sessions SET status = ?, finished_at = ? WHERE id = ? AND status = ?`,
+			StatusFinished, s.now().Unix(), id, StatusIdle); err != nil {
+			return nil, err
+		}
+	}
+	return ids, nil
+}

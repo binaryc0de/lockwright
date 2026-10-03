@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your game · ESCAPEBOX</title>
+  <link rel="stylesheet" href="/site/style.css">
+  <script type="module" src="/site/game.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>ESCAPEBOX</a>
+      <a class="back" href="/" style="margin:0">← All rooms</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p class="message" id="page-message" aria-live="polite"></p>
+    <button class="btn btn-ghost" id="game-retry" type="button" hidden>Try again</button>
+
+    <section class="unknown" id="unknown-game" hidden>
+      <p class="eyebrow">Access denied</p>
+      <h1>No game has that code.</h1>
+      <p>Check the code with whoever invited you, or start a new game yourself.</p>
+      <a class="btn btn-primary" href="/">Back to the rooms</a>
+    </section>
+
+    <div id="game-details" hidden>
+      <section class="game-head">
+        <p class="eyebrow">Your team's game</p>
+        <h1 id="room-title">Room</h1>
+        <div class="chips">
+          <span class="badge" id="difficulty-title"></span>
+          <span class="badge badge-hacker" id="hacker-badge" hidden>Hacker room</span>
+          <span class="badge" id="game-duration"></span>
+        </div>
+        <p class="status-line" aria-live="polite"><span class="led wait" id="status-led" aria-hidden="true"></span><span id="game-status">Checking…</span></p>
+      </section>
+
+      <div class="game-grid">
+        <div class="game-main">
+          <section class="card" aria-labelledby="code-title">
+            <h2 id="code-title">Invite your team</h2>
+            <p class="sub">They open the link, or type the code on the front page.</p>
+            <div class="code-display" id="game-code" role="img" aria-label="Join code"></div>
+            <label class="field-label" for="invite-link">Invite link</label>
+            <div class="invite-row">
+              <input class="input" id="invite-link" readonly>
+              <button class="btn btn-ghost" id="copy-invite" type="button">Copy invite link</button>
+            </div>
+            <p class="copy-feedback" id="copy-feedback" aria-live="polite"></p>
+            <p class="hacker-note" id="game-hacker-note" hidden>This room has a real hacking challenge. When you find the laptop in the game, it shows an address: open it in a second browser tab.</p>
+          </section>
+        </div>
+
+        <div class="game-side">
+          <section class="card enter-card" aria-labelledby="enter-title">
+            <h2 id="enter-title">Enter the room</h2>
+            <form id="play-form">
+              <div>
+                <label class="field-label" for="player-name">Your name</label>
+                <input class="input" id="player-name" data-player-name maxlength="24" autocomplete="nickname" placeholder="What should your team call you?">
+              </div>
+              <button class="btn btn-primary btn-block btn-big" id="play-button" type="submit">Play</button>
+              <p class="play-hint" id="play-hint"></p>
+            </form>
+          </section>
+
+          <section class="card" aria-labelledby="roster-title">
+            <div class="roster-head">
+              <h2 id="roster-title">Team</h2>
+              <span class="count" id="player-count"></span>
+            </div>
+            <ul class="roster" id="players"></ul>
+            <p class="roster-empty" id="players-empty"></p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

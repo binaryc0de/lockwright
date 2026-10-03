@@ -48,6 +48,9 @@ func run() error {
 	challengePorts := flag.String("challenge-ports", "20000-20999", "TCP port range for challenge proxies")
 	transport := flag.String("transport", "enet", "game transport for clients: enet or ws")
 	packsDir := flag.String("packs", "", "serve room packs built by tools/packroom from this directory (catalog + /download/packs/, ADR-0025)")
+	maxGames := flag.Int("max-games", 4, "most games (sessions not finished) at once; 0 = no cap")
+	expireAfter := flag.Duration("expire-unjoined", 30*time.Minute, "finish games nobody joined after this long")
+	abandonAfter := flag.Duration("expire-abandoned", 12*time.Hour, "finish idle games (players left, no server) this long after they were created")
 	webDir := flag.String("web", "", "serve the exported browser client from this directory at /play/ (ADR-0023)")
 	testTrust := flag.Bool("test-trust-positions", false, "TEST ONLY: start game servers with --trust-positions so headless bots can teleport")
 	flag.Parse()
@@ -67,6 +70,11 @@ func run() error {
 		return err
 	}
 	defer st.Close()
+	if n, err := st.ResetLiveStatuses(ctx); err != nil {
+		return err
+	} else if n > 0 {
+		slog.Info("games from the previous run marked idle (restorable on rejoin)", "count", n)
+	}
 	cat, err := rooms.Load(*roomsDir)
 	if err != nil {
 		return fmt.Errorf("rooms: %w", err)
@@ -93,7 +101,8 @@ func run() error {
 		slog.Warn("TEST MODE: game servers accept teleporting positions (--test-trust-positions)")
 		extra = append(extra, "--trust-positions")
 	}
-	deps := &api.Deps{Store: st, Rooms: cat, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host, WebDir: *webDir, PacksDir: *packsDir}
+	deps := &api.Deps{Store: st, Rooms: cat, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host, WebDir: *webDir, PacksDir: *packsDir,
+		MaxGames: *maxGames, CreateLimit: &api.RateLimit{Max: 6, Window: 10 * time.Minute}}
 	mgr := sessions.New(sessions.Config{
 		Command:     []string{*godot, "--headless", "--path", gameAbs, "--"},
 		PortMin:     gmin,
@@ -125,6 +134,29 @@ func run() error {
 		}()
 	}
 
+	go func() {
+		t := time.NewTicker(time.Minute)
+		defer t.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-t.C:
+				if n, err := st.ExpireAbandoned(ctx, time.Now().Add(-*abandonAfter)); err != nil {
+					slog.Warn("expiring abandoned games", "err", err)
+				} else if n > 0 {
+					slog.Info("abandoned games finished", "count", n)
+				}
+				ids, err := st.ExpireUnjoined(ctx, time.Now().Add(-*expireAfter))
+				if err != nil {
+					slog.Warn("expiring unjoined games", "err", err)
+				}
+				for _, id := range ids {
+					slog.Info("game expired: nobody joined", "session", id)
+				}
+			}
+		}
+	}()
 	srv := &http.Server{Addr: *addr, Handler: api.NewHandler(deps), ReadHeaderTimeout: 10 * time.Second}
 	go func() {
 		<-ctx.Done()

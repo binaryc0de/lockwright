@@ -9,6 +9,8 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/binaryc0de/escapebox/platform/internal/web"
 	"io"
 	"log/slog"
 	"math"
@@ -22,6 +24,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/binaryc0de/escapebox/platform/internal/flags"
@@ -70,6 +73,62 @@ type Deps struct {
 	// (<room>-<version>.pck plus its .json entry). The catalog lists each
 	// room's pack and /download/packs/{file} serves it (ADR-0025).
 	PacksDir string
+	// MaxGames caps sessions that are not finished (0 = no cap); creating
+	// more answers 503 games_full. Every game holds a game server and its
+	// challenge containers, so the host sets this to what it can carry.
+	MaxGames int
+	// CreateLimit limits how often one client may create games (nil = none).
+	CreateLimit *RateLimit
+}
+
+// RateLimit allows Max events per Window per key (in memory).
+type RateLimit struct {
+	Max    int
+	Window time.Duration
+	mu     sync.Mutex
+	seen   map[string][]time.Time
+	now    func() time.Time
+}
+
+// Allow records an event for key and reports whether it is within the limit.
+func (l *RateLimit) Allow(key string) bool {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.seen == nil {
+		l.seen = map[string][]time.Time{}
+	}
+	now := time.Now()
+	if l.now != nil {
+		now = l.now()
+	}
+	keep := l.seen[key][:0]
+	for _, t := range l.seen[key] {
+		if now.Sub(t) < l.Window {
+			keep = append(keep, t)
+		}
+	}
+	if len(keep) >= l.Max {
+		l.seen[key] = keep
+		return false
+	}
+	l.seen[key] = append(keep, now)
+	return true
+}
+
+// clientKey identifies who is creating games: the first X-Forwarded-For hop
+// when the request came through a local proxy (tailscale serve, Caddy), else
+// the remote address.
+func clientKey(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		host = r.RemoteAddr
+	}
+	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
+		if xff := strings.TrimSpace(strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0]); xff != "" {
+			return xff
+		}
+	}
+	return host
 }
 
 // NewHandler returns the platform's HTTP handler. d may be nil (health and
@@ -91,8 +150,8 @@ func NewHandler(d *Deps) http.Handler {
 	a := &app{d}
 	if d.WebDir != "" {
 		mux.Handle("GET /play/", webClient(d.WebDir))
-		mux.Handle("GET /{$}", http.RedirectHandler("/play/", http.StatusFound))
 	}
+	web.Register(mux)
 	mux.HandleFunc("GET /api/catalog", a.catalog)
 	if d.Servers != nil {
 		mux.HandleFunc("GET /ws/{session}", a.wsProxy)
@@ -102,6 +161,8 @@ func NewHandler(d *Deps) http.Handler {
 	}
 	mux.HandleFunc("POST /api/sessions", a.createSession)
 	mux.HandleFunc("GET /api/sessions/{id}", a.getSession)
+	mux.HandleFunc("GET /api/games/{code}", a.getGame)
+	mux.HandleFunc("GET /api/status", a.status)
 	mux.HandleFunc("POST /api/sessions/{id}/join", a.join)
 	mux.HandleFunc("POST /api/join", a.joinByCode)
 	mux.HandleFunc("POST /internal/sessions/{id}/verify", a.internal(a.verify))
@@ -129,6 +190,7 @@ func (a *app) catalog(w http.ResponseWriter, _ *http.Request) {
 		Challenges      int                `json:"challenges"`
 		Difficulties    []rooms.Difficulty `json:"difficulties"`
 		Pack            *packInfo          `json:"pack,omitempty"`
+		Summary         string             `json:"summary"`
 	}
 	out := []entry{}
 	for _, r := range a.d.Rooms.All() {
@@ -136,7 +198,7 @@ func (a *app) catalog(w http.ResponseWriter, _ *http.Request) {
 		if ds == nil {
 			ds = []rooms.Difficulty{}
 		}
-		out = append(out, entry{r.ID, r.Title, r.Version, r.Mode.DurationMinutes, [2]int{r.Mode.Players.Min, r.Mode.Players.Max}, len(r.CTF.Challenges), ds, a.pack(r)})
+		out = append(out, entry{r.ID, r.Title, r.Version, r.Mode.DurationMinutes, [2]int{r.Mode.Players.Min, r.Mode.Players.Max}, len(r.CTF.Challenges), ds, a.pack(r), r.Summary})
 	}
 	writeJSON(w, http.StatusOK, out)
 }
@@ -153,6 +215,21 @@ func (a *app) createSession(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		writeErr(w, http.StatusNotFound, "unknown_room", "No such room is installed.")
 		return
+	}
+	if a.d.CreateLimit != nil && !a.d.CreateLimit.Allow(clientKey(r)) {
+		writeErr(w, http.StatusTooManyRequests, "too_many_games", "You have started a lot of games just now. Wait a few minutes and try again.")
+		return
+	}
+	if a.d.MaxGames > 0 {
+		n, err := a.d.Store.CountActive(r.Context())
+		if err != nil {
+			internalErr(w, err)
+			return
+		}
+		if n >= a.d.MaxGames {
+			writeErr(w, http.StatusServiceUnavailable, "games_full", fmt.Sprintf("All %d game slots are in use. Try again when a game finishes.", a.d.MaxGames))
+			return
+		}
 	}
 	if !room.HasDifficulty(in.Difficulty) {
 		writeErr(w, http.StatusBadRequest, "unknown_difficulty", "The room has no such difficulty.")
@@ -583,4 +660,68 @@ func (a *app) wsProxy(w http.ResponseWriter, r *http.Request) {
 		req.Host = target.Host
 	}
 	p.ServeHTTP(w, r)
+}
+
+// getGame is the public view of a game by its join code, for the lobby's
+// game page: never tokens or internal ids beyond what joining already uses.
+func (a *app) getGame(w http.ResponseWriter, r *http.Request) {
+	sess, err := a.d.Store.SessionByInvite(r.Context(), r.PathValue("code"))
+	if errors.Is(err, store.ErrNotFound) {
+		writeErr(w, http.StatusNotFound, "bad_invite", "No game has that code.")
+		return
+	}
+	if err != nil {
+		internalErr(w, err)
+		return
+	}
+	players, err := a.d.Store.Players(r.Context(), sess.ID)
+	if err != nil {
+		internalErr(w, err)
+		return
+	}
+	if players == nil {
+		players = []string{}
+	}
+	room, _ := a.d.Rooms.Room(sess.RoomID)
+	diff, diffTitle := sess.Difficulty, ""
+	for i, d := range room.Difficulties {
+		if d.ID == diff || (diff == "" && i == 0) {
+			diff, diffTitle = d.ID, d.Title
+			break
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"code": sess.InviteCode, "room_id": sess.RoomID, "title": room.Title, "difficulty": diff,
+		"difficulty_title": diffTitle, "status": sess.Status, "players": players,
+		"players_max": room.Mode.Players.Max, "duration_minutes": room.Mode.DurationMinutes,
+		"hacker_room": len(room.CTF.Challenges) > 0, "created_at": sess.CreatedAt.Unix(),
+		"won": sess.Won, "elapsed_s": sess.ElapsedS,
+	})
+}
+
+// status is the public overview: how many games are waiting, running or
+// done, and the cap. No codes (they are invitations).
+func (a *app) status(w http.ResponseWriter, r *http.Request) {
+	counts, err := a.d.Store.CountByStatus(r.Context())
+	if err != nil {
+		internalErr(w, err)
+		return
+	}
+	active, err := a.d.Store.CountActive(r.Context())
+	if err != nil {
+		internalErr(w, err)
+		return
+	}
+	running := counts[store.StatusStarting] + counts[store.StatusRunning]
+	free := -1 // no cap
+	if a.d.MaxGames > 0 {
+		free = max(0, a.d.MaxGames-active)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"waiting":   active - running, // new games waiting for their first player
+		"running":   running,
+		"finished":  counts[store.StatusFinished],
+		"max_games": a.d.MaxGames,
+		"free":      free,
+	})
 }
