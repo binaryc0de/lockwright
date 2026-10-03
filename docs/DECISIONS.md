@@ -164,8 +164,16 @@ Short records: context, decision, consequences. Newest at the bottom. Never edit
 **Consequences.** Hard needs players to bring a cracker; the tier-2/3 hints name the tools and tier 3 gives the password. A Go test in the challenge module fails if the USB hash and the challenge password drift apart.
 **Found while building this: Godot 4.7.2's export drops `PackedStringArray` properties from scenes.** In the exported room pack every `PackedStringArray` value on a script node (`verbs`, `cable_ids`, `cable_labels`, `difficulties`) was missing: the pack's `SceneState` simply had no such property, while typed `Array[NodePath]` and scalar exports survived. Since M1, packed Night Shift had silently lost the patch panel's "A - red, one stripe" labels. All SDK exports are now `Array[String]`, scene values use `Array[String]([...])`, a core test forbids `@export` packed arrays in the SDK, and a room test (also run from the pack by `packroom -verify`) checks the arrays survive.
 
-## ADR-0023: Low barrier for default play; "bring your own tools" only at harder levels (2026-10-02)
+## ADR-0023: The game is played in the browser; only hacker rooms' CTF parts may need player setup (2026-10-02)
 
-**Context.** The owner (2026-10-02): CTF-style rooms with "a little bit of technical connection knowledge" are the point, as on Hack The Box where players bring their own tools and connection. But "for the basic room there needs to be a lower barrier to entry".
-**Decision.** Each room's default difficulty needs only the game and a web browser: no installs, no VPN, no command line, and every CTF step solvable in a browser tab. Harder levels may expect players' own tools (password crackers, scanners, scripts), and their description says so (Night Shift hard names John the Ripper and hashcat). Recorded as ROOM_AUTHORING design rule 9.
-**Consequences.** Night Shift already complies: Standard's intranet hack is a browser IDOR, and Hard is the cracking level. A future browser build must at least run the default levels. No in-game cracking terminal is needed for hard mode. Platform-side connection features (VPN-style access, cloud shells) are optional extras for harder levels, never requirements.
+**Context.** The owner (2026-10-02): "Really I would expect all of it to be browser based, just the CTF components in the room may require setup from the user." The dividing line is the kind of room, not the difficulty. A *standard room* (no CTF challenges) must be playable in a browser with nothing else. A *CTF-enhanced "hacker room"* may expect players to set up their own tools or connection (Hack The Box style: own cracker, own VPN), but only for its CTF components. This revises PLAN.md's assumption of a downloaded desktop client.
+**Decision.**
+- **The browser is the target client** for every room. The desktop builds (Windows/Linux exports) stay as a convenience and a development path, not the requirement.
+- **Room kind follows from the manifest.** A room with `ctf.challenges` is a hacker room; one without is a standard room.
+- **Standard rooms:** nothing beyond the browser page; no installs, VPN or command line.
+- **Hacker rooms:** everything except the CTF components still plays in the browser. CTF steps may need player setup (tools, a VPN-style connection), and the room's description says what setup it needs.
+- **ROOM_AUTHORING design rule 9** records this.
+**Consequences.**
+- A browser client becomes a planned milestone, not an option. Godot 4.7's web export uses the Compatibility renderer (WebGL 2), so rooms need a browser-grade lighting setup (baked lighting) besides the desktop look. Assets need a size diet; game connections must be WSS, platform calls HTTPS, and room packs must be downloadable (`/download`).
+- Night Shift is a hacker room: its CTF steps may need player setup at any difficulty (Hard already expects a cracker).
+- Hosting plans follow from this. A browser page needs HTTPS and WSS end to end, which matters both for the friends test and for the cloud.

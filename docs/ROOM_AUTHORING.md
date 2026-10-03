@@ -155,7 +155,7 @@ Rules: **flags are templates, never literals** (`roomcheck` fails on anything th
 6. Every puzzle has a reason to exist in the story. Never encode by colour alone. Text readable at inspect distance; light the workspaces.
 7. 24/48-hour rooms: cap open threads, keep high-variance puzzles off the critical path.
 8. Play-test blind with at least 3 groups; log hesitation points and solve times in the room README.
-9. Barrier to entry (ADR-0023): a room's default difficulty needs nothing but the game and a web browser. No tools to install, no VPN, no command line; any CTF step must be solvable in a browser tab. "Bring your own tools" (crackers, scanners, scripts) belongs to a harder level, and the level's description must say so.
+9. Barrier to entry (ADR-0023): the game is played in a web browser. A standard room (no `ctf.challenges`) needs nothing else: no installs, no VPN, no command line. A hacker room (has `ctf.challenges`) may ask players to set up their own tools or connection for its CTF components only; the rest of the room must still play in the browser, and the room's description says what setup its CTF parts need.
 
 ## 6. Assets
 
