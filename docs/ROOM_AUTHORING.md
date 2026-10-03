@@ -54,7 +54,7 @@ Compose your scene from these. They replicate themselves; you never write netcod
 
 **Every SDK node** also has `difficulties` (empty = all levels; see section 3).
 
-**Wiring.** `locked_by` points an openable at its lock. `targets` (on `FlagGate`, `PatchPanel`, `Lever`, `AllOfGate`) *activate* other nodes: an unpowered lock gains power, a powered lock unlocks, a dead `SequencePlayer` comes alive. Locks say `dead_message` (and show `dead_prompt`) while unpowered. That covers "the flag releases the cage maglock" and "the patch panel powers the exit keypad" without scripts.
+**Wiring.** `locked_by` points an openable at its lock. `targets` (on `FlagGate`, `PatchPanel`, `Lever`, `AllOfGate`) *activate* other nodes: an unpowered lock gains power, a powered lock unlocks, a dead `SequencePlayer` comes alive, a closed door or container whose lock allows springs open (wire an `AllOfGate` from a lock to its drawer so solving it pops the drawer). Locks say `dead_message` (and show `dead_prompt`) while unpowered. That covers "the flag releases the cage maglock" and "the patch panel powers the exit keypad" without scripts.
 
 **Collision.** Every interactable needs a `StaticBody3D` + `CollisionShape3D` below it (the SDK puts it on the interaction layer). Walls and furniture use layer 1. Things inside a closed `ContainerProp`'s `contents` are hidden and untargetable automatically.
 

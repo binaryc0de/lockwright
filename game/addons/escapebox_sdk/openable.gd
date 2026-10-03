@@ -85,6 +85,14 @@ func _server_intent(_player_id: String, verb: String, _payload: Dictionary) -> D
 	return {"ok": false, "error": "unsupported_verb"}
 
 
+## Activation (AllOfGate, Lever, PatchPanel, FlagGate targets) springs it
+## open once its lock allows: a drawer that pops when a clock is set, a case
+## that swings aside.
+func _server_activate() -> void:
+	if not is_open() and not is_locked():
+		set_state({"state": "open"})
+
+
 ## An airlock's door stays open while the airlock waits (ADR-0020): closing it
 ## could shut the team out behind its own lock.
 func _held_open() -> bool:

@@ -282,5 +282,6 @@ On HTTPS the clipboard works too. ufw needs 8090 only for local access; Tailscal
 - **`AllOfGate`**: watches its inputs' states on the server and activates targets once.
 - **`SessionClock.wall_start`**: story-time clock with hands (11:00 -> midnight).
 - **Notes are synthesised** (`EBSound.tone`: bell or whistle), played without pitch jitter. No audio files, same approach as `AmbientZone`.
+- **Activation opens an `Openable`** whose lock allows it (added for the greybox): solving a lock can spring its drawer, flap or case open through an `AllOfGate`, so players do not need a second click.
 - **`Lock.dead_message`/`dead_prompt`** replace the hard-coded "The panel is dead." / "no power" (defaults unchanged).
 **Consequences.** All new exports are `Array[String]`, `Array[NodePath]` or `Array[float]` (not packed arrays, ADR-0022); the room's pack replay will confirm `Array[float]` survives export. A clock-tick `AmbientZone` that starts when the clock runs is left for the audio pass.

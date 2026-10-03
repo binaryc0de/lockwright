@@ -2,7 +2,8 @@ extends RefCounted
 ## An in-code room for the clockwork SDK nodes (ADR-0033), wired the way the
 ## Clockmaker's Study uses them:
 ##
-##   Rings (DialLock "ABC" x3, code CAB)
+##   Rings (DialLock "ABC" x3, code CAB) -> RingSpring (AllOfGate) -> Box
+##   Box (ContainerProp locked_by Rings)
 ##   GearA, GearB (KeyLock gear_a / gear_b) -> Gears (AllOfGate) -> Bird
 ##   Bird (SequencePlayer, {{melody}}), Bars (SequenceLock {{melody}}, pads 1-5)
 ##   Bars -> ClockGate (AllOfGate) -> Clock (DialLock hour:minute, unpowered,
@@ -46,6 +47,11 @@ static func build() -> RoomRoot:
 		_add(rings, Node3D.new(), "Ring%d" % i)
 	rings.hand_parts = [NodePath("Ring0"), NodePath("Ring1"), NodePath("Ring2")]
 	rings.hand_turn = Vector3(360, 0, 0)
+	var box := _add(root, ContainerProp.new(), "Box") as ContainerProp
+	box.locked_by = NodePath("../Rings")
+	var spring := _add(root, AllOfGate.new(), "RingSpring") as AllOfGate
+	spring.inputs = [NodePath("../Rings")]
+	spring.targets = [NodePath("../Box")]
 
 	for id in ["a", "b"]:
 		var item := _add(root, Item.new(), "GearItem" + id.to_upper()) as Item

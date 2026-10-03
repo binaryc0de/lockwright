@@ -58,6 +58,14 @@ func test_dial_turns_wrap_and_open_on_the_right_combination() -> void:
 	assert_str(rings.code_for(DialLock.dials_of(auth.state.node_state("Rings")))).is_equal("CAB")
 
 
+func test_activation_springs_an_openable_once_its_lock_allows() -> void:
+	var box := room.get_node("Box") as ContainerProp
+	box._server_activate()  # still locked: stays shut
+	assert_bool(box.is_open()).is_false()
+	act("Rings", "submit_code", {"value": "CAB"})  # RingSpring fires
+	assert_bool(box.is_open()).is_true()
+
+
 func test_dial_submit_code_sets_every_wheel() -> void:
 	assert_dict(act("Rings", "submit_code", {"value": "ABA"})).contains_key_value("error", "wrong_code")
 	assert_dict(act("Rings", "submit_code", {"value": "XYZ"})).contains_key_value("error", "wrong_code")
