@@ -50,6 +50,27 @@ func _show_connection_card() -> void:
 		lines.append("[i]%s[/i]" % handle["note"])
 	lines.append("Attack it from your own machine with your own tools, then submit the flag below.")
 	_log.append_text("\n".join(lines) + "\n\n")
+	if handle.has("url"):
+		body().add_child(TerminalPanel.link_row(str(handle["url"])))
+
+
+## "Open in new tab" and "Copy link" for a challenge address. In the browser,
+## shell_open opens a new tab and both run within the click's user activation.
+static func link_row(url: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	var status := Label.new()
+	var open := Button.new()
+	open.text = "Open in new tab"
+	open.pressed.connect(func() -> void: OS.shell_open(url))
+	row.add_child(open)
+	var copy := Button.new()
+	copy.text = "Copy link"
+	copy.pressed.connect(func() -> void:
+		DisplayServer.clipboard_set(url)
+		status.text = "Copied.")
+	row.add_child(copy)
+	row.add_child(status)
+	return row
 
 
 func _on_submit(text: String) -> void:

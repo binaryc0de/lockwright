@@ -163,3 +163,10 @@ func test_focused_view_moves_the_camera_in_and_back() -> void:
 	await await_millis(int(FirstPersonPlayer.FOCUS_TIME * 1000) + 150)
 	assert_bool(player.is_focused()).is_false()
 	assert_vector(player.camera.transform.origin).is_equal_approx(home.origin, Vector3.ONE * 1e-3)
+
+
+func test_challenge_link_can_be_opened_or_copied() -> void:
+	var row := auto_free(TerminalPanel.link_row("https://example.test/ctf/abc/intranet/")) as HBoxContainer
+	var labels := row.get_children().filter(func(c: Node) -> bool: return c is Button).map(func(b: Button) -> String: return b.text)
+	assert_array(labels).contains_exactly(["Open in new tab", "Copy link"])
+	assert_str(PauseMenu.invite_text("AB3K9Z")).is_equal("AB3K9Z")  # desktop shares the code

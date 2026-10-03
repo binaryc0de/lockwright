@@ -78,7 +78,9 @@ func _play(room_id: String, pack_path: String, difficulty: String = "") -> void:
 		push_error(err)
 		_show_menu(err)
 		return
-	session.left.connect(func() -> void: _show_menu())
+	session.left.connect(func() -> void:
+		if not _back_to_site(""):
+			_show_menu())
 
 
 func _join(args: AppArgs) -> void:
@@ -87,8 +89,21 @@ func _join(args: AppArgs) -> void:
 		_menu = null
 	var session := PlaySession.new()
 	add_child(session)
-	session.left.connect(func() -> void: _show_menu(session.error))
+	var code := args.join_code
+	session.left.connect(func() -> void:
+		if not _back_to_site(code):
+			_show_menu(session.error))
 	session.start_remote(args)
+
+
+## Browser build: leaving the room returns to the website (that game's page,
+## or the lobby) instead of the in-engine menu. False on desktop.
+func _back_to_site(code: String) -> bool:
+	if not OS.has_feature("web"):
+		return false
+	var dest := "/g/%s" % code.uri_encode() if not code.is_empty() else "/"
+	JavaScriptBridge.eval("window.location.assign(%s)" % JSON.stringify(dest))
+	return true
 
 
 ## Dedicated server (PLAN.md 7.1): loads the room, restores the snapshot if
