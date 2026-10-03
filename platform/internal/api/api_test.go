@@ -407,7 +407,9 @@ func TestCatalogListsAndServesRoomPacks(t *testing.T) {
 	if string(b) != "GDPC-pack" {
 		t.Fatalf("pack body %q", b)
 	}
-	for _, bad := range []string{"/download/packs/..%2Fsecret.key", "/download/packs/night_shift-0.1.0.json", "/download/packs/x.pck"} {
+	// A pack with no room in the catalog (a draft, ADR-0030) is not served.
+	_ = os.WriteFile(filepath.Join(dir, "unlisted-0.1.0.pck"), []byte("GDPC-pack"), 0o644)
+	for _, bad := range []string{"/download/packs/..%2Fsecret.key", "/download/packs/night_shift-0.1.0.json", "/download/packs/x.pck", "/download/packs/unlisted-0.1.0.pck"} {
 		if resp, _ := http.Get(ts.URL + bad); resp.StatusCode == 200 {
 			t.Fatalf("%s served", bad)
 		}

@@ -365,3 +365,12 @@ func TestRejectsOverridesOnNonEditableInstances(t *testing.T) {
 		t.Fatalf("editable instance still rejected: %v", r.Issues)
 	}
 }
+
+func TestDraftFlagValidates(t *testing.T) {
+	if r := validate(t, goodYAML+"draft: true\n"); r.Failed() {
+		t.Fatalf("draft: true rejected: %v", r.Issues)
+	}
+	if r := validate(t, goodYAML+"draft: yes please\n"); !r.Failed() {
+		t.Fatal("non-boolean draft accepted")
+	}
+}

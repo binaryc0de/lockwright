@@ -244,3 +244,23 @@ On HTTPS the clipboard works too. ufw needs 8090 only for local access; Tailscal
 - **The switch.** `tools/public.sh on|off|status` turns Funnel on for the platform (the site, the browser game, `/ws/` game connections, `/ctf/` challenges) and back to tailnet-only. Nothing else on the machine is exposed. `install-service.sh` sets `-public-url` to the `.ts.net` address, so the tailnet and the public use the same links.
 - **Tunnel choice.** Funnel over ngrok for this: ngrok's free plan has a small monthly transfer allowance (a new player downloads about 92 MB) and shows browsers an interstitial page. The platform is tunnel-agnostic, so `ngrok http 8090` with `-public-url` works too.
 **Consequences.** Friends need only the link and a browser. Verified: the m3 smoke attacks the real challenge container through `/ctf/`. Turning Funnel on is the owner's action (the first time, Tailscale asks to allow Funnel for the machine). The site is public while it is on.
+
+## ADR-0030: Draft rooms stay off the platform until they ship (2026-10-03)
+
+**Context.** The owner picked the second room, The Clockmaker's Study, and asked to keep it off the public site until it is ready. The platform loads every `game/rooms/*/room.json` at start-up and the always-on service runs from this working tree, so a half-built room would appear in the lobby as soon as it had a `room.json`. `/download/packs/{file}` also served any well-named file in the packs directory, whether or not its room was listed.
+**Decision.**
+- `room.yaml` gains an optional top-level `draft: true` (schema; carried into `room.json`).
+- The platform's catalog (`rooms.Load`) leaves draft rooms out, so they are absent from `/api/catalog`, the lobby and the web start screen, and `POST /api/sessions` for them is 404. `-drafts` (`rooms.LoadWithDrafts`) includes them, for a private development platform; `tools/play.sh --drafts` passes it. The start-up log lists hidden drafts.
+- `/download/packs/{file}` serves only the current pack of a room in the catalog, so a draft's pack built by `tools/export.sh` is not downloadable, and neither are stale versions.
+- Everything else (roomcheck, dev mode, `packroom`, tests) treats a draft like any room. Shipping is deleting the line.
+**Consequences.** The always-on service never shows a draft, even if it restarts on a branch that contains one. It still runs game servers from this checkout (`-game game`), so SDK changes made for a new room reach live games when a new game starts; running the service from its own worktree on a release branch would separate the two (not done; the owner's call).
+
+## ADR-0031: Second room is The Clockmaker's Study, a standard 60-minute room (2026-10-03)
+
+**Context.** The owner asked for a second room with a classic escape-room theme to sit beside the hacker room, chose the clockmaker theme from a brainstorm (others: séance parlour, night train, tomb, bunker, pirate cabin, speakeasy, alchemist), and decided the format.
+**Decision.**
+- Room id `clockmaker`, *The Clockmaker's Study*: a standard room (no CTF), so browser only (ADR-0023).
+- 60 minutes, 1-4 players, the team **starts together** (no split-start asymmetry, so no per-group spawns in the SDK).
+- **Long formats (24/48 h) are reserved for harder hacker rooms.** Standard rooms are 60 minutes.
+- Design, puzzle chart, SDK needs and asset list: `game/rooms/clockmaker/README.md`. The room stays `draft: true` until its blind play-tests pass (ADR-0030).
+**Consequences.** The room drives generic SDK additions (`DialLock`, which also covers the planned `LetterLock`; `SequenceLock`; `SequencePlayer`; `AllOfGate`; analog `SessionClock`), built and tested before the greybox. A Hard level is undecided.

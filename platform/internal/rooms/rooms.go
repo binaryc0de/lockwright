@@ -20,7 +20,10 @@ type Room struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
 	Version string `json:"version"`
-	Mode    struct {
+	// Draft rooms are work in progress (room.yaml `draft: true`, ADR-0030):
+	// the catalog leaves them out unless it was loaded with drafts.
+	Draft bool `json:"draft"`
+	Mode  struct {
 		DurationMinutes int `json:"duration_minutes"`
 		Players         struct {
 			Min int `json:"min"`
@@ -75,11 +78,22 @@ func (r Room) Challenge(id string) (orchestrator.Challenge, bool) {
 
 // Catalog holds the installed rooms.
 type Catalog struct {
-	rooms map[string]Room
+	rooms  map[string]Room
+	hidden []string
 }
 
-// Load reads every <dir>/*/room.json.
+// Load reads every <dir>/*/room.json, leaving out draft rooms.
 func Load(dir string) (*Catalog, error) {
+	return load(dir, false)
+}
+
+// LoadWithDrafts reads every <dir>/*/room.json, draft rooms included (for a
+// private development platform).
+func LoadWithDrafts(dir string) (*Catalog, error) {
+	return load(dir, true)
+}
+
+func load(dir string, drafts bool) (*Catalog, error) {
 	matches, err := filepath.Glob(filepath.Join(dir, "*", "room.json"))
 	if err != nil {
 		return nil, err
@@ -97,6 +111,10 @@ func Load(dir string) (*Catalog, error) {
 		if r.ID == "" || r.ID != filepath.Base(filepath.Dir(m)) {
 			return nil, fmt.Errorf("%s: id %q does not match its directory", m, r.ID)
 		}
+		if r.Draft && !drafts {
+			c.hidden = append(c.hidden, r.ID)
+			continue
+		}
 		r.Dir = filepath.Dir(m)
 		if r.Briefing.IntroMD != "" && !strings.Contains(r.Briefing.IntroMD, "..") {
 			if b, err := os.ReadFile(filepath.Join(r.Dir, r.Briefing.IntroMD)); err == nil {
@@ -112,6 +130,13 @@ func Load(dir string) (*Catalog, error) {
 func (c *Catalog) Room(id string) (Room, bool) {
 	r, ok := c.rooms[id]
 	return r, ok
+}
+
+// Hidden returns the ids of draft rooms that were left out, sorted.
+func (c *Catalog) Hidden() []string {
+	out := append([]string(nil), c.hidden...)
+	sort.Strings(out)
+	return out
 }
 
 // All returns every room, sorted by id.

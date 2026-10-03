@@ -40,6 +40,7 @@ func run() error {
 	addr := flag.String("addr", ":8080", "HTTP listen address")
 	dataDir := flag.String("data", "data", "data directory (database, platform secret)")
 	roomsDir := flag.String("rooms", "game/rooms", "installed rooms (each <id>/room.json)")
+	drafts := flag.Bool("drafts", false, "also offer draft rooms (room.yaml draft: true, ADR-0030); for a private development platform, never the public one")
 	godot := flag.String("godot", "godot", "Godot binary used to run game servers")
 	gameDir := flag.String("game", "game", "Godot project directory for game servers")
 	advertise := flag.String("advertise", "", "address players' machines use to reach this host (default: auto-detect the LAN address)")
@@ -76,7 +77,11 @@ func run() error {
 	} else if n > 0 {
 		slog.Info("games from the previous run marked idle (restorable on rejoin)", "count", n)
 	}
-	cat, err := rooms.Load(*roomsDir)
+	load := rooms.Load
+	if *drafts {
+		load = rooms.LoadWithDrafts
+	}
+	cat, err := load(*roomsDir)
 	if err != nil {
 		return fmt.Errorf("rooms: %w", err)
 	}
@@ -170,7 +175,7 @@ func run() error {
 	for _, r := range cat.All() {
 		names = append(names, r.ID)
 	}
-	slog.Info("platform listening", "addr", *addr, "version", api.Version, "advertise", host, "rooms", strings.Join(names, ","), "challenges", deps.Orchestrator != nil)
+	slog.Info("platform listening", "addr", *addr, "version", api.Version, "advertise", host, "rooms", strings.Join(names, ","), "hidden_drafts", strings.Join(cat.Hidden(), ","), "challenges", deps.Orchestrator != nil)
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}

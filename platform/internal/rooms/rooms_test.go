@@ -45,3 +45,28 @@ func TestSummaryComesFromTheIntroBriefing(t *testing.T) {
 		t.Fatalf("summary %q", r.Summary)
 	}
 }
+
+func TestDraftRoomsAreHiddenUnlessAsked(t *testing.T) {
+	dir := t.TempDir()
+	for id, body := range map[string]string{
+		"ready": `{"id":"ready","title":"Ready","version":"1.0.0"}`,
+		"wip":   `{"id":"wip","title":"WIP","version":"0.1.0","draft":true}`,
+	} {
+		os.MkdirAll(filepath.Join(dir, id), 0o755)
+		os.WriteFile(filepath.Join(dir, id, "room.json"), []byte(body), 0o644)
+	}
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := c.Room("wip"); ok || len(c.All()) != 1 || strings.Join(c.Hidden(), ",") != "wip" {
+		t.Fatalf("public catalog: %+v hidden %v", c.All(), c.Hidden())
+	}
+	c, err = LoadWithDrafts(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r, ok := c.Room("wip"); !ok || !r.Draft || len(c.All()) != 2 || len(c.Hidden()) != 0 {
+		t.Fatalf("development catalog: %+v hidden %v", c.All(), c.Hidden())
+	}
+}

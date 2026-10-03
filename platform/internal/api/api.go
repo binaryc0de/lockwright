@@ -692,9 +692,20 @@ func (a *app) pack(r rooms.Room) *packInfo {
 	return &packInfo{File: e.File, SHA256: e.SHA256, Size: e.Size, URL: "/download/packs/" + e.File}
 }
 
+// offersPack reports whether file is the current pack of a catalog room, so
+// packs of draft rooms (ADR-0030) and stale versions are not served.
+func (a *app) offersPack(file string) bool {
+	for _, room := range a.d.Rooms.All() {
+		if p := a.pack(room); p != nil && p.File == file {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *app) downloadPack(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("file")
-	if !packFileRe.MatchString(name) {
+	if !packFileRe.MatchString(name) || !a.offersPack(name) {
 		writeErr(w, http.StatusNotFound, "not_found", "No such pack.")
 		return
 	}

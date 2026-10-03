@@ -2,7 +2,9 @@
 # One command to play a room with everything real (platform, game server,
 # Docker CTF challenge): starts the platform, creates a session, opens the
 # game joined to it, and shuts it all down when you quit the game.
-#   tools/play.sh [--hard | --difficulty <id>] [--tailscale] [--serve] [room_id] [your name]
+#   tools/play.sh [--hard | --difficulty <id>] [--tailscale] [--serve] [--drafts] [room_id] [your name]
+# --drafts also offers rooms still marked `draft: true` (ADR-0030); the
+# always-on service never does.
 # --serve hosts the game for others without opening it yourself: it prints the
 # link and join code and runs until Ctrl+C.
 # --tailscale advertises this machine's Tailscale address, so friends you have
@@ -15,11 +17,13 @@ cd "$(dirname "$0")/.."
 DIFFICULTY=""
 ADVERTISE=""
 SERVE=0
+DRAFTS=()
 POS=()
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--hard) DIFFICULTY=hard ;;
 		--serve) SERVE=1 ;;
+		--drafts) DRAFTS=(-drafts) ;;
 		--tailscale) ADVERTISE="$(tailscale ip -4 2>/dev/null | head -1)"
 			[ -n "$ADVERTISE" ] || { echo "Tailscale is not up: run 'sudo tailscale up' first"; exit 1; } ;;
 		--difficulty) DIFFICULTY="${2:?--difficulty needs an id}"; shift ;;
@@ -54,7 +58,7 @@ WEB=()
 [ -d build/packs ] && WEB+=(-packs build/packs)
 ADV=()
 [ -n "$ADVERTISE" ] && ADV=(-advertise "$ADVERTISE")
-"$LOG/platform" -addr ":$PORT" -data data -rooms game/rooms -game game -godot "$GODOT" -transport ws "${WEB[@]}" "${ADV[@]}" > "$LOG/platform.log" 2>&1 &
+"$LOG/platform" -addr ":$PORT" -data data -rooms game/rooms -game game -godot "$GODOT" -transport ws "${WEB[@]}" "${ADV[@]}" "${DRAFTS[@]}" > "$LOG/platform.log" 2>&1 &
 PLATFORM_PID=$!
 cleanup() { kill "$PLATFORM_PID" 2>/dev/null; wait "$PLATFORM_PID" 2>/dev/null; echo "== platform stopped (logs in $LOG)"; }
 trap cleanup EXIT

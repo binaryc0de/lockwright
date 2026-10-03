@@ -103,6 +103,8 @@ solution:
   - { act: input_code, lock: "Safe/Keypad", value: "{{safe_code}}" }
 ```
 
+**Draft rooms (ADR-0030).** Add `draft: true` at the top level while a room is being built. `roomcheck`, dev mode and `packroom` treat it like any room, but the platform leaves it out of the catalog, game creation and pack downloads unless it runs with `-drafts` (`tools/play.sh --drafts`; the always-on service never does). Delete the line to ship.
+
 `solved_when` vocabulary (closed, grows additively): `item_picked_up: <item_id>`, `node_state: {path, state}`, `flag_accepted: {challenge}`, `all_of: [...]`, `any_of: [...]`. Exactly one key per condition.
 
 Templates: `{{var}}` refers to a declared variable; `{{flags.<challenge_id>}}` to a challenge's per-session flag (solution only); `{{nonce}}` appears only inside a flag `format`.

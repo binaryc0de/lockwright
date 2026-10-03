@@ -14,13 +14,13 @@ Conventions:
 |---|---|---|---|
 | GET | `/healthz` | M0 | Liveness: `{"status":"ok"}` |
 | GET | `/api/version` | M0 | `{"platform":"0.1.0"}`; room packs' `requires.platform` is matched against it |
-| GET | `/api/catalog` | M3 | Installed rooms: `[{room_id, title, version, duration_minutes, players: [min, max], challenges, difficulties: [{id, title, description}]}]` (pack download fields arrive with `/download` in M5) |
+| GET | `/api/catalog` | M3 | Installed rooms: `[{room_id, title, version, duration_minutes, players: [min, max], challenges, difficulties: [{id, title, description}]}]` (pack download fields arrive with `/download` in M5). Draft rooms are left out unless the platform runs with `-drafts` (ADR-0030); unknown room ids in `POST /api/sessions` are 404 |
 | POST | `/api/sessions` | M3 | Create a session: `{room_id, difficulty?}` -> `{session_id, invite_code}`. Guardrails: 503 `games_full` when `-max-games` unfinished games exist; 429 `too_many_games` after 6 creations in 10 minutes from one client (first `X-Forwarded-For` hop behind a local proxy); games nobody joins finish after `-expire-unjoined` (30 min). `difficulty` is one of the room's level ids ("" or absent = the default; unknown: 400 `unknown_difficulty`). LAN prototype: anyone on the LAN may create. |
 | GET | `/api/games/{code}` | M5 | Public view of a game by join code, for the lobby's game page: `{code, room_id, title, difficulty, difficulty_title, status, players, players_max, duration_minutes, hacker_room, created_at, won, elapsed_s}`. No tokens or session id. 404 `bad_invite` |
 | GET | `/api/status` | M5 | `{waiting, running, finished, max_games, free}` (`free` -1 = no cap; counts the same games as the cap). Counts only: codes are invitations and are never listed |
 | GET | `/`, `/g/{code}`, `/site/*` | M5 | The lobby site (ADR-0028), embedded in the platform |
 | any | `/ctf/{session}/{challenge}/...` | M5 | A running game's web challenge, proxied with `X-Forwarded-Prefix` (ADR-0029); 404 when not running or the game is finished. Challenge cards use it when the platform has `-public-url` |
-| GET | `/play/`, `/download/packs/{file}`, `/ws/{session}` | M5 | Browser client (`-web`), room packs (`-packs`), game WebSocket proxy (ADR-0025, ADR-0026) |
+| GET | `/play/`, `/download/packs/{file}`, `/ws/{session}` | M5 | Browser client (`-web`), room packs (`-packs`; only the current pack of a catalog room, ADR-0030), game WebSocket proxy (ADR-0025, ADR-0026) |
 | GET | `/api/sessions/{id}` | M3 | `{session_id, room_id, status: idle|starting|running|finished, players: [display_name], started_at, duration_minutes}` |
 | POST | `/api/sessions/{id}/join` | M3 | `{display_name, invite_code}` -> `{session_id, room_id, host, port, transport: "enet"|"ws", join_token}`. Starts or restores the game server if it is idle (PLAN.md 7.3, 7.4). `join_token` is single-use, 60 s TTL; clients fetch a new one for every (re)connect. |
 | POST | `/api/join` | M3 | Same as above with only the join code: `{display_name, invite_code}`. Codes are unique among unfinished sessions; 404 `bad_invite` otherwise. This is what the game client uses. |

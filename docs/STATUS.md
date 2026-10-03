@@ -113,6 +113,16 @@ Branch `m5-browser` (stacked on `m4-polish`; M4 stays open for its blind play-te
 - [x] Guardrails: `-max-games` (counts games holding resources), 6 creations / 10 min per client, unjoined games expire after 30 min, abandoned ones after 12 h, `/api/status` with free slots. Found live: games stayed "running" after the platform stopped and filled the cap; the platform now marks them idle (restorable) at start-up
 - [ ] Friends test in browsers (owner + friends over Tailscale), CTF included
 
+## Second room: The Clockmaker's Study (owner request 2026-10-03; ADR-0031)
+Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/README.md`.
+- [x] Draft rooms stay off the platform (ADR-0030): `draft: true` in `room.yaml`; catalog, game creation and pack downloads leave drafts out unless `-drafts` (`tools/play.sh --drafts`)
+- [x] Design draft: premise, spaces, puzzle chart (9 puzzles, ~28 steps), variables, SDK needs, asset list
+- [ ] Owner review of the design
+- [ ] R1 SDK: `DialLock`, `SequenceLock`, `SequencePlayer`, `AllOfGate`, analog `SessionClock`, `AmbientZone` tick
+- [ ] R2 greybox: scene, `room.yaml` (`draft: true`), briefing, hints, solution replay, roomcheck, `packroom -verify`, owner greybox play
+- [ ] R3 look: Codex assets and printables, dressing, baked browser lighting, audio
+- [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
+
 ## M6: Deployment and prototype sign-off (was M5)
 Not started. Includes `docker compose up` for the platform and challenge images (moved from M3, ADR-0019).
 
@@ -235,6 +245,11 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - `tools/test.sh` exit 0 afterwards: go test (incl. `-race` on the API), roomcheck, assetcheck 24/24, texture budget, gdUnit4 100 + 28 from the pack, m2 + m3 + browser smoke.
 - Public switch (ADR-0029, owner: "no installs for friends; a switch I control"): `tools/public.sh on|off|status` (Tailscale Funnel exposes only the platform's HTTPS site). CTF challenges go through the platform at `/ctf/{session}/{challenge}/` (intranet honours `X-Forwarded-Prefix`; cookie scoped per game); internal endpoints are loopback-only; joins limited to 30/min per client. `tools/test.sh` exit 0 (m3 smoke now attacks the real container through `/ctf/`). Funnel itself not yet switched on: the owner's call.
 - Owner feedback after the first public test (2026-10-03), fixed: the laptop's challenge link has **Open in new tab** and **Copy link**; the Esc menu has **Copy invite link** (the site's `/g/<code>` in the browser, the code on desktop); leaving the room in the browser returns to the game's page (or the lobby) instead of the in-engine menu. Checked in the owner's Chrome over HTTPS: Copy invite showed "Copied.", Leave room landed on `/g/VWDRW8`.
+
+### 2026-10-03, draft rooms (ADR-0030; Alienware)
+- New tests: `TestDraftRoomsAreHiddenUnlessAsked` (catalog hides a draft by default, includes it with `LoadWithDrafts`), `TestCatalogListsAndServesRoomPacks` now refuses a pack with no catalog room, `TestDraftFlagValidates` (schema accepts `draft: true`, rejects a non-boolean).
+- `tools/test.sh` exit 0: go test, roomcheck, assetcheck, gdUnit4 (29 room tests incl. the pack replay), m2 + m3 smoke (real Docker) and the browser smoke (headless Chrome downloads Night Shift's pack through the narrowed `/download/packs/` and plays to the win).
+- Not run: the always-on service was not restarted or redeployed; it still runs the previous build, which has no drafts to hide.
 
 ## Handoff (2026-10-03, end of the M4/M5 working session)
 - **Branches:** `m5-browser` is stacked on `m4-polish`; neither is merged to `main` (M4 still waits for its blind play-tests, M5 for the friends test). New work should branch from `m5-browser`, or merge both first if the owner agrees.
