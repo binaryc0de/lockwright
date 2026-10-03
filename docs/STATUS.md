@@ -106,7 +106,8 @@ Branch `m5-browser` (stacked on `m4-polish`; M4 stays open for its blind play-te
 - [x] Asset size diet: VRAM-compressed textures with 1K caps (ADR-0024); web first load ~92 MB gzipped (82 MB pack + 10 MB engine), then cached
 - [x] Platform serves the web client (`-web`, gzip) and room packs (`-packs`, catalog + `/download/packs/`); the browser downloads, verifies and mounts the pack (ADR-0025). `tools/web_smoke.sh` (headless Chrome, Radeon 680M): standard and hard both played to the win, platform recorded it
 - [ ] HTTPS/WSS path (Tailscale certs for the friends test)
-- [ ] Browser checks: pointer lock, audio, clipboard/save, frame rate, a web start screen (without a link the browser shows the desktop menu with an empty room list)
+- [x] Web start screen: rooms and difficulties from the platform catalog; Play solo (fetches the pack), Join by code, Host; desktop-only fields hidden
+- [ ] Browser checks: pointer lock, audio, clipboard/save, frame rate
 - [ ] Friends test in browsers (owner + friends over Tailscale), CTF included
 
 ## M6: Deployment and prototype sign-off (was M5)

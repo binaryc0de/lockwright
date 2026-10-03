@@ -119,6 +119,8 @@ static func valid_id(id: String) -> bool:
 ## Room ids available in res://rooms (dev mode and mounted packs).
 static func available_rooms() -> PackedStringArray:
 	var out := PackedStringArray()
+	if not DirAccess.dir_exists_absolute("res://rooms"):
+		return out  # builds without rooms (browser): they come as packs
 	for d in DirAccess.get_directories_at("res://rooms"):
 		if FileAccess.file_exists("res://rooms/%s/room.json" % d):
 			out.append(d)

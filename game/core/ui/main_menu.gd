@@ -22,6 +22,9 @@ var _token: LineEdit
 var _ws: CheckBox
 var _host_btn: Button
 var _platform: PlatformClient
+## Browser build (ADR-0023): rooms come from the platform serving this page.
+var _web := OS.has_feature("web")
+var _catalog := {}  # room_id -> catalog entry (browser build)
 
 
 func _ready() -> void:
@@ -78,7 +81,8 @@ func _ready() -> void:
 	_difficulty.item_selected.connect(func(_i: int) -> void: _refresh_difficulty_note())
 	_refresh_difficulties()
 
-	box.add_child(_caption("...or a room pack (.pck) and its room id"))
+	var pack_caption := _caption("...or a room pack (.pck) and its room id")
+	box.add_child(pack_caption)
 	var row := HBoxContainer.new()
 	_pack = LineEdit.new()
 	_pack.placeholder_text = "/path/to/room-0.1.0.pck"
@@ -91,12 +95,12 @@ func _ready() -> void:
 	box.add_child(row)
 
 	var play := Button.new()
-	play.text = "Play offline"
+	play.text = "Play solo" if _web else "Play offline"
 	play.custom_minimum_size = Vector2(0, 48)
 	play.pressed.connect(_play)
 	box.add_child(play)
 
-	box.add_child(_caption("Online: platform or game server address"))
+	box.add_child(_caption("Join friends with their game code, or host a game for them" if _web else "Online: platform or game server address"))
 	var jrow := HBoxContainer.new()
 	_server = LineEdit.new()
 	_server.placeholder_text = "address, e.g. 192.168.1.20"
@@ -129,7 +133,7 @@ func _ready() -> void:
 	join.pressed.connect(_join)
 	brow.add_child(join)
 	_host_btn = Button.new()
-	_host_btn.text = "Host the selected room on the platform"
+	_host_btn.text = "Host the selected room" if _web else "Host the selected room on the platform"
 	_host_btn.custom_minimum_size = Vector2(0, 48)
 	_host_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_host_btn.pressed.connect(_host)
@@ -143,6 +147,13 @@ func _ready() -> void:
 	_status = Label.new()
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_status)
+	if _web:
+		# The page's own origin is the platform; no packs, passwords, tunnels
+		# or quitting in a browser tab.
+		for c: Control in [pack_caption, row, _ws, _token, _server, quit]:
+			c.visible = false
+		_server.text = str(JavaScriptBridge.eval("location.origin"))
+		_load_catalog()
 
 
 func show_error(text: String) -> void:
@@ -175,12 +186,44 @@ func selected_difficulty() -> String:
 	return str(_difficulty.get_item_metadata(_difficulty.selected))
 
 
+## The selected room's difficulty levels: from its manifest, or from the
+## platform catalog in the browser build.
+func _selected_difficulties() -> Array:
+	var sel := _rooms.get_selected_items()
+	if sel.is_empty():
+		return []
+	var id: String = _rooms.get_item_metadata(sel[0])
+	if _catalog.has(id):
+		var ds: Array = _catalog[id].get("difficulties", [])
+		return ds if not ds.is_empty() else [{"id": "", "title": "Standard"}]
+	var m := RoomManifest.load_room(id)
+	return m.difficulties if m else []
+
+
+func _load_catalog() -> void:
+	_platform = PlatformClient.new(_server.text)
+	add_child(_platform)
+	_platform.request_async(HTTPClient.METHOD_GET, "/api/catalog", null, func(code: int, data: Variant) -> void:
+		if not is_instance_valid(self):
+			return
+		if code != 200 or not data is Array:
+			show_error("Could not load the room list (HTTP %d)." % code)
+			return
+		_rooms.clear()
+		for r: Dictionary in data:
+			_catalog[str(r["room_id"])] = r
+			_rooms.add_item("%s  (%s, %d min)" % [r.get("title", r["room_id"]), r.get("version", ""), int(r.get("duration_minutes", 60))])
+			_rooms.set_item_metadata(_rooms.item_count - 1, str(r["room_id"]))
+		if _rooms.item_count > 0:
+			_rooms.select(0)
+		_refresh_difficulties())
+
+
 func _refresh_difficulties() -> void:
 	_difficulty.clear()
-	var sel := _rooms.get_selected_items()
-	var m := RoomManifest.load_room(_rooms.get_item_metadata(sel[0])) if not sel.is_empty() else null
-	if m:
-		for d: Dictionary in m.difficulties:
+	var levels := _selected_difficulties()
+	if not levels.is_empty():
+		for d: Dictionary in levels:
 			_difficulty.add_item(str(d.get("title", d.get("id"))))
 			_difficulty.set_item_metadata(_difficulty.item_count - 1, str(d.get("id")))
 		_difficulty.select(0)
@@ -188,11 +231,10 @@ func _refresh_difficulties() -> void:
 
 
 func _refresh_difficulty_note() -> void:
-	var sel := _rooms.get_selected_items()
-	var m := RoomManifest.load_room(_rooms.get_item_metadata(sel[0])) if not sel.is_empty() else null
+	var levels := _selected_difficulties()
 	_difficulty_note.text = ""
-	if m and _difficulty.selected >= 0:
-		_difficulty_note.text = str(m.difficulties[_difficulty.selected].get("description", ""))
+	if _difficulty.selected >= 0 and _difficulty.selected < levels.size():
+		_difficulty_note.text = str(levels[_difficulty.selected].get("description", ""))
 
 
 func _join() -> void:
