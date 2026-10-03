@@ -105,7 +105,7 @@ Branch `m5-browser` (stacked on `m4-polish`; M4 stays open for its blind play-te
 - [ ] Per-platform renderer + browser-grade lighting for Night Shift
 - [x] Asset size diet: VRAM-compressed textures with 1K caps (ADR-0024); web first load ~92 MB gzipped (82 MB pack + 10 MB engine), then cached
 - [x] Platform serves the web client (`-web`, gzip) and room packs (`-packs`, catalog + `/download/packs/`); the browser downloads, verifies and mounts the pack (ADR-0025). `tools/web_smoke.sh` (headless Chrome, Radeon 680M): standard and hard both played to the win, platform recorded it
-- [ ] HTTPS/WSS path (Tailscale certs for the friends test)
+- [x] HTTPS/WSS (ADR-0026): Godot web needs a secure context, so browsers use HTTPS via `tailscale serve` and reach games through the platform's `/ws/{session}` proxy. Remote test from the Omarchy box on the tailnet: headless Chromium (SwiftShader) played hard mode to the win from `https://<machine>.<tailnet>.ts.net/play/`; the desktop client joined through the HTTPS platform; the CTF login answered over Tailscale (HTTP 200); no containers left afterwards
 - [x] Web start screen: rooms and difficulties from the platform catalog; Play solo (fetches the pack), Join by code, Host; desktop-only fields hidden
 - [x] Browser checks: "Click to play" + pointer lock recapture, a lost lock (Esc) opens the pause menu, "Save to Downloads" is a browser download, `?stats=1` logs FPS. Measured in headless Chrome on the integrated Radeon 680M at 1920x1080 (start view, corridor into the office): steady 60 fps (vsync), ~9 ms process, ~2,200 draw calls (worth batching later). Audio starts on the first click (Godot handles the browser unlock).
 - [ ] Friends test in browsers (owner + friends over Tailscale), CTF included

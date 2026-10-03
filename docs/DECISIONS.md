@@ -198,8 +198,16 @@ The platform serves the web build gzip-compressed.
 - **Web serving.** `-web <dir>` serves the browser client at `/play/` on the API's own origin. The page URL carries the join details (`?code=&name=`, plus `room`/`difficulty` for local play; `bot`/`flag` are for tests only). Precompressed `.gz` copies (`tools/export.sh`) are sent to browsers that accept gzip.
 **Consequences.** A friend needs only the link `http://<host>:<port>/play/?code=XXXXXX`. `tools/web_smoke.sh` plays both difficulties to the win in headless Chrome on the integrated GPU; `tools/test.sh` runs it when Chrome is installed. Packs are verified but not signed; signing is on the roadmap (PLAN.md 12.2).
 
-## ADR-0026: The friends test runs over plain HTTP on Tailscale; HTTPS waits for the cloud (2026-10-02)
+## ADR-0026: Browsers reach games over HTTPS through the platform; Tailscale provides HTTPS for the friends test (2026-10-02)
 
-**Context.** A page served over HTTPS may only open secure WebSockets, and every game server listens on its own port, so HTTPS end to end needs TLS on every per-game port or a proxy that routes WebSockets by path. Tailscale already encrypts the traffic between the owner's machine and the friends it is shared with.
-**Decision.** The friends test uses `http://<tailscale-ip>:<port>/play/?code=...` (`tools/play.sh --tailscale`). The cloud milestone puts the platform, the game servers' WebSockets and the challenge URLs behind one TLS proxy (Caddy or a cloud load balancer) with path routing.
-**Consequences.** On plain HTTP outside localhost, browsers block clipboard writes, so "Copy to clipboard" for item files does nothing. "Save to Downloads" works, so hard mode is unaffected. Everything else (WebGL, WebSocket, pointer lock, audio) works over HTTP.
+**Context.** Godot's web build refuses to start outside a secure context: on `http://100.x.y.z` it shows "Secure Context - use HTTPS". It works only on HTTPS or localhost, which is why the localhost tests passed. A page served over HTTPS may only open `wss://` on the page's own origin, and every game server listens on its own port. (This replaces the first version of this ADR, which assumed plain HTTP over Tailscale and failed in the first remote test.)
+**Decision.**
+- **Proxy.** The platform proxies game WebSockets at `/ws/{session}` to that session's game server, and the join reply includes `ws_path`. Browser clients always connect through it on the page's origin (`wss://` on HTTPS pages), so only the platform's port has to be reachable from a browser. Desktop clients still connect to the game server port directly.
+- **Friends test.** `tailscale serve --bg --https=443 http://127.0.0.1:8090` gives `https://<machine>.<tailnet>.ts.net/` with a real certificate, reachable only on the tailnet and by machines it is shared with. `tools/play.sh --tailscale` advertises the Tailscale IP (the CTF card and desktop game ports) and prints the HTTPS link.
+- **CTF cards** stay plain `http://<tailscale-ip>:200NN/`. Players open them in a separate tab, which browsers allow from an HTTPS page.
+- **Cloud.** The same proxy sits behind a TLS terminator (Caddy or a load balancer).
+**Consequences.** Verified from a second machine on the tailnet (the Omarchy box):
+- headless Chromium opened the `.ts.net` link, downloaded the room pack, joined through `/ws/`, and played hard mode to the win (the platform recorded it);
+- the desktop client joined through the HTTPS platform and the direct game port;
+- the CTF login page answered over Tailscale.
+On HTTPS the clipboard works too. ufw needs 8090 only for local access; Tailscale serve reaches the platform over loopback.

@@ -14,13 +14,14 @@ ap = argparse.ArgumentParser()
 ap.add_argument("url"); ap.add_argument("outdir")
 ap.add_argument("--at", default="30"); ap.add_argument("--size", default="1280x720")
 ap.add_argument("--swiftshader", action="store_true")
+ap.add_argument("--chrome", default=os.environ.get("CHROME", "google-chrome"))
 a = ap.parse_args()
 os.makedirs(a.outdir, exist_ok=True)
 w, h = a.size.split("x")
 port = 9300 + os.getpid() % 500
 gpu = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] if a.swiftshader else ["--use-angle=gl", "--ignore-gpu-blocklist"]  # the integrated GPU (Radeon 680M here)
 prof = tempfile.mkdtemp(prefix="webshot-")
-chrome = subprocess.Popen(["google-chrome", "--headless=new", "--no-first-run", f"--user-data-dir={prof}",
+chrome = subprocess.Popen([a.chrome, "--headless=new", "--no-first-run", f"--user-data-dir={prof}",
     f"--remote-debugging-port={port}", f"--window-size={w},{h}", "--autoplay-policy=no-user-gesture-required",
     *gpu, "about:blank"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 try:

@@ -10,6 +10,8 @@ signal status_changed(status: String, detail: String)
 const TIGHTEN_DELAY_S := 2.0
 const RETRY_S := 2.0
 
+## Platform WebSocket proxy path for this session (browsers).
+var ws_path: String = ""
 var host: String = "127.0.0.1"
 var port: int = 7777
 var transport: String = "enet"
@@ -100,6 +102,7 @@ func _fetch_ticket() -> void:
 				transport = str(data.get("transport", "enet"))
 				token = str(data["join_token"])
 				session_id = str(data.get("session_id", ""))
+				ws_path = str(data.get("ws_path", ""))
 				room_id = str(data.get("room_id", ""))
 				_connect_direct()
 			elif code in [400, 403, 404]:
@@ -110,12 +113,27 @@ func _fetch_ticket() -> void:
 				_schedule_retry("platform not reachable at %s" % platform_url), 10.0)
 
 
+## Browsers reach the game through the platform's /ws/<session> proxy on the
+## page's own origin (wss on HTTPS pages, ADR-0026); others connect directly.
+func ws_url() -> String:
+	if OS.has_feature("web") and not ws_path.is_empty() and not platform_url.is_empty():
+		return SessionClient.proxied_ws_url(platform_url, ws_path)
+	return "ws://%s:%d" % [host, port]
+
+
+static func proxied_ws_url(p_platform_url: String, path: String) -> String:
+	var base := p_platform_url.trim_suffix("/")
+	if base.begins_with("https://"):
+		return "wss://" + base.trim_prefix("https://") + path
+	return "ws://" + base.trim_prefix("http://") + path
+
+
 func _connect_direct() -> Error:
 	var err: Error
 	var peer: MultiplayerPeer
 	if transport == "ws":
 		var ws := WebSocketMultiplayerPeer.new()
-		err = ws.create_client("ws://%s:%d" % [host, port])
+		err = ws.create_client(ws_url())
 		peer = ws
 	else:
 		var enet := ENetMultiplayerPeer.new()

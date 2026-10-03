@@ -55,5 +55,16 @@ CODE="$(curl -sf -X POST "http://127.0.0.1:$PORT/api/sessions" -d "{\"room_id\":
 [ -n "$CODE" ] || { echo "could not create a session for $ROOM"; tail -5 "$LOG/platform.log"; exit 1; }
 IP="$(grep -o 'advertise=[0-9.]*' "$LOG/platform.log" | head -1 | cut -d= -f2)"
 echo "== $ROOM (${DIFFICULTY:-default difficulty}) is ready. Join code: $CODE   (friends: ${IP:-this-pc}:$PORT + code $CODE)"
-[ ${#WEB[@]} -gt 0 ] && echo "== in a browser: http://${IP:-127.0.0.1}:$PORT/play/?code=$CODE"
+if [ ${#WEB[@]} -gt 0 ]; then
+	if [ -n "$ADVERTISE" ]; then
+		TSNAME="$(tailscale status --json 2>/dev/null | jq -r '.Self.DNSName' | sed 's/\.$//')"
+		if tailscale serve status 2>/dev/null | grep -q "127.0.0.1:$PORT"; then
+			echo "== friends open: https://$TSNAME/play/?code=$CODE"
+		else
+			echo "== browsers need HTTPS: run 'tailscale serve --bg --https=443 http://127.0.0.1:$PORT' once, then share https://$TSNAME/play/?code=$CODE"
+		fi
+	else
+		echo "== in a browser on this PC: http://127.0.0.1:$PORT/play/?code=$CODE"
+	fi
+fi
 "$GODOT" --path game -- --join "127.0.0.1:$PORT" --code "$CODE" --name "$NAME" > "$LOG/game.log" 2>&1 || true

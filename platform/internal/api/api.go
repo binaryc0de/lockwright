@@ -13,10 +13,14 @@ import (
 	"log/slog"
 	"math"
 	"mime"
+	"net"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -46,6 +50,8 @@ type Orchestrator interface {
 type GameServers interface {
 	EnsureRunning(ctx context.Context, sess store.Session) (int, error)
 	Transport() string
+	// Port is the running game server's port for a session (0 if none).
+	Port(sessionID string) int
 }
 
 // Deps are the API's collaborators.
@@ -88,6 +94,9 @@ func NewHandler(d *Deps) http.Handler {
 		mux.Handle("GET /{$}", http.RedirectHandler("/play/", http.StatusFound))
 	}
 	mux.HandleFunc("GET /api/catalog", a.catalog)
+	if d.Servers != nil {
+		mux.HandleFunc("GET /ws/{session}", a.wsProxy)
+	}
 	if d.PacksDir != "" {
 		mux.HandleFunc("GET /download/packs/{file}", a.downloadPack)
 	}
@@ -236,7 +245,8 @@ func (a *app) admit(w http.ResponseWriter, r *http.Request, sess store.Session, 
 		writeErr(w, http.StatusServiceUnavailable, "server_unavailable", "The game server could not start. Try again in a moment.")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"session_id": sess.ID, "room_id": sess.RoomID, "host": a.d.AdvertiseHost, "port": port, "transport": a.d.Servers.Transport(), "join_token": token})
+	writeJSON(w, http.StatusOK, map[string]any{"session_id": sess.ID, "room_id": sess.RoomID, "host": a.d.AdvertiseHost, "port": port, "transport": a.d.Servers.Transport(), "join_token": token,
+		"ws_path": "/ws/" + sess.ID})
 }
 
 // --- internal (game server -> platform) -------------------------------------
@@ -554,4 +564,23 @@ func (a *app) downloadPack(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	http.ServeFile(w, r, filepath.Join(a.d.PacksDir, name))
+}
+
+// wsProxy forwards a WebSocket to the session's game server (ADR-0026).
+// Browsers on an HTTPS page may only open wss:// on the page's own origin, so
+// they reach every game through this one TLS endpoint instead of per-game
+// ports. The game server still checks the join token.
+func (a *app) wsProxy(w http.ResponseWriter, r *http.Request) {
+	port := a.d.Servers.Port(r.PathValue("session"))
+	if port == 0 || !strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
+		writeErr(w, http.StatusNotFound, "not_found", "No running game for this session.")
+		return
+	}
+	target := &url.URL{Scheme: "http", Host: net.JoinHostPort("127.0.0.1", strconv.Itoa(port))}
+	p := httputil.NewSingleHostReverseProxy(target)
+	p.Director = func(req *http.Request) {
+		req.URL.Scheme, req.URL.Host, req.URL.Path, req.URL.RawPath = target.Scheme, target.Host, "/", ""
+		req.Host = target.Host
+	}
+	p.ServeHTTP(w, r)
 }

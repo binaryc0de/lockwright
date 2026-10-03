@@ -1,11 +1,13 @@
 package api
 
 import (
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"context"
 	"encoding/json"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -35,13 +37,17 @@ func TestHealthAndVersion(t *testing.T) {
 	}
 }
 
-type fakeServers struct{ started []string }
+type fakeServers struct {
+	started []string
+	port    int
+}
 
 func (f *fakeServers) EnsureRunning(_ context.Context, s store.Session) (int, error) {
 	f.started = append(f.started, s.ID)
 	return 7781, nil
 }
 func (f *fakeServers) Transport() string { return "enet" }
+func (f *fakeServers) Port(string) int   { return f.port }
 
 type fakeOrch struct{ started, stopped []string }
 
@@ -393,5 +399,53 @@ func TestCatalogListsAndServesRoomPacks(t *testing.T) {
 		if resp, _ := http.Get(ts.URL + bad); resp.StatusCode == 200 {
 			t.Fatalf("%s served", bad)
 		}
+	}
+}
+
+func TestWebSocketProxyReachesTheGameServer(t *testing.T) {
+	// A stand-in game server: answers the upgrade, then echoes bytes.
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	go func() {
+		c, err := ln.Accept()
+		if err != nil {
+			return
+		}
+		defer c.Close()
+		br := bufio.NewReader(c)
+		req, err := http.ReadRequest(br)
+		if err != nil || req.URL.Path != "/" || !strings.EqualFold(req.Header.Get("Upgrade"), "websocket") {
+			return
+		}
+		_, _ = c.Write([]byte("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n"))
+		buf := make([]byte, 4)
+		if _, err := io.ReadFull(br, buf); err == nil {
+			_, _ = c.Write(buf)
+		}
+	}()
+	e := setup(t)
+	e.servers.port = ln.Addr().(*net.TCPAddr).Port
+	c, err := net.Dial("tcp", strings.TrimPrefix(e.ts.URL, "http://"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	_, _ = c.Write([]byte("GET /ws/abc HTTP/1.1\r\nHost: x\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n"))
+	br := bufio.NewReader(c)
+	resp, err := http.ReadResponse(br, nil)
+	if err != nil || resp.StatusCode != 101 {
+		t.Fatalf("upgrade through the proxy: %v %v", resp, err)
+	}
+	_, _ = c.Write([]byte("ping"))
+	got := make([]byte, 4)
+	if _, err := io.ReadFull(br, got); err != nil || string(got) != "ping" {
+		t.Fatalf("echo through the proxy: %q %v", got, err)
+	}
+	e.servers.port = 0
+	if code, _ := e.call(t, "GET", "/ws/abc", "", nil); code != 404 {
+		t.Fatalf("no game server: %d", code)
 	}
 }

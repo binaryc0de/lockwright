@@ -71,3 +71,8 @@ func test_platform_urls_keep_explicit_ports() -> void:
 	assert_str(AppArgs.platform_http_url("192.168.1.20:8090")).is_equal("http://192.168.1.20:8090")
 	assert_str(AppArgs.platform_http_url("https://play.example.org/")).is_equal("https://play.example.org")
 	assert_str(AppArgs.platform_http_url("http://h:9000")).is_equal("http://h:9000")
+
+
+func test_browser_game_url_goes_through_the_platform() -> void:
+	assert_str(SessionClient.proxied_ws_url("https://box.tail1234.ts.net", "/ws/abc")).is_equal("wss://box.tail1234.ts.net/ws/abc")
+	assert_str(SessionClient.proxied_ws_url("http://127.0.0.1:8090/", "/ws/abc")).is_equal("ws://127.0.0.1:8090/ws/abc")
