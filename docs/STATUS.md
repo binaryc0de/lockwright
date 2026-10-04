@@ -129,7 +129,7 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Shipped (ADR-0035): `draft: true` removed; packs served gzipped
 - [x] Download progress with gzipped packs: measured in both clients (desktop stopped at 64.5 %, now 99.9 %; the browser already counted decompressed bytes); the platform sends Content-Length with the gzipped copy
 - [x] Intro video on the site (owner request; ADR-0036): room-footage trailer (`media/rooms/clockmaker/trailer.json`, 7 shots, 30.7 s), Gemini TTS narration (`tools/narrate`), `tools/trailer/build.sh`; platform `-media` serves it, lobby card and game page show it
-- [ ] Veo story clips from Flow (waiting on the owner's OK to accept Flow's privacy notice), then rebuild the trailer
+- [x] Veo story clips from Flow (owner accepted Flow's privacy notice, 2026-10-04): `clips/01-street.mp4` (fogbound Clerkenwell street, push-in on the clock window) and `02-housekeeper.mp4` (Mrs Pell opens the study door); trailer rebuilt, 46.7 s
 - [ ] R4: three blind play-tests logged in the room README (after shipping, owner's choice)
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
 
@@ -297,6 +297,7 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - `tools/trailer/build.sh clockmaker`: Movie Maker recorded 922 frames at 1920x1080; Blender encoded `intro.mp4` (1280x720 H.264 + AAC, 30.7 s, 8.3 MB, index at the front) and `poster.jpg`. FFmpeg `volumedetect`: mean -25.8 dB, max -4.3 dB; per-second peaks show the narration throughout and no spike from the staged door (one-shot sounds are now removed).
 - Headless Chrome (`webshot.py --swiftshader`) played it with sound (-23 dB RMS); its GPU path stalls 720p video at 0.2 s on this laptop, which first looked like a silent file.
 - `go test ./platform/internal/api` (`TestIntroVideosAreListedAndServed`: catalog lists only rooms with a video; serves the video; refuses other files, unknown rooms and traversal). A private dev platform (port 8095, own data dir) with `-media media`: range requests answer 206; lobby card and game page screenshotted at 1366x900 and 390x844.
+- Story clips: two Veo 3.1 Fast clips made in Flow (project "Oct 04 - 07:43", 20 credits each, 40 of the month's 1,000), downloaded at 720p. `build.sh` converts them to 30 fps and levels their sound (loudnorm -30 LUFS); final per-second peaks: clips -10 to -23 dB, narration -8 to -15 dB. Contact sheet checked: street, window, door, study, then the room footage with title and captions.
 - `tools/test.sh` in the worktree: all Go packages ok, gdUnit 135 + 16 + 29 cases pass, multiplayer, platform and browser smokes PASS.
 
 ## Handoff (2026-10-03, end of the M4/M5 working session)

@@ -25,8 +25,21 @@ if [[ -f "$MEDIA/narration.wav" ]]; then
 	ARGS+=(--narration "$PWD/$MEDIA/narration.wav" --narration-start "$START")
 fi
 shopt -s nullglob
-CLIPS=("$PWD/$MEDIA"/clips/*.mp4)
-if (( ${#CLIPS[@]} )); then
+CLIPS=()
+SRC=("$MEDIA"/clips/*.mp4)
+if (( ${#SRC[@]} )); then
+	# Story clips (Flow/Veo) come at 24 fps with loud, unlevelled sound; the
+	# sequencer does not retime, so convert them to the trailer's 30 fps and
+	# level their sound below the narration.
+	command -v "${FFMPEG:-ffmpeg}" > /dev/null || { echo "story clips need ffmpeg"; exit 1; }
+	mkdir -p "$WORK/clips"
+	for c in "${SRC[@]}"; do
+		out="$PWD/$WORK/clips/$(basename "$c")"
+		"${FFMPEG:-ffmpeg}" -hide_banner -v error -y -i "$c" -vf "fps=30,scale=1280:720" \
+			-af "loudnorm=I=-30:TP=-6:LRA=11,aresample=48000" -c:v libx264 -crf 16 -preset medium \
+			-c:a aac -b:a 192k -ac 2 "$out"
+		CLIPS+=("$out")
+	done
 	ARGS+=(--pre "$(IFS=,; echo "${CLIPS[*]}")")
 fi
 echo "== assembling (Blender FFmpeg)"
