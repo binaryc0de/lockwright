@@ -137,7 +137,7 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] R5.2 greybox (0.2.0): spiral stair (smooth helicoid collider under stone treads, 6 m over 2.5 turns), the undercroft, six puzzles (15 in all, 47 solution steps), exit `open_vault`; the long-case face, arbor and plaque now ride on the swinging case (paths `Study/LongcaseClock/Case/Swing/Front/...`), the opening behind it widened to 0.8 m and the case swings 130 degrees; room tests 17 incl. a physics walk (a capsule with the player's size walks from the study to the vault) and reach checks below ground and along the stair; `tools/play_from.sh ROOM PUZZLE` starts a local game part-way through
 - [ ] Owner greybox play of R5 (blind)
 - [x] R5.3 look: 11 Codex GLBs (iron gate, gate ring lock, tomb chest, sluice, waterwheel, turret clock, great dial, vault door, regulator, Maren's bench, the undercroft smalls kit; tomb and regulator revised once for stone tone), 7 printables (fresco, barrel strip, three mason's marks, Maren's journal, the stair note), Poly Haven stone (`medieval_blocks_02`, `monastery_stone_floor`, `rough_block_wall`, triplanar) and a crate; candles with `Flicker`, lanterns, a reflection probe for the colder undercroft ambient, water, race, air and the turret tick (all synthesised); screenshots in `docs/screenshots/clockmaker-r5/`
-- [ ] R5.4 ship 0.2.0: trailer last shot, deploy with no game live
+- [x] R5.4 ship 0.2.0 (deployed 2026-10-04): trailer last shot, deploy with no game live
 - [ ] R4: three blind play-tests logged in the room README (after shipping, owner's choice)
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
 
@@ -337,3 +337,8 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - Checked by eye in-engine: gate rings, tomb bosses and inscription, the turret clock's stamps and chalk, the fresco's names and devices, the comb, vault rings, great dial; Compatibility renderer render compared (probe ambient ignored there, a little brighter, nothing lost).
 - `tools/test.sh` exit 0 (gdUnit4 145/145, both rooms' pack replays, m2/m3/browser smoke). Pack 0.2.0: 122.5 MB, 76.0 MB gzipped (0.1.0: 82.2 / 53.0); dropped a 5.7 MB candlestick, the barrels and a bucket, and Codex's leftover loose textures to get there.
 - Trailer rebuilt (`tools/narrate` + `tools/trailer/build.sh clockmaker`): two new last shots (the case swung open on the stone passage; the descent into the spiral under the title), one new narration line; 52.8 s, mean -26.2 dB, max -3.0 dB.
+
+### 2026-10-04, deployed: Clockmaker 0.2.0 with the Undercroft
+- Before: `/api/status` 0 running / 0 waiting, no game-server processes, service checkout clean on `m5-browser`. Fast-forwarded to `room-clockmaker` (e64b5cd); service stopped 17:11:57, `tools/install-service.sh` restarted it by 17:13:05.
+- After, over the public HTTPS address: `/api/catalog` lists clockmaker 0.2.0 (pack 122,528,836 bytes) with its intro; `/download/packs/clockmaker-0.2.0.pck` answered gzip (75,977,157 bytes on the wire) and the decompressed bytes match the catalog SHA-256 (3fc961d3...); the new `intro.mp4` serves 200 (19,980,695 bytes). Headless Chrome (`tools/webshot.py --swiftshader`) joined a fresh game (DK4JP3; server log: player joined) and rendered the landing from the new pack. That check game was left to idle out.
+- Not done: the blind play-tests (R4) and the owner's own blind run of the undercroft.
