@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## SocketLock + Socket and Spinner (ADR-0037), through the authority as
+## SocketLock + Socket, Spinner and Flicker (ADR-0037), through the authority as
 ## players would. Room: a two-arbor train taking wheels 20/24/30, right with
 ## 20 and 30 in either order, unpowered until Power (a Lever) is thrown, and
 ## only after the "start" puzzle (a KeyLock) is solved.
@@ -212,3 +212,13 @@ func test_spinner_turns_only_while_its_condition_holds() -> void:
 	assert_bool(spin.running).is_true()
 	spin._process(0.5)
 	assert_float(spin.rotation_degrees.z).is_equal_approx(45.0, 0.01)
+
+
+func test_flicker_stays_within_its_amount() -> void:
+	var f: Flicker = auto_free(Flicker.new())
+	f.amount = 0.2
+	f._base = 1.0
+	f._noise.frequency = 1.0
+	for i in 200:
+		var e := f.energy_at(i * 0.37)
+		assert_float(e).is_between(0.8, 1.2)
