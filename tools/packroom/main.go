@@ -130,6 +130,10 @@ func run(args []string) error {
 		return fmt.Errorf("%s contains files of other rooms (%s); check the preset's filters", packName, strings.Join(f, ","))
 	}
 
+	if err := gzipFile(packPath); err != nil {
+		return err
+	}
+
 	sum, size, err := hashFile(packPath)
 	if err != nil {
 		return err

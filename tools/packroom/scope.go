@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -78,4 +79,25 @@ func foreignRooms(pack []byte, others []string) []string {
 		}
 	}
 	return found
+}
+
+// gzipFile writes path.gz next to path, deterministically (no name or time
+// in the header), for the platform to send to clients that accept gzip.
+func gzipFile(path string) error {
+	in, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var buf bytes.Buffer
+	zw, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
+	if err != nil {
+		return err
+	}
+	if _, err := zw.Write(in); err != nil {
+		return err
+	}
+	if err := zw.Close(); err != nil {
+		return err
+	}
+	return os.WriteFile(path+".gz", buf.Bytes(), 0o644)
 }

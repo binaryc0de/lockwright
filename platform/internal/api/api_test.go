@@ -306,7 +306,13 @@ func TestDifficultyInCatalogAndSessions(t *testing.T) {
 	}
 	_ = json.NewDecoder(resp.Body).Decode(&cat)
 	resp.Body.Close()
-	if len(cat) != 1 || len(cat[0].Difficulties) != 2 || cat[0].Difficulties[1].ID != "hard" {
+	found := false
+	for _, c := range cat {
+		if c.RoomID == "night_shift" {
+			found = len(c.Difficulties) == 2 && c.Difficulties[1].ID == "hard"
+		}
+	}
+	if !found {
 		t.Fatalf("catalog difficulties: %+v", cat)
 	}
 	code, out := e.call(t, "POST", "/api/sessions", "", map[string]string{"room_id": "night_shift", "difficulty": "hard"})
@@ -393,13 +399,26 @@ func TestCatalogListsAndServesRoomPacks(t *testing.T) {
 	ts := httptest.NewServer(NewHandler(&Deps{Store: e.st, Rooms: cat, PacksDir: dir}))
 	defer ts.Close()
 	resp, _ := http.Get(ts.URL + "/api/catalog")
-	var out []struct {
-		Pack *struct{ File, SHA256, URL string } `json:"pack"`
+	var all []struct {
+		RoomID string                              `json:"room_id"`
+		Pack   *struct{ File, SHA256, URL string } `json:"pack"`
 	}
-	_ = json.NewDecoder(resp.Body).Decode(&out)
+	_ = json.NewDecoder(resp.Body).Decode(&all)
 	resp.Body.Close()
+	var out []struct {
+		Pack *struct{ File, SHA256, URL string }
+	}
+	for _, r := range all {
+		if r.RoomID == "night_shift" {
+			out = append(out, struct {
+				Pack *struct{ File, SHA256, URL string }
+			}{r.Pack})
+		} else if r.Pack != nil {
+			t.Fatalf("%s lists a pack that was never built: %+v", r.RoomID, r.Pack)
+		}
+	}
 	if len(out) != 1 || out[0].Pack == nil || out[0].Pack.URL != "/download/packs/night_shift-0.1.0.pck" {
-		t.Fatalf("catalog pack: %+v", out)
+		t.Fatalf("catalog pack: %+v", all)
 	}
 	resp, _ = http.Get(ts.URL + out[0].Pack.URL)
 	b, _ := io.ReadAll(resp.Body)
@@ -407,6 +426,26 @@ func TestCatalogListsAndServesRoomPacks(t *testing.T) {
 	if string(b) != "GDPC-pack" {
 		t.Fatalf("pack body %q", b)
 	}
+	// A precompressed copy goes to clients that accept gzip.
+	var zb bytes.Buffer
+	zw := gzip.NewWriter(&zb)
+	zw.Write([]byte("GDPC-pack"))
+	zw.Close()
+	_ = os.WriteFile(filepath.Join(dir, "night_shift-0.1.0.pck.gz"), zb.Bytes(), 0o644)
+	req, _ := http.NewRequest("GET", ts.URL+out[0].Pack.URL, nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	zresp, err := http.DefaultTransport.RoundTrip(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zr, err := gzip.NewReader(zresp.Body)
+	if err != nil || zresp.Header.Get("Content-Encoding") != "gzip" {
+		t.Fatalf("no gzip pack: %v %q", err, zresp.Header.Get("Content-Encoding"))
+	}
+	if got, _ := io.ReadAll(zr); string(got) != "GDPC-pack" {
+		t.Fatalf("gzip pack body %q", got)
+	}
+	zresp.Body.Close()
 	// A pack with no room in the catalog (a draft, ADR-0030) is not served.
 	_ = os.WriteFile(filepath.Join(dir, "unlisted-0.1.0.pck"), []byte("GDPC-pack"), 0o644)
 	for _, bad := range []string{"/download/packs/..%2Fsecret.key", "/download/packs/night_shift-0.1.0.json", "/download/packs/x.pck", "/download/packs/unlisted-0.1.0.pck"} {
@@ -524,8 +563,12 @@ func TestGameViewStatusAndGuardrails(t *testing.T) {
 	var catOut []map[string]any
 	_ = json.NewDecoder(resp.Body).Decode(&catOut)
 	resp.Body.Close()
-	if s, _ := catOut[0]["summary"].(string); !strings.Contains(s, "Kestrel") {
-		t.Fatalf("catalog summary %q", s)
+	for _, c := range catOut {
+		if c["room_id"] == "night_shift" {
+			if s, _ := c["summary"].(string); !strings.Contains(s, "Kestrel") {
+				t.Fatalf("catalog summary %q", s)
+			}
+		}
 	}
 }
 

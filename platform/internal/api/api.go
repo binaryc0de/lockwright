@@ -711,7 +711,23 @@ func (a *app) downloadPack(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Cache-Control", "no-cache")
-	http.ServeFile(w, r, filepath.Join(a.d.PacksDir, name))
+	w.Header().Add("Vary", "Accept-Encoding")
+	path := filepath.Join(a.d.PacksDir, name)
+	// A fresh precompressed copy (tools/packroom) goes to clients that accept
+	// gzip; they verify the SHA-256 of the decompressed pack.
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		if pst, err := os.Stat(path); err == nil {
+			if f, err := os.Open(path + ".gz"); err == nil {
+				defer f.Close()
+				if gst, err := f.Stat(); err == nil && !gst.ModTime().Before(pst.ModTime()) {
+					w.Header().Set("Content-Encoding", "gzip")
+					http.ServeContent(w, r, "", gst.ModTime(), f)
+					return
+				}
+			}
+		}
+	}
+	http.ServeFile(w, r, path)
 }
 
 // wsProxy forwards a WebSocket to the session's game server (ADR-0026).

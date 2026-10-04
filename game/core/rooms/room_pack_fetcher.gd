@@ -76,6 +76,10 @@ func _http_get(url: String, size: int = 0) -> Dictionary:
 	var http := HTTPRequest.new()
 	http.timeout = 300.0
 	http.body_size_limit = 512 * 1024 * 1024
+	# Packs may come gzipped (ADR-0035). A browser's own fetch already
+	# decompresses them, so the web build must not try again; desktop builds
+	# ask for gzip and decompress it themselves.
+	http.accept_gzip = not OS.has_feature("web")
 	add_child(http)
 	var done := []
 	http.request_completed.connect(func(result: int, code: int, _h: PackedStringArray, body: PackedByteArray) -> void:

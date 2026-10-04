@@ -125,7 +125,9 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Fixes from the owner's look: pocket watch rested face up on the desk, suitcase off the landing wall (`settle()`)
 - [x] Audio: long-case tick once wound, strike of the master's hour at the win, fire crackle (all synthesised)
 - [x] Browser: renders compared with the Compatibility renderer (no lights lost); a private `-drafts` platform served the room to headless Chrome (Radeon 680M, WebGL 2), the 82 MB pack downloaded and mounted, and the solution bot played it to the win in the browser (platform recorded won=true)
-- [ ] Owner play of the dressed room
+- [x] Owner play of the dressed room (2026-10-03, desktop, solo: "played through looks good")
+- [x] Shipped (ADR-0035): `draft: true` removed; packs served gzipped
+- [ ] R4: three blind play-tests logged in the room README (after shipping, owner's choice)
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
 
 ## M6: Deployment and prototype sign-off (was M5)
