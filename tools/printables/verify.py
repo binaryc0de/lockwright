@@ -112,6 +112,16 @@ def main():
     group.add_argument('--compare', action='store_true')
     parser.add_argument('documents', nargs='*', help='Optional request IDs; defaults to all metadata')
     args = parser.parse_args()
+    # Clockmaker metadata is confined to the request's allowed reports lane.
+    from verify_clockmaker import IDS, verify as verify_clockmaker
+    selected_clockmaker = [doc for doc in args.documents if doc in IDS]
+    if not args.documents:
+        selected_clockmaker = [doc for doc in IDS if (ROOT / 'assets/reports/printables' / (doc+'.json')).exists()]
+    if selected_clockmaker:
+        verify_clockmaker(selected_clockmaker, args.record, args.compare)
+        if args.documents and len(selected_clockmaker) == len(args.documents):
+            return
+        args.documents = [doc for doc in args.documents if doc not in IDS]
     hashes = {}
     count = 0
     metadata_dir = ROOT / 'assets/meta/printables'

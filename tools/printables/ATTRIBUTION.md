@@ -6,7 +6,7 @@ comes from the owner/orchestrator's `assets/requests/printables/` files. No down
 photographs, textures, SVGs or font files are used. No font binaries are copied into
 the repository or delivered PNGs.
 
-Printed lettering uses only **Inter**, already bundled with Blender 5.2.2,
+Legacy Night Shift printed lettering uses only **Inter**, already bundled with Blender 5.2.2,
 as expressly allowed by the printable request. Author: **The Inter Project
 Authors**, copyright 2020. Source: https://rsms.me/inter/ and
 https://github.com/rsms/inter . License: **SIL Open Font License 1.1**.
@@ -19,3 +19,10 @@ CC0/CC-BY restriction continues to apply to any third-party art assets.
 
 The CPU renderer uses Python's standard library and NumPy already bundled with
 Blender. These are rendering tools and are not shipped as asset inputs.
+
+Clockmaker’s six printable templates, cabinet-card portrait illustration,
+letterpress serif contours, dip-pen lettering and paper/photo overlays are
+original artwork authored in `clockmaker.py`, `create_clockmaker_templates.py`
+and `overlays/clockmaker_surface.py`. Clockmaker uses no third-party art,
+photograph or font input; its letter geometry extends the original authored
+stroke alphabet. No downloads were made.

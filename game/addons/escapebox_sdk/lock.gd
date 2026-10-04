@@ -15,6 +15,10 @@ signal attempt_failed
 @export var code: String = ""
 ## False for locks that need power first (e.g. a dead door panel).
 @export var starts_powered: bool = true
+## Nodes shown only once the lock is open (a fitted wheel, a hung pendulum)
+## and nodes hidden then (an empty outline). Presentation only.
+@export var show_when_unlocked: Array[NodePath] = []
+@export var hide_when_unlocked: Array[NodePath] = []
 ## What players are told while the lock has no power, and the prompt suffix.
 @export var dead_message: String = "The panel is dead."
 @export var dead_prompt: String = "no power"
@@ -89,6 +93,14 @@ func _apply_state(state: Dictionary) -> void:
 		mat.emission = color
 		mat.emission_energy_multiplier = 2.0
 		(light as GeometryInstance3D).material_override = mat
+	for p in show_when_unlocked:
+		var n := get_node_or_null(p) as Node3D
+		if n:
+			n.visible = open
+	for p in hide_when_unlocked:
+		var n := get_node_or_null(p) as Node3D
+		if n:
+			n.visible = not open
 	var label := get_node_or_null(status_label) as Label3D
 	if label:
 		label.text = "" if not powered else ("OPEN" if open else "LOCKED")

@@ -66,6 +66,23 @@ func test_activation_springs_an_openable_once_its_lock_allows() -> void:
 	assert_bool(box.is_open()).is_true()
 
 
+func test_locks_show_and_hide_parts_when_opened() -> void:
+	var slot := room.get_node("GearA") as KeyLock
+	var fitted := Node3D.new()
+	var empty := Node3D.new()
+	slot.add_child(fitted)
+	slot.add_child(empty)
+	slot.show_when_unlocked = [slot.get_path_to(fitted)]
+	slot.hide_when_unlocked = [slot.get_path_to(empty)]
+	slot._apply_state(auth.state.node_state("GearA"))
+	assert_bool(fitted.visible).is_false()
+	assert_bool(empty.visible).is_true()
+	act("GearItemA", "pick_up")
+	act("GearA", "use_item", {"item": "GearItemA"})
+	assert_bool(fitted.visible).is_true()
+	assert_bool(empty.visible).is_false()
+
+
 func test_dial_submit_code_sets_every_wheel() -> void:
 	assert_dict(act("Rings", "submit_code", {"value": "ABA"})).contains_key_value("error", "wrong_code")
 	assert_dict(act("Rings", "submit_code", {"value": "XYZ"})).contains_key_value("error", "wrong_code")

@@ -76,3 +76,35 @@ pen ticks/signature and corner laminate reflections are original SVG geometry.
 For a selected two-build check, run bundled Python on `verify.py --record
 network_diagram_laminated work_order`, rebuild, then use the same IDs with
 `--compare`. Existing templates and outputs are unchanged.
+
+Clockmaker printables use `clockmaker.py` through the same locked runner:
+
+```bash
+tools/printables/build_printables.sh harrow_letter almanac_cipher_page coded_note photograph house_rules_card daybook_spread
+```
+
+The original Night Shift renderer remains unchanged; selected legacy requests
+still delegate to it. Clockmaker adds six SVG templates with request-filled
+`tspan` placeholders, original dip-pen / serif lettering (no external fonts),
+computed analog faces, and seeded laid-paper, foxing and cabinet-print overlays.
+`create_clockmaker_templates.py` regenerates these source templates without
+rendering or downloading art. The cabinet portrait is an original illustration,
+softened and aged on the CPU; `photograph` builds front and back as separate PNGs.
+
+Clockmaker outputs go only to `game/rooms/clockmaker/assets/docs/`, previews to
+`assets/previews/printables/`, and its metadata to
+`assets/reports/printables/<request_id>.json` alongside the Markdown reports.
+This metadata location follows the Clockmaker task's narrower allowed write
+paths. `verify.py` dispatches these IDs to `verify_clockmaker.py`; using bundled
+Python, run `verify.py --record` with the six IDs, rebuild, then run
+`verify.py --compare` with the same IDs. Clockmaker checksum manifests live in
+`assets/reports/printables/` too. The checks decode PNGs independently, recompute
+all 31 faces' hand angles from request times, sample hand pixels at both scales,
+check exact text and text bounds, and ensure the daybook reveal rectangle has no
+writing. The daybook's normalized reveal rectangle is `(0.805, 0.25, 0.975, 0.75)`,
+measured from the image's top-left. No UV texture or heat text is baked into it.
+
+Selecting all six Clockmaker IDs also performs the record/rebuild/compare check
+automatically while holding the same lock; it launches only one Blender process.
+Individual IDs retain the single-build behavior. The independent `verify.py`
+command remains available for checking the delivered artifacts afterward.

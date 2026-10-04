@@ -35,6 +35,9 @@ Compose your scene from these. They replicate themselves; you never write netcod
 | `Door` | Doors and cage gates | as `ContainerProp` minus `contents`, plus `is_exit` | closed, open |
 | `KeypadLock` | Number pad with focused UI | `code` (may be `{{var}}`), `display_length`, `starts_powered`, `status_light`, `status_label` | locked, unlocked |
 | `KeyLock` | Opened by using an inventory item on it | `key_item_id`, `consume_key` | locked, unlocked |
+
+Every lock also has `show_when_unlocked` / `hide_when_unlocked` (nodes shown or hidden once it opens: a fitted wheel, a hung pendulum) and `dead_message` / `dead_prompt` (what players see while it has no power).
+
 | `MaglockGate` | Lock with no input, released by activation | | locked, unlocked |
 | `DialLock` | Letter rings, number wheels, clock hands: opens the moment every wheel shows the code (ADR-0033) | `wheels` (one entry per wheel: `"ABC..."` one symbol per character, or `"12,1,2,..."`), `separator` (`":"` -> `"4:40"`), `wheel_labels`, `start_code`, `hand_parts` + `hand_turn` (parts turned by each wheel), `code` | locked, unlocked |
 | `SequenceLock` | Chime bars, piano keys, button rows: opens when its `SequencePad` children are struck in `code` order (the latest strikes count; one character per symbol) | `code` (may be `{{var}}`) | locked, unlocked |
@@ -167,7 +170,7 @@ Rules: **flags are templates, never literals** (`roomcheck` fails on anything th
 
 ## 6. Assets
 
-Use CC0 assets (Poly Haven, ambientCG, Kenney, Quaternius) or your own; record each in `assets/ATTRIBUTION.md` with URL and licence. Textures <= 2048 px; props <= 20k triangles (hero props <= 60k). Custom props for the core library go through an asset request (`docs/ASSET_PIPELINE.md`).
+Use CC0 assets (Poly Haven, ambientCG, Kenney, Quaternius) or your own; record each in `assets/ATTRIBUTION.md` with URL and licence. Assets only your room uses live under `game/rooms/<id>/assets/` (CC0 downloads in `assets/third_party/` via `tools/thirdparty/fetch_cc0.sh`, Codex props in `assets/props/` via a request whose `**Output:**` names that path), so they ship in your pack only, not in every client (ADR-0034). Textures <= 2048 px; props <= 20k triangles (hero props <= 60k). Custom props for the core library go through an asset request (`docs/ASSET_PIPELINE.md`).
 
 ## 7. Commands
 

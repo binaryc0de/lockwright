@@ -117,6 +117,8 @@ Exact strings that must be legible, font feel (dot-matrix, laser-printed, handwr
 (Claude appends dated feedback here; Codex responds in assets/reports/<asset_id>.md)
 ```
 
+**Room-specific props (ADR-0034).** A request may carry `**Output:** \`game/rooms/<room>/assets/props/<id>.glb\``; `build_assets.sh` then passes that directory as `--out`, and `tools/texture_budget.py` treats room props and room CC0 downloads like the core ones (text-bearing props are listed in its `TEXT_PROPS`).
+
 ## 5. Deliverables Codex must produce
 
 | Path | Content |

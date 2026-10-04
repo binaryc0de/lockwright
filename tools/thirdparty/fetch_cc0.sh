@@ -86,3 +86,21 @@ kenney_audio interface-sounds click_002.ogg confirmation_002.ogg error_004.ogg b
 kenney_audio impact-sounds impactMetal_heavy_002.ogg impactGeneric_light_002.ogg footstep_carpet_000.ogg footstep_carpet_001.ogg footstep_carpet_002.ogg footstep_carpet_003.ogg footstep_carpet_004.ogg
 kenney_audio sci-fi-sounds forceField_001.ogg
 kenney_audio rpg-audio doorOpen_1.ogg doorClose_2.ogg creak1.ogg handleSmallLeather.ogg bookFlip2.ogg metalLatch.ogg
+
+# The Clockmaker's Study: room-specific downloads live in the room's own
+# directory, so they ship only in its pack (ADR-0030), not in every client.
+# Listed in game/rooms/clockmaker/assets/ATTRIBUTION.md.
+dest="$root/game/rooms/clockmaker/assets/third_party"
+polyhaven_tex old_wooden_floor_02 1k
+polyhaven_tex dark_paneled_wood 1k
+polyhaven_tex quatrefoil_jacquard_fabric 1k
+polyhaven_tex velour_velvet 1k
+polyhaven_tex plastered_wall_03 1k
+polyhaven_tex dark_wooden_planks 1k
+for m in ArmChair_01 lantern_chandelier_01 fancy_picture_frame_01 fancy_picture_frame_02 \
+	book_encyclopedia_set_01 brass_candleholders Lantern_01 \
+	bench_vice_01 hand_plane_no4 vintage_hand_drill magnifying_glass_01 screwdrivers_02 pliers \
+	small_oil_can_01 vintage_pocket_watch vintage_oil_lamp ClassicConsole_01 vintage_suitcase \
+	vintage_grandfather_clock_01 mantel_clock_01 vintage_wooden_drawer_01; do
+	polyhaven_model "$m" 1k
+done

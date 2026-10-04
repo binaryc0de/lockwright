@@ -34,6 +34,16 @@ for SCRIPT in "${SCRIPTS[@]}"; do
 done
 cd "$ROOT"
 for SCRIPT in "${SCRIPTS[@]}"; do
-    echo "Building $(basename "$SCRIPT" .py) with Blender $VERSION (CPU only, 4 threads)"
-    PULSE_SERVER=unix:/nonexistent-blender-asset-audio "$BLENDER_BIN" -b --factory-startup --threads 4 -noaudio --python-exit-code 1 --python "$SCRIPT" -- --out "$ROOT/game/assets/core/props"
+    ASSET_ID="$(basename "$SCRIPT" .py)"
+    # A request may name a room-specific output (**Output:** `game/rooms/<room>/assets/props/<id>.glb`,
+    # ADR-0030); everything else goes to the core library.
+    OUT_DIR="$ROOT/game/assets/core/props"
+    OUTPUT="$(sed -nE 's/^\*\*Output:\*\* `([^`]+\.glb)`.*/\1/p' "$ROOT/assets/requests/$ASSET_ID.md" | head -n1)"
+    if [[ -n "$OUTPUT" ]]; then
+        [[ "$OUTPUT" =~ ^game/rooms/[a-z0-9_]+/assets/props/$ASSET_ID\.glb$ ]] || { echo "ERROR: $ASSET_ID: unexpected Output path $OUTPUT" >&2; exit 1; }
+        OUT_DIR="$ROOT/$(dirname "$OUTPUT")"
+        mkdir -p "$OUT_DIR"
+    fi
+    echo "Building $ASSET_ID with Blender $VERSION (CPU only, 4 threads) -> ${OUT_DIR#$ROOT/}"
+    PULSE_SERVER=unix:/nonexistent-blender-asset-audio "$BLENDER_BIN" -b --factory-startup --threads 4 -noaudio --python-exit-code 1 --python "$SCRIPT" -- --out "$OUT_DIR"
 done

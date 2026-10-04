@@ -28,17 +28,42 @@ SURFACE_DIRS = ("assets/core/third_party/ambientcg/", "assets/core/third_party/p
                 "assets/core/third_party/polyhaven/painted_plaster_wall/")
 
 
+# Room-specific props and CC0 downloads (ADR-0030) follow the core rules.
+ROOM_PROP = re.compile(r"^rooms/[a-z0-9_]+/assets/(props|third_party)/")
+
+
 def is_doc(rel: str) -> bool:
     return "/assets/docs/" in rel
 
 
+# Room-specific assets download with the room's pack in the browser, on top
+# of the client: props and CC0 model textures are capped at 512 px (seen from
+# a metre or two), tiling room surfaces at 1024; text-bearing colour maps
+# keep their size (ADR-0034).
+ROOM_LIMIT = 512
+# Room-prop colour maps that carry lettering players read (dials, numerals,
+# signs); everything else of a room prop is capped.
+ROOM_TEXT_MAPS = ("automaton_songbird_T_automaton_songbird_enamel_base_color",
+                  "chime_bars_5_T_chime_bars_5_wood_base_color",
+                  "longcase_clock_T_longcase_clock_dial_plaque_base_color",
+                  "mantel_clock_drawer_T_mantel_clock_drawer_base_color",
+                  "pegboard_tools_T_pegboard_tools_wood_paint_base_color")
+ROOM_SURFACE = re.compile(r"^rooms/[a-z0-9_]+/assets/third_party/polyhaven/[^/]+/[^/]+$")
+
+
 def wanted(rel: str) -> int:
     name = os.path.basename(rel)
+    if ROOM_PROP.match(rel):
+        if ROOM_SURFACE.match(rel):
+            return LIMIT
+        if name.startswith(ROOM_TEXT_MAPS):
+            return 0
+        return ROOM_LIMIT
     if NON_COLOUR.search(name):
         return LIMIT
     if rel.startswith(SURFACE_DIRS):
         return LIMIT
-    if rel.startswith(PROP_DIRS) and not name.startswith(TEXT_PROPS):
+    if (rel.startswith(PROP_DIRS) or ROOM_PROP.match(rel)) and not name.startswith(TEXT_PROPS):
         return LIMIT
     return 0
 
