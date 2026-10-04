@@ -134,7 +134,7 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Owner play of the shipped room, puzzles unread (2026-10-04): about 24 min of 60, "way too short and simple" (logged in the room README)
 - [x] R5 design, the Undercroft (ADR-0037): stair, seven more puzzles, story turn; README section R5
 - [x] R5.1 SDK: `SocketLock` + `Socket` (sockets gated by their lock's puzzle; items seated move to a `placed` state and come back on Take), `Spinner`; the water track is `AmbientZone` noise with `only_when` (no new code); `tests/core/test_socket_lock.gd` 9 tests; ROOM_AUTHORING rows. gdUnit4 144/144 on the Alienware
-- [ ] R5.2 greybox: stair + undercroft in the builder, `room.yaml` puzzles 10-16, room tests, roomcheck, `packroom -verify`
+- [x] R5.2 greybox (0.2.0): spiral stair (smooth helicoid collider under stone treads, 6 m over 2.5 turns), the undercroft, six puzzles (15 in all, 47 solution steps), exit `open_vault`; the long-case face, arbor and plaque now ride on the swinging case (paths `Study/LongcaseClock/Case/Swing/Front/...`), the opening behind it widened to 0.8 m and the case swings 130 degrees; room tests 17 incl. a physics walk (a capsule with the player's size walks from the study to the vault) and reach checks below ground and along the stair; `tools/play_from.sh ROOM PUZZLE` starts a local game part-way through
 - [ ] Owner greybox play of R5 (blind)
 - [ ] R5.3 look: Codex props and printables, CC0 stone, lighting, audio
 - [ ] R5.4 ship 0.2.0: trailer last shot, deploy with no game live
@@ -325,3 +325,9 @@ Not started. Includes `docker compose up` for the platform and challenge images 
   - Redeploy after changes with `tools/install-service.sh`, which re-exports when game files changed.
 - **Open:** friends test (M5 acceptance); 3 blind play-tests (M4); browser lighting pass; Windows build untested; join retry when a tab is hidden mid-join.
 - **Next requested by the owner:** a second room. Start from `docs/ROOM_AUTHORING.md` (design rules 1-10, incl. 9: standard rooms are browser-only, hacker rooms may need setup for CTF parts; 10: web challenges honour `X-Forwarded-Prefix`), `game/rooms/night_shift/` as the worked example, and `docs/ASSET_PIPELINE.md` for Codex asset requests. Hand-written `.tscn` edits must keep `[editable path=...]` for instance overrides (ADR-0027; roomcheck enforces it).
+
+### 2026-10-04, Clockmaker R5 SDK + greybox (worktree `../escapebox-clockmaker`, Alienware RTX 3080 Ti)
+- `tools/test.sh` exit 0: gdUnit4 145/145 (9 new SocketLock/Spinner tests, 17 Clockmaker room tests), roomcheck PASS (no warnings), both rooms' pack replays, m2, m3 and browser smoke PASS. `tools/m2_smoke.sh clockmaker` PASS: Alice steps 0-8, server killed and restored, Bob plays 9-end (through the undercroft) to the win.
+- The walk test first caught a gate-lock box and a drum-wall corner narrowing the stair foot; both fixed. The reach test caught the channel kerb hiding the drained bed; kerb lowered to 0.35 m.
+- Rendered on the RTX 3080 Ti (`room_shots.tscn`, 11 views of the stair and undercroft): greybox only, flat lighting; the dungeon look is R5.3.
+- `tools/play_from.sh`: the step finder returns 26 for `strike_true` and 46 for `open_vault`; over ENet a bot replayed 0-26 and a second bot finished 27-end to the win. The windowed client step was not run here.

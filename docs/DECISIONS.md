@@ -323,7 +323,7 @@ Found by the browser smoke: the web build must leave decompression to the browse
 
 **Context.** The owner played the shipped room solo in about 24 minutes, without having read the puzzles, and found it too short and simple. The ending (the long-case clock swings aside on a short passage) also felt like a missed opportunity. They asked for a hidden winding stair with an old castle-dungeon feel, more story and more puzzles, and for the room to **stay 60 minutes** so the extra content fills the hour.
 **Decision.**
-- `strike_true` becomes the halfway point. The stair behind the clock is a stone spiral down to the priory undercroft beneath the house (Clerkenwell stands on the Knights of St John's priory; the River Fleet runs under it). Seven new puzzles in two threads that meet at a vault; the exit puzzle becomes `open_vault`. Design: `game/rooms/clockmaker/README.md`, section R5.
+- `strike_true` becomes the halfway point. The stair behind the clock is a stone spiral down to the priory undercroft beneath the house (Clerkenwell stands on the Knights of St John's priory; the River Fleet runs under it). Six new puzzles in two threads that meet at a vault; the exit puzzle becomes `open_vault`. Design: `game/rooms/clockmaker/README.md`, section R5.
 - Story turn: the Regulator was Maren's design. Tone colder and older below, never horror.
 - Duration stays **60 minutes** (ADR-0031 unchanged). Target about 45-50 minutes for a strong solo player.
 - Generic SDK additions: `SocketLock` (seat any of several items in sockets, solved by one of several arrangements) and `Spinner` (continuous rotation while a node is in a state). The stair is walkable through a hidden helical ramp, so the player controller is unchanged.
