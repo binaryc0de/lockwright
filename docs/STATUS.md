@@ -300,6 +300,10 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - Story clips: two Veo 3.1 Fast clips made in Flow (project "Oct 04 - 07:43", 20 credits each, 40 of the month's 1,000), downloaded at 720p. `build.sh` converts them to 30 fps and levels their sound (loudnorm -30 LUFS); final per-second peaks: clips -10 to -23 dB, narration -8 to -15 dB. Contact sheet checked: street, window, door, study, then the room footage with title and captions.
 - `tools/test.sh` in the worktree: all Go packages ok, gdUnit 135 + 16 + 29 cases pass, multiplayer, platform and browser smokes PASS.
 
+### 2026-10-04, deployed: intro video live
+- Before: `/api/status` 0 running / 0 waiting, no game servers. `m5-browser` fast-forwarded to `room-clockmaker` (aca0131); service stopped 07:55:18, `tools/install-service.sh` (now with `-media media`) restarted it by 07:56:20.
+- After, over the public HTTPS address: `/api/catalog` gives clockmaker an `intro` (night_shift none); `/media/rooms/clockmaker/intro.mp4` answers 200 `video/mp4` 18,037,532 bytes, range requests 206, SHA-256 equal to the checkout's copy; `narration.json` in the same folder is refused (404). Headless Chrome (`--swiftshader`) played the live URL: 20 s in, picture and audio decoding. The owner's Chrome showed the lobby card with the poster.
+
 ## Handoff (2026-10-03, end of the M4/M5 working session)
 - **Branches:** `m5-browser` is stacked on `m4-polish`; neither is merged to `main` (M4 still waits for its blind play-tests, M5 for the friends test). New work should branch from `m5-browser`, or merge both first if the owner agrees.
 - **Running:**
