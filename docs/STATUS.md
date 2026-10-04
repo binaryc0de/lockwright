@@ -348,3 +348,4 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - The day-book's heat ink wrapped mid-word ("long-ca se") in the 7 cm margin: it now runs along the margin on two lines (render checked with the new review-only `room_shots --show`).
 - The passage showed in the slivers beside the long-case clock (the opening is 0.8 m, the case 0.6 m): a papered filler with wainscot fills the opening and hides when the clock strikes (`Hands.hide_when_unlocked`); rendered closed from both sides and open.
 - `tools/test.sh` exit 0 (gdUnit4 148/148: new tests for the arrow icons and the crosshair).
+- Deployed 18:40:51-18:41:57 (no game live); catalog clockmaker 0.2.0 pack 7d8374a7...; headless Chrome joined a fresh game (X86TRB) over the public address.
