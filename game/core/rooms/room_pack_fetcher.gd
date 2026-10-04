@@ -59,6 +59,16 @@ func fetch(platform_url: String, room_id: String) -> String:
 	return path
 
 
+## What download progress is measured against. Packs may come gzipped
+## (ADR-0035): desktop builds count the compressed bytes they receive, so the
+## response's Content-Length is the total; a browser hands Godot bytes it has
+## already decompressed, so there the pack's own size is.
+static func progress_total(pack_size: int, content_length: int, is_web: bool) -> int:
+	if not is_web and content_length > 0:
+		return content_length
+	return pack_size
+
+
 static func sha256_of(path: String) -> String:
 	var f := FileAccess.open(path, FileAccess.READ)
 	if f == null:
@@ -89,9 +99,12 @@ func _http_get(url: String, size: int = 0) -> Dictionary:
 		error = "cannot reach %s" % url
 		return {}
 	while done.is_empty():
-		if size > 0:
-			progressed.emit(clampf(float(http.get_downloaded_bytes()) / size, 0.0, 1.0))
+		var total := RoomPackFetcher.progress_total(size, http.get_body_size(), OS.has_feature("web"))
+		if total > 0:
+			progressed.emit(clampf(float(http.get_downloaded_bytes()) / total, 0.0, 1.0))
 		await get_tree().process_frame
+	if size > 0:
+		print("room pack: %d bytes counted, Content-Length %d, pack %d" % [http.get_downloaded_bytes(), http.get_body_size(), size])
 	http.queue_free()
 	var r: Dictionary = done[0]
 	if r["result"] != HTTPRequest.RESULT_SUCCESS or int(r["code"]) != 200:

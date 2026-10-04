@@ -438,6 +438,9 @@ func TestCatalogListsAndServesRoomPacks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if zresp.ContentLength != int64(zb.Len()) {
+		t.Fatalf("gzip pack Content-Length %d, want %d (desktop progress needs it)", zresp.ContentLength, zb.Len())
+	}
 	zr, err := gzip.NewReader(zresp.Body)
 	if err != nil || zresp.Header.Get("Content-Encoding") != "gzip" {
 		t.Fatalf("no gzip pack: %v %q", err, zresp.Header.Get("Content-Encoding"))

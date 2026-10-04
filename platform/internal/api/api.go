@@ -720,8 +720,15 @@ func (a *app) downloadPack(w http.ResponseWriter, r *http.Request) {
 			if f, err := os.Open(path + ".gz"); err == nil {
 				defer f.Close()
 				if gst, err := f.Stat(); err == nil && !gst.ModTime().Before(pst.ModTime()) {
+					// A whole response with its length: http.ServeContent drops
+					// Content-Length once Content-Encoding is set, and desktop
+					// clients measure download progress against it.
 					w.Header().Set("Content-Encoding", "gzip")
-					http.ServeContent(w, r, "", gst.ModTime(), f)
+					w.Header().Set("Content-Length", strconv.FormatInt(gst.Size(), 10))
+					w.WriteHeader(http.StatusOK)
+					if r.Method != http.MethodHead {
+						_, _ = io.Copy(w, f)
+					}
 					return
 				}
 			}

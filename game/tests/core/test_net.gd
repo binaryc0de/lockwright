@@ -409,3 +409,14 @@ func test_sdk_exports_avoid_packed_arrays() -> void:
 		for line in FileAccess.get_file_as_string("res://addons/escapebox_sdk/" + f).split("\n"):
 			if line.begins_with("@export") and line.contains("Packed") and line.contains("Array"):
 				fail("%s: %s" % [f, line])
+
+
+## Gzipped packs (ADR-0035): desktop counts compressed bytes against the
+## response's Content-Length; a browser counts decompressed bytes, so there
+## the pack's size is the total (measured 2026-10-03 in both).
+func test_pack_progress_total() -> void:
+	assert_int(RoomPackFetcher.progress_total(82166424, 53014105, false)).is_equal(53014105)
+	assert_int(RoomPackFetcher.progress_total(82166424, -1, false)).is_equal(82166424)
+	assert_int(RoomPackFetcher.progress_total(82166424, -1, true)).is_equal(82166424)
+	assert_int(RoomPackFetcher.progress_total(82166424, 53014105, true)).is_equal(82166424)
+

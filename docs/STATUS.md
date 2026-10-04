@@ -127,6 +127,7 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Browser: renders compared with the Compatibility renderer (no lights lost); a private `-drafts` platform served the room to headless Chrome (Radeon 680M, WebGL 2), the 82 MB pack downloaded and mounted, and the solution bot played it to the win in the browser (platform recorded won=true)
 - [x] Owner play of the dressed room (2026-10-03, desktop, solo: "played through looks good")
 - [x] Shipped (ADR-0035): `draft: true` removed; packs served gzipped
+- [x] Download progress with gzipped packs: measured in both clients (desktop stopped at 64.5 %, now 99.9 %; the browser already counted decompressed bytes); the platform sends Content-Length with the gzipped copy
 - [ ] R4: three blind play-tests logged in the room README (after shipping, owner's choice)
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
 
