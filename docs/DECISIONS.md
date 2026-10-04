@@ -318,3 +318,14 @@ Found by the browser smoke: the web build must leave decompression to the browse
 - **Serving:** videos live in `media/`, outside `game/`, so they never enter a room pack. The platform's `-media` flag serves `/media/rooms/{room}/intro.mp4|poster.jpg` (catalog rooms only, nothing else in the folder) and adds `intro` to `/api/catalog` and `/api/games/{code}`. The lobby card and the game page show a click-to-play `<video>` with the poster (`preload="none"`).
 **Consequences.** A room without `intro.mp4` simply shows no video. Re-run `build.sh` after the room changes. `build.sh` moves the MP4 index to the front with FFmpeg (`-movflags +faststart`, a static build in `~/.local/bin`) so browsers start playing before the whole file arrives. Check a trailer's sound with `ffmpeg -i intro.mp4 -af volumedetect -f null -`, not headless Chrome: on this laptop its GPU path stalls 720p video at 0.2 s (so it reports silence); with `tools/webshot.py --swiftshader` it plays through with sound. Staged state changes (opening a door for a shot) would play their one-shot sounds on the cut, so the recorder removes them.
 
+
+## ADR-0037: The Clockmaker's Study gets a second half, the Undercroft, inside the same 60 minutes (2026-10-04)
+
+**Context.** The owner played the shipped room solo in about 24 minutes, without having read the puzzles, and found it too short and simple. The ending (the long-case clock swings aside on a short passage) also felt like a missed opportunity. They asked for a hidden winding stair with an old castle-dungeon feel, more story and more puzzles, and for the room to **stay 60 minutes** so the extra content fills the hour.
+**Decision.**
+- `strike_true` becomes the halfway point. The stair behind the clock is a stone spiral down to the priory undercroft beneath the house (Clerkenwell stands on the Knights of St John's priory; the River Fleet runs under it). Seven new puzzles in two threads that meet at a vault; the exit puzzle becomes `open_vault`. Design: `game/rooms/clockmaker/README.md`, section R5.
+- Story turn: the Regulator was Maren's design. Tone colder and older below, never horror.
+- Duration stays **60 minutes** (ADR-0031 unchanged). Target about 45-50 minutes for a strong solo player.
+- Generic SDK additions: `SocketLock` (seat any of several items in sockets, solved by one of several arrangements) and `Spinner` (continuous rotation while a node is in a state). The stair is walkable through a hidden helical ramp, so the player controller is unchanged.
+- Built in the usual order: SDK, greybox (owner plays it blind), Codex props, ship as 0.2.0.
+**Consequences.** The pack grows (stone textures and about nine hero props). The trailer needs a new last shot, and its narration still holds ("let themselves out of my study" is literally true). In-progress snapshots from 0.1.0 games would not match the new tree, so 0.2.0 is deployed only when no Clockmaker game is live.

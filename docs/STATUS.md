@@ -131,6 +131,13 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Intro video on the site (owner request; ADR-0036): room-footage trailer (`media/rooms/clockmaker/trailer.json`, 7 shots, 30.7 s), Gemini TTS narration (`tools/narrate`), `tools/trailer/build.sh`; platform `-media` serves it, lobby card and game page show it
 - [x] Veo story clips from Flow (owner accepted Flow's privacy notice, 2026-10-04): `clips/01-street.mp4` (fogbound Clerkenwell street, push-in on the clock window) and `02-housekeeper.mp4` (Mrs Pell opens the study door); trailer rebuilt, 46.7 s
 - [x] Night Shift intro video (owner request 2026-10-04): 7 room shots (exit door staged shut for the crash line), Dale's narration (Gemini TTS voice Algenib, 31.8 s), two Veo clips (`01-estate.mp4` rain and blackout, `02-maglock.mp4` badge reader dies, racks behind mesh); 49.2 s, 17.5 MB
+- [x] Owner play of the shipped room, puzzles unread (2026-10-04): about 24 min of 60, "way too short and simple" (logged in the room README)
+- [x] R5 design, the Undercroft (ADR-0037): stair, seven more puzzles, story turn; README section R5
+- [ ] R5.1 SDK: `SocketLock`, `Spinner`, water track, tests, ROOM_AUTHORING
+- [ ] R5.2 greybox: stair + undercroft in the builder, `room.yaml` puzzles 10-16, room tests, roomcheck, `packroom -verify`
+- [ ] Owner greybox play of R5 (blind)
+- [ ] R5.3 look: Codex props and printables, CC0 stone, lighting, audio
+- [ ] R5.4 ship 0.2.0: trailer last shot, deploy with no game live
 - [ ] R4: three blind play-tests logged in the room README (after shipping, owner's choice)
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
 
