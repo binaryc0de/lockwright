@@ -130,6 +130,7 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Download progress with gzipped packs: measured in both clients (desktop stopped at 64.5 %, now 99.9 %; the browser already counted decompressed bytes); the platform sends Content-Length with the gzipped copy
 - [x] Intro video on the site (owner request; ADR-0036): room-footage trailer (`media/rooms/clockmaker/trailer.json`, 7 shots, 30.7 s), Gemini TTS narration (`tools/narrate`), `tools/trailer/build.sh`; platform `-media` serves it, lobby card and game page show it
 - [x] Veo story clips from Flow (owner accepted Flow's privacy notice, 2026-10-04): `clips/01-street.mp4` (fogbound Clerkenwell street, push-in on the clock window) and `02-housekeeper.mp4` (Mrs Pell opens the study door); trailer rebuilt, 46.7 s
+- [x] Night Shift intro video (owner request 2026-10-04): 7 room shots (exit door staged shut for the crash line), Dale's narration (Gemini TTS voice Algenib, 31.8 s), two Veo clips (`01-estate.mp4` rain and blackout, `02-maglock.mp4` badge reader dies, racks behind mesh); 49.2 s, 17.5 MB
 - [ ] R4: three blind play-tests logged in the room README (after shipping, owner's choice)
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
 
@@ -303,6 +304,11 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 ### 2026-10-04, deployed: intro video live
 - Before: `/api/status` 0 running / 0 waiting, no game servers. `m5-browser` fast-forwarded to `room-clockmaker` (aca0131); service stopped 07:55:18, `tools/install-service.sh` (now with `-media media`) restarted it by 07:56:20.
 - After, over the public HTTPS address: `/api/catalog` gives clockmaker an `intro` (night_shift none); `/media/rooms/clockmaker/intro.mp4` answers 200 `video/mp4` 18,037,532 bytes, range requests 206, SHA-256 equal to the checkout's copy; `narration.json` in the same folder is refused (404). Headless Chrome (`--swiftshader`) played the live URL: 20 s in, picture and audio decoding. The owner's Chrome showed the lobby card with the poster.
+
+### 2026-10-04, Night Shift intro video (worktree, Alienware)
+- Shots planned from a node-position dump of `room.tscn`; recorded 990 frames at 1080p; contact sheets checked (title overflow fixed with a two-line final title). Narration 31.8 s, so the final shot runs 8.5 s.
+- Flow project "Oct 04 - 14:27": two Veo 3.1 Fast clips (20 credits each; 80 of the month's 1,000 used so far), downloaded at 720p.
+- `tools/trailer/build.sh night_shift`: `intro.mp4` 49.2 s, 17,475,948 bytes; per-second peaks: clips -12 to -30 dB, narration -4 to -8 dB; poster is the title card in the corridor.
 
 ## Handoff (2026-10-03, end of the M4/M5 working session)
 - **Branches:** `m5-browser` is stacked on `m4-polish`; neither is merged to `main` (M4 still waits for its blind play-tests, M5 for the friends test). New work should branch from `m5-browser`, or merge both first if the owner agrees.
