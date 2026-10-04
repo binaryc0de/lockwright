@@ -2,7 +2,7 @@
 
 Milestone checklist from PLAN.md Section 11. Check an item only when it was actually run; each milestone ends with a verification note saying what ran, where, and with which command. Untested things are listed as untested.
 
-**Current milestone: M4 (Night Shift content and polish).** M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Server cage dressed (pulled forward from M4) and merged. M2 closed 2026-10-02.
+**Current milestone: M4 (Night Shift content and polish).** 2026-10-03: `m4-polish`, `m5-browser` and `room-clockmaker` merged into `main` (fast-forward) at the owner's request; M4 (blind play-tests) and M5 (friends test) stay open. M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Server cage dressed (pulled forward from M4) and merged. M2 closed 2026-10-02.
 
 ## M0: Repo and specs
 
