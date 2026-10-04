@@ -44,3 +44,31 @@ func test_turning_wheels_shows_live_state_and_opens() -> void:
 func test_unpowered_dial_does_not_open_a_panel() -> void:
 	(room.get_node("Clock") as DialLock).client_interact()
 	assert_bool(hud.is_modal_open()).is_false()
+
+
+## The web build's font has no arrow glyphs ("▲" showed as an empty box):
+## turn buttons carry a drawn icon and no text.
+func test_turn_buttons_use_drawn_arrows_not_glyphs() -> void:
+	(room.get_node("Rings") as DialLock).client_interact()
+	var panel := hud._modal as DialLockPanel
+	var buttons := panel.find_children("*", "Button", true, false)
+	var arrows := 0
+	for b: Button in buttons:
+		if b.icon != null:
+			arrows += 1
+			assert_str(b.text).is_empty()
+		for c in b.text:
+			assert_int(c.unicode_at(0)).override_failure_message("non-ASCII button text %s" % b.text).is_less(128)
+	assert_int(arrows).is_equal(6)  # three wheels, up and down
+	var up := DialLockPanel.arrow_icon(true).get_image()
+	assert_float(up.get_pixel(2, 1).a).is_less(0.1)     # tip at the top: corners empty
+	assert_float(up.get_pixel(14, 16).a).is_greater(0.9)
+	assert_float(up.get_pixel(1, 16).a).is_greater(0.3)
+
+
+func test_crosshair_hides_while_a_panel_is_open() -> void:
+	assert_bool(hud._cross.visible).is_true()
+	(room.get_node("Rings") as DialLock).client_interact()
+	assert_bool(hud._cross.visible).is_false()
+	hud._modal.close()
+	assert_bool(hud._cross.visible).is_true()

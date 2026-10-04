@@ -342,3 +342,9 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - Before: `/api/status` 0 running / 0 waiting, no game-server processes, service checkout clean on `m5-browser`. Fast-forwarded to `room-clockmaker` (e64b5cd); service stopped 17:11:57, `tools/install-service.sh` restarted it by 17:13:05.
 - After, over the public HTTPS address: `/api/catalog` lists clockmaker 0.2.0 (pack 122,528,836 bytes) with its intro; `/download/packs/clockmaker-0.2.0.pck` answered gzip (75,977,157 bytes on the wire) and the decompressed bytes match the catalog SHA-256 (3fc961d3...); the new `intro.mp4` serves 200 (19,980,695 bytes). Headless Chrome (`tools/webshot.py --swiftshader`) joined a fresh game (DK4JP3; server log: player joined) and rendered the landing from the new pack. That check game was left to idle out.
 - Not done: the blind play-tests (R4) and the owner's own blind run of the undercroft.
+
+### 2026-10-04, fixes from the owner's play (worktree, Alienware)
+- Dial panels (letter rings, every clock face) showed empty boxes for the turn arrows: the built-in font has no U+25B2/25BC (checked with `ThemeDB.fallback_font.has_char`; the web build has no system fallback). The buttons now draw a triangle icon. The evidence board's emoji (same problem) became "Read:" / "Note (name):". The crosshair hides while a panel is open (it sat on the middle letter).
+- The day-book's heat ink wrapped mid-word ("long-ca se") in the 7 cm margin: it now runs along the margin on two lines (render checked with the new review-only `room_shots --show`).
+- The passage showed in the slivers beside the long-case clock (the opening is 0.8 m, the case 0.6 m): a papered filler with wainscot fills the opening and hides when the clock strikes (`Hands.hide_when_unlocked`); rendered closed from both sides and open.
+- `tools/test.sh` exit 0 (gdUnit4 148/148: new tests for the arrow icons and the crosshair).

@@ -35,6 +35,17 @@ func _ready() -> void:
 			var kv := args[j + 1].split("=", true, 1)
 			Game.authority.set_node_state(kv[0], JSON.parse_string(kv[1]))
 			print("set %s" % args[j + 1])
+	# --show path (repeatable): make a hidden node visible for the shot (review
+	# only; e.g. heat-ink text that needs the lamp in hand).
+	for j in args.size():
+		if args[j] == "--show" and j + 1 < args.size():
+			var n := room.get_node_or_null(args[j + 1]) as Node3D
+			if n:
+				n.visible = true
+				var rev := n.get_parent() as UVReveal
+				if rev and n is Label3D:
+					rev.set_process(false)
+					(n as Label3D).text = EBTemplate.render(rev.text, Game.vars())
 	_cam = Camera3D.new()
 	_cam.fov = 80.0
 	add_child(_cam)

@@ -47,6 +47,7 @@ func _ready() -> void:
 	add_child(root)
 
 	var cross := Label.new()
+	_cross = cross
 	cross.text = "+"
 	cross.add_theme_font_size_override("font_size", 22)
 	cross.set_anchors_preset(Control.PRESET_CENTER)
@@ -201,8 +202,14 @@ func _focus(target: Node3D, panel: ModalPanel) -> void:
 			player.unfocus())
 
 
+var _cross: Label
+
+
 func _set_free_mouse(free: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if free else Input.MOUSE_MODE_CAPTURED
+	# The crosshair would sit on top of a panel's middle (a dial's letter).
+	if _cross:
+		_cross.visible = not free
 	if player:
 		player.input_enabled = not free
 

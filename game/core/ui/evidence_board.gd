@@ -51,9 +51,9 @@ func _refresh(evidence: Array[Dictionary]) -> void:
 	_list.clear()
 	for e in _entries:
 		if e["kind"] == "doc":
-			_list.add_item("📄 " + str(e["title"]))
+			_list.add_item("Read: " + str(e["title"]))
 		else:
-			_list.add_item("📝 %s: %s" % [e.get("author", "?"), str(e["text"]).left(40)])
+			_list.add_item("Note (%s): %s" % [e.get("author", "?"), str(e["text"]).left(40)])
 	_detail.text = "[i]Select an entry.[/i]" if not _entries.is_empty() else "[i]Nothing pinned yet. Read documents to pin them here.[/i]"
 	_remove.disabled = true
 
