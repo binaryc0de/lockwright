@@ -285,6 +285,11 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - Audio: `test_ambient_tick_and_condition`, `test_unlock_strike_count` (gdUnit); the long-case wiring (tick `only_when` Hands powered, strike `{{true_hour}}` at 98 Hz) is in the builder. Not listened to by a person yet.
 - Browser: `--rendering-method gl_compatibility` renders of four views match Forward+; private platform (`-drafts`, port 8655, own data and port ranges) + `tools/webshot.py`: the room loaded in headless Chrome and, with `bot=1` and `-test-trust-positions`, was played to the win (server log: "result reported to the platform (won=true)"). FPS was not captured.
 
+### 2026-10-03, deployed: The Clockmaker's Study is live
+- Before: `/api/status` 0 running / 0 waiting, no game-server processes, no challenge containers. `m5-browser` fast-forwarded to `room-clockmaker` (5f01c30) in the service checkout; service stopped 22:12:16, `tools/install-service.sh` re-exported clients and packs and restarted it 22:13:29 (about 75 s down).
+- After, over the public HTTPS address: `/api/catalog` lists clockmaker (pack 82,166,424 bytes) and night_shift; `/download/packs/clockmaker-0.1.0.pck` answered with `content-encoding: gzip` (53 MB on the wire) and the decompressed bytes match the catalog SHA-256; headless Chrome loaded the lobby (both room cards, Night Shift keeps its HACKER ROOM badge) and joined a fresh Clockmaker game (server log: player joined), landing rendered.
+- The deploy also brought the owner-scoped container cleanup (ADR-0032) and single-room packs (ADR-0030 amendment) to the live service.
+
 ## Handoff (2026-10-03, end of the M4/M5 working session)
 - **Branches:** `m5-browser` is stacked on `m4-polish`; neither is merged to `main` (M4 still waits for its blind play-tests, M5 for the friends test). New work should branch from `m5-browser`, or merge both first if the owner agrees.
 - **Running:**
