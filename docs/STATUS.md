@@ -133,7 +133,7 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Night Shift intro video (owner request 2026-10-04): 7 room shots (exit door staged shut for the crash line), Dale's narration (Gemini TTS voice Algenib, 31.8 s), two Veo clips (`01-estate.mp4` rain and blackout, `02-maglock.mp4` badge reader dies, racks behind mesh); 49.2 s, 17.5 MB
 - [x] Owner play of the shipped room, puzzles unread (2026-10-04): about 24 min of 60, "way too short and simple" (logged in the room README)
 - [x] R5 design, the Undercroft (ADR-0037): stair, seven more puzzles, story turn; README section R5
-- [ ] R5.1 SDK: `SocketLock`, `Spinner`, water track, tests, ROOM_AUTHORING
+- [x] R5.1 SDK: `SocketLock` + `Socket` (sockets gated by their lock's puzzle; items seated move to a `placed` state and come back on Take), `Spinner`; the water track is `AmbientZone` noise with `only_when` (no new code); `tests/core/test_socket_lock.gd` 9 tests; ROOM_AUTHORING rows. gdUnit4 144/144 on the Alienware
 - [ ] R5.2 greybox: stair + undercroft in the builder, `room.yaml` puzzles 10-16, room tests, roomcheck, `packroom -verify`
 - [ ] Owner greybox play of R5 (blind)
 - [ ] R5.3 look: Codex props and printables, CC0 stone, lighting, audio

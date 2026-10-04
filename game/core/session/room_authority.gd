@@ -234,6 +234,8 @@ func _prerequisites_met(n: EBNode) -> bool:
 		gates = gates + _gates_by_item.get((n as Item).item_id, [])
 	if n is Terminal:
 		gates = gates + _gates_by_challenge.get((n as Terminal).challenge_id, [])
+	if n is Socket and (n as Socket).lock() != null:
+		gates = gates + _gates_by_path.get((n as Socket).lock().eb_path, [])
 	for pid: String in gates:
 		if state.is_solved(pid):
 			continue
@@ -291,6 +293,24 @@ func consume_item(item_path: String) -> void:
 	state.inventory.erase(item_path)
 	set_node_state(item_path, {"state": "consumed"})
 	inventory_changed.emit(state.inventory)
+
+
+## Takes an Item out of the team inventory into the world somewhere it is
+## not picked up from (seated in a Socket). `return_item` gives it back.
+func place_item(item_path: String) -> void:
+	if not item_path in state.inventory:
+		return
+	state.inventory.erase(item_path)
+	set_node_state(item_path, {"state": "placed"})
+	inventory_changed.emit(state.inventory)
+
+
+func return_item(item_path: String, player_id: String) -> void:
+	var it := node(item_path) as Item
+	if it == null or item_path in state.inventory:
+		return
+	set_node_state(item_path, {"state": "inventory"})
+	give_item(item_path, it.item_id, player_id)
 
 
 func pin_document(path: String, title: String, player_id: String) -> void:
