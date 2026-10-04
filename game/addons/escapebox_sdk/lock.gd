@@ -19,6 +19,10 @@ signal attempt_failed
 ## and nodes hidden then (an empty outline). Presentation only.
 @export var show_when_unlocked: Array[NodePath] = []
 @export var hide_when_unlocked: Array[NodePath] = []
+## Optional bell struck when the lock opens (a clock striking the hour):
+## pitch in Hz (0 = none) and how many strikes, which may use {{vars}}.
+@export var unlock_tone_hz: float = 0.0
+@export var unlock_tone_count: String = "1"
 ## What players are told while the lock has no power, and the prompt suffix.
 @export var dead_message: String = "The panel is dead."
 @export var dead_prompt: String = "no power"
@@ -110,8 +114,24 @@ func _apply_state(state: Dictionary) -> void:
 		attempt_failed.emit()
 
 
+## How many unlock strikes to play (1-12), from unlock_tone_count.
+func unlock_strikes() -> int:
+	var text := EBTemplate.render(unlock_tone_count, Game.vars()).strip_edges()
+	return clampi(int(text) if text.is_valid_int() else 1, 1, 12)
+
+
+func _strike_bell() -> void:
+	var n := unlock_strikes()
+	var tw := create_tween()
+	for i in n:
+		tw.tween_callback(func() -> void: EBSound.play_at(self, EBSound.tone(unlock_tone_hz, "bell"), 2.0, 0.0))
+		tw.tween_interval(1.4)
+
+
 func _state_sound(old: Dictionary, new: Dictionary) -> Variant:
 	if new.get("state") == "unlocked" and old.get("state") != "unlocked":
+		if unlock_tone_hz > 0.0 and is_inside_tree():
+			_strike_bell()
 		return "accept"
 	if int(new.get("attempts", 0)) > int(old.get("attempts", 0)) and not new.get("last_ok", false):
 		return "deny"

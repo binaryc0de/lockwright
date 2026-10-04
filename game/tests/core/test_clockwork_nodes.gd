@@ -201,3 +201,27 @@ func test_tones_are_synthesised_and_cached() -> void:
 	assert_bool(bell.data.size() > 22050).is_true()
 	assert_object(EBSound.tone(440.0)).is_same(bell)
 	assert_object(EBSound.tone(440.0, "whistle")).is_not_same(bell)
+
+
+func test_ambient_tick_and_condition() -> void:
+	var z: AmbientZone = auto_free(AmbientZone.new())
+	z.tick_per_s = 1.0
+	z.only_when_key = "powered"
+	z.only_when_value = "true"
+	assert_bool(z.condition_met({"powered": true})).is_true()
+	assert_bool(z.condition_met({"powered": false})).is_false()
+	assert_bool(z.condition_met({})).is_false()
+	# A click right after each beat, silence in between.
+	assert_float(absf(z.tick_sample(0.0005)) + absf(z.tick_sample(1.0004))).is_greater(0.01)
+	assert_float(z.tick_sample(0.5)).is_equal(0.0)
+	z.hum_level = 0.0
+	var loop := z.make_loop()
+	assert_int(loop.data.size()).is_equal(int(AmbientZone.RATE * AmbientZone.SECONDS) * 2)
+
+
+func test_unlock_strike_count() -> void:
+	var lock := room.get_node("Clock") as DialLock
+	for case in [["1", 1], ["7", 7], ["20", 12], ["0", 1], ["x", 1]]:
+		lock.unlock_tone_count = case[0]
+		assert_int(lock.unlock_strikes()).override_failure_message(str(case)).is_equal(case[1])
+

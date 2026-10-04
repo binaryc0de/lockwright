@@ -36,7 +36,7 @@ Compose your scene from these. They replicate themselves; you never write netcod
 | `KeypadLock` | Number pad with focused UI | `code` (may be `{{var}}`), `display_length`, `starts_powered`, `status_light`, `status_label` | locked, unlocked |
 | `KeyLock` | Opened by using an inventory item on it | `key_item_id`, `consume_key` | locked, unlocked |
 
-Every lock also has `show_when_unlocked` / `hide_when_unlocked` (nodes shown or hidden once it opens: a fitted wheel, a hung pendulum) and `dead_message` / `dead_prompt` (what players see while it has no power).
+Every lock also has `unlock_tone_hz` / `unlock_tone_count` (a bell struck N times when it opens; the count may be `{{var}}`), `show_when_unlocked` / `hide_when_unlocked` (nodes shown or hidden once it opens: a fitted wheel, a hung pendulum) and `dead_message` / `dead_prompt` (what players see while it has no power).
 
 | `MaglockGate` | Lock with no input, released by activation | | locked, unlocked |
 | `DialLock` | Letter rings, number wheels, clock hands: opens the moment every wheel shows the code (ADR-0033) | `wheels` (one entry per wheel: `"ABC..."` one symbol per character, or `"12,1,2,..."`), `separator` (`":"` -> `"4:40"`), `wheel_labels`, `start_code`, `hand_parts` + `hand_turn` (parts turned by each wheel), `code` | locked, unlocked |
@@ -52,7 +52,7 @@ Every lock also has `show_when_unlocked` / `hide_when_unlocked` (nodes shown or 
 | `Intercom` | Shows hints and narration in the room | `label`, `chime`, `speaker_name` | |
 | `SessionClock` | Countdown display, or with `wall_start` ("23:00") a clock in story time that runs forward to the deadline, with optional hands | `label`, `wall_start`, `hour_hand`, `minute_hand`, `hand_turn` | |
 | `AirlockGate` | Optional onboarding (ADR-0020): players start outside at `spawn_point`; seals `door`, starts the clock and narrates `seal_text` when everyone is inside (or `seal_after_s` after the first); stragglers and later joiners go to `late_spawn`. While it waits, the HUD shows the controls tutorial instead of the briefing | `door`, `inside_min`/`inside_max` (room coordinates), `seal_after_s`, `seal_text`, `late_spawn` | waiting, sealed |
-| `AmbientZone` | Positional room tone synthesised at start-up (mains hum, fan noise, tube buzz); no audio files | `hum_hz`, `hum_level`, `harmonics`, `noise_level`, `noise_cutoff_hz`, `buzz`, `volume_db` | |
+| `AmbientZone` | Positional room tone synthesised at start-up (mains hum, fan noise, tube buzz, clock tick); no audio files. With `only_when` it sounds only while that SDK node's `state[only_when_key]` equals `only_when_value` (a clock that ticks once wound) | `hum_hz`, `hum_level`, `harmonics`, `noise_level`, `noise_cutoff_hz`, `buzz`, `tick_per_s`, `tick_level`, `only_when`, `only_when_key`, `only_when_value`, `volume_db` | |
 | Planned | `DirectionalLock`, `PushButton`, `Switch`, `Dial`, `FuseBox`, `TriggerVolume`, `PuzzleMarker` | | |
 
 **Every SDK node** also has `difficulties` (empty = all levels; see section 3).
