@@ -97,10 +97,15 @@ polyhaven_tex quatrefoil_jacquard_fabric 1k
 polyhaven_tex velour_velvet 1k
 polyhaven_tex plastered_wall_03 1k
 polyhaven_tex dark_wooden_planks 1k
+# R5, the undercroft (ADR-0037)
+polyhaven_tex medieval_blocks_02 1k
+polyhaven_tex monastery_stone_floor 1k
+polyhaven_tex rough_block_wall 1k
 for m in ArmChair_01 lantern_chandelier_01 fancy_picture_frame_01 fancy_picture_frame_02 \
 	book_encyclopedia_set_01 brass_candleholders Lantern_01 \
 	bench_vice_01 hand_plane_no4 vintage_hand_drill magnifying_glass_01 screwdrivers_02 pliers \
 	small_oil_can_01 vintage_pocket_watch vintage_oil_lamp ClassicConsole_01 vintage_suitcase \
-	vintage_grandfather_clock_01 mantel_clock_01 vintage_wooden_drawer_01; do
+	vintage_grandfather_clock_01 mantel_clock_01 vintage_wooden_drawer_01 \
+	wooden_crate_01; do
 	polyhaven_model "$m" 1k
 done

@@ -26,3 +26,10 @@ original artwork authored in `clockmaker.py`, `create_clockmaker_templates.py`
 and `overlays/clockmaker_surface.py`. Clockmaker uses no third-party art,
 photograph or font input; its letter geometry extends the original authored
 stroke alphabet. No downloads were made.
+
+R5's seven templates, six-knight fresco, limestone carvings, barrel pattern,
+journal lettering and seeded surface wear are also original artwork, generated
+by `create_undercroft_templates.py`, `undercroft.py` and
+`overlays/undercroft_surface.py`. `glyphs.py` transcribes the locally authored
+`tomb_chest.py` and `gate_ring_lock.py` contours so clues match the props. No
+third-party art or font was added. The lowercase q is an original new pen stroke.

@@ -47,7 +47,14 @@ ROOM_TEXT_MAPS = ("automaton_songbird_T_automaton_songbird_enamel_base_color",
                   "chime_bars_5_T_chime_bars_5_wood_base_color",
                   "longcase_clock_T_longcase_clock_dial_plaque_base_color",
                   "mantel_clock_drawer_T_mantel_clock_drawer_base_color",
-                  "pegboard_tools_T_pegboard_tools_wood_paint_base_color")
+                  "pegboard_tools_T_pegboard_tools_wood_paint_base_color",
+                  # R5, the undercroft (ADR-0037): marks, numerals, letters, inscription
+                  "gate_ring_lock_T_gate_ring_lock_brass_base_color",
+                  "gate_ring_lock_T_gate_ring_lock_iron_base_color",
+                  "great_dial_T_great_dial_paint_base_color",
+                  "tomb_chest_T_tomb_chest_base_color",
+                  "maren_bench_T_maren_bench_metal_base_color",
+                  "vault_door_T_vault_door_brass_base_color")
 ROOM_SURFACE = re.compile(r"^rooms/[a-z0-9_]+/assets/third_party/polyhaven/[^/]+/[^/]+$")
 
 

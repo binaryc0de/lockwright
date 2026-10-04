@@ -108,3 +108,37 @@ Selecting all six Clockmaker IDs also performs the record/rebuild/compare check
 automatically while holding the same lock; it launches only one Blender process.
 Individual IDs retain the single-build behavior. The independent `verify.py`
 command remains available for checking the delivered artifacts afterward.
+
+R5 adds `fresco`, `barrel_strip`, `mason_mark_arrow`, `mason_mark_hourglass`,
+`mason_mark_trident`, `maren_journal`, and `stair_note` through the same dispatcher:
+
+```bash
+tools/printables/build_printables.sh fresco barrel_strip mason_mark_arrow mason_mark_hourglass mason_mark_trident maren_journal stair_note
+```
+
+Selecting these seven IDs builds twice and verifies all 21 PNG, preview and
+metadata hashes under the shared lock. `create_undercroft_templates.py` regenerates
+only their SVGs. `undercroft.py` uses the original text renderer and a narrower,
+upright hand for Maren; Ambrose retains the original broad dip pen. Seeded plaster,
+limestone and damp-paper layers live in `overlays/undercroft_surface.py`. Actual
+text bounds, shield fields, carvings and pin dots are protected from wear.
+Requested resolutions take precedence: the barrel is 1536x1024 and the niche
+marks are 512x640. Their previews are 384x256 and 128x160 respectively; the
+journal preview is 512x358 (nearest quarter height).
+
+`glyphs.py` records the original tomb and gate glyph coordinates. The verifier
+compares the **actual SVG contours** to the prop scripts' pure geometry function
+and literal mark table, without importing Blender scripts. It independently
+derives the barrel's 10x6 grid and dot cells from SVG lines and circles, checks
+black dot centroids in every cell at both resolutions, and proves that moved
+row/column geometry fails. No pin-position metadata is trusted.
+
+`clockmaker_original.py` is an exact copy of the pre-R5 renderer. The dispatcher
+uses that versioned source for the original six documents and their source
+fingerprints. With unchanged requests this preserves their output, preview and
+metadata bytes as the dispatcher grows. `_clockmaker_existing_before.sha256.json`
+in reports records the 20 original artifacts before this extension. The 14
+original PNGs/previews rebuilt byte-identically; six pre-existing stale request
+hashes in their metadata were refreshed (no other metadata fields changed).
+Do not edit that
+versioned source or the old templates when adding documents.
