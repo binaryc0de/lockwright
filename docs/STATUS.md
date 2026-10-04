@@ -128,6 +128,8 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [x] Owner play of the dressed room (2026-10-03, desktop, solo: "played through looks good")
 - [x] Shipped (ADR-0035): `draft: true` removed; packs served gzipped
 - [x] Download progress with gzipped packs: measured in both clients (desktop stopped at 64.5 %, now 99.9 %; the browser already counted decompressed bytes); the platform sends Content-Length with the gzipped copy
+- [x] Intro video on the site (owner request; ADR-0036): room-footage trailer (`media/rooms/clockmaker/trailer.json`, 7 shots, 30.7 s), Gemini TTS narration (`tools/narrate`), `tools/trailer/build.sh`; platform `-media` serves it, lobby card and game page show it
+- [ ] Veo story clips from Flow (waiting on the owner's OK to accept Flow's privacy notice), then rebuild the trailer
 - [ ] R4: three blind play-tests logged in the room README (after shipping, owner's choice)
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
 
@@ -290,6 +292,12 @@ Not started. Includes `docker compose up` for the platform and challenge images 
 - Before: `/api/status` 0 running / 0 waiting, no game-server processes, no challenge containers. `m5-browser` fast-forwarded to `room-clockmaker` (5f01c30) in the service checkout; service stopped 22:12:16, `tools/install-service.sh` re-exported clients and packs and restarted it 22:13:29 (about 75 s down).
 - After, over the public HTTPS address: `/api/catalog` lists clockmaker (pack 82,166,424 bytes) and night_shift; `/download/packs/clockmaker-0.1.0.pck` answered with `content-encoding: gzip` (53 MB on the wire) and the decompressed bytes match the catalog SHA-256; headless Chrome loaded the lobby (both room cards, Night Shift keeps its HACKER ROOM badge) and joined a fresh Clockmaker game (server log: player joined), landing rendered.
 - The deploy also brought the owner-scoped container cleanup (ADR-0032) and single-room packs (ADR-0030 amendment) to the live service.
+
+### 2026-10-04, intro videos (ADR-0036; worktree, Alienware)
+- `tools/trailer/build.sh clockmaker`: Movie Maker recorded 922 frames at 1920x1080; Blender encoded `intro.mp4` (1280x720 H.264 + AAC, 30.7 s, 8.3 MB, index at the front) and `poster.jpg`. FFmpeg `volumedetect`: mean -25.8 dB, max -4.3 dB; per-second peaks show the narration throughout and no spike from the staged door (one-shot sounds are now removed).
+- Headless Chrome (`webshot.py --swiftshader`) played it with sound (-23 dB RMS); its GPU path stalls 720p video at 0.2 s on this laptop, which first looked like a silent file.
+- `go test ./platform/internal/api` (`TestIntroVideosAreListedAndServed`: catalog lists only rooms with a video; serves the video; refuses other files, unknown rooms and traversal). A private dev platform (port 8095, own data dir) with `-media media`: range requests answer 206; lobby card and game page screenshotted at 1366x900 and 390x844.
+- `tools/test.sh` in the worktree: all Go packages ok, gdUnit 135 + 16 + 29 cases pass, multiplayer, platform and browser smokes PASS.
 
 ## Handoff (2026-10-03, end of the M4/M5 working session)
 - **Branches:** `m5-browser` is stacked on `m4-polish`; neither is merged to `main` (M4 still waits for its blind play-tests, M5 for the friends test). New work should branch from `m5-browser`, or merge both first if the owner agrees.

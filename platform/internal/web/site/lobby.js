@@ -34,6 +34,7 @@ async function loadRooms() {
       card.querySelector('h3').textContent = room.title;
       card.querySelector('.case-id').textContent = `Room · ${room.room_id} · v${room.version}`;
       card.querySelector('.room-summary').textContent = room.summary;
+      showIntro(card.querySelector('.intro-video'), room.intro, room.title);
       const [min, max] = room.players;
       card.querySelector('.room-facts').textContent = `${room.duration_minutes} minutes · ${min === max ? min : `${min}–${max}`} players`;
       card.querySelectorAll('[data-hacker]').forEach(element => { element.hidden = !(room.challenges > 0); });
@@ -90,3 +91,13 @@ async function loadStatus() {
   } catch { line.textContent = 'Platform status unavailable'; }
 }
 loadStatus();
+
+// showIntro sets up a room's intro video (click to play, sound on) when the
+// platform lists one. preload="none" keeps the page light until it is played.
+function showIntro(video, intro, title) {
+  if (!intro || !intro.video) return;
+  video.src = intro.video;
+  if (intro.poster) video.poster = intro.poster;
+  video.setAttribute('aria-label', `Intro video: ${title}`);
+  video.hidden = false;
+}

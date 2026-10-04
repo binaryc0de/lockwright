@@ -38,6 +38,13 @@ function render(data) {
   document.querySelector('#hacker-badge').hidden = !data.hacker_room;
   document.querySelector('#game-hacker-note').hidden = !data.hacker_room;
   document.querySelector('#game-duration').textContent = `${data.duration_minutes} minutes`;
+  const intro = document.querySelector('#intro-video');
+  if (data.intro && data.intro.video && !intro.getAttribute('src')) {
+    intro.src = data.intro.video;
+    if (data.intro.poster) intro.poster = data.intro.poster;
+    intro.setAttribute('aria-label', `Intro video: ${data.title}`);
+    intro.hidden = false;
+  }
   const codeBox = document.querySelector('#game-code');
   if (codeBox.dataset.code !== data.code) {
     codeBox.replaceChildren(...Array.from(data.code).map(ch => { const s = document.createElement('span'); s.textContent = ch; return s; }));

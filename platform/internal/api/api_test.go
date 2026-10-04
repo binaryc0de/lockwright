@@ -703,3 +703,42 @@ func TestJoinAttemptsAreLimited(t *testing.T) {
 		t.Fatalf("4th lookup in a minute: %d", last)
 	}
 }
+
+func TestIntroVideosAreListedAndServed(t *testing.T) {
+	e := setup(t)
+	media := t.TempDir()
+	dir := filepath.Join(media, "rooms", "night_shift")
+	_ = os.MkdirAll(dir, 0o755)
+	_ = os.WriteFile(filepath.Join(dir, "intro.mp4"), []byte("MP4-bytes"), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "poster.jpg"), []byte("JPG"), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "narration.json"), []byte("{}"), 0o644)
+	cat, _ := rooms.Load("../../../game/rooms")
+	ts := httptest.NewServer(NewHandler(&Deps{Store: e.st, Rooms: cat, MediaDir: media}))
+	defer ts.Close()
+	resp, _ := http.Get(ts.URL + "/api/catalog")
+	var out []struct {
+		RoomID string `json:"room_id"`
+		Intro  *struct{ Video, Poster string }
+	}
+	_ = json.NewDecoder(resp.Body).Decode(&out)
+	resp.Body.Close()
+	for _, r := range out {
+		switch {
+		case r.RoomID == "night_shift" && (r.Intro == nil || r.Intro.Video != "/media/rooms/night_shift/intro.mp4" || r.Intro.Poster != "/media/rooms/night_shift/poster.jpg"):
+			t.Fatalf("night_shift intro %+v", r.Intro)
+		case r.RoomID != "night_shift" && r.Intro != nil:
+			t.Fatalf("%s lists an intro it does not have", r.RoomID)
+		}
+	}
+	resp, _ = http.Get(ts.URL + "/media/rooms/night_shift/intro.mp4")
+	b, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if string(b) != "MP4-bytes" || resp.Header.Get("Content-Type") != "video/mp4" {
+		t.Fatalf("video %q %q", b, resp.Header.Get("Content-Type"))
+	}
+	for _, bad := range []string{"/media/rooms/night_shift/narration.json", "/media/rooms/nope/intro.mp4", "/media/rooms/night_shift/..%2F..%2Fsecret"} {
+		if resp, _ := http.Get(ts.URL + bad); resp.StatusCode == 200 {
+			t.Fatalf("%s served", bad)
+		}
+	}
+}

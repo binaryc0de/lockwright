@@ -51,7 +51,7 @@ These came from the owner interview and the research reports. Do not relitigate 
 | Art direction | **Realistic PBR, dim and moody, spotlit workspaces**, built from CC0 libraries (Poly Haven, ambientCG, Kenney, Quaternius) plus a few hero props. Text on props must be readable at inspect distance. | Matches the physical-venue feel; achievable solo with CC0 assets. |
 | Asset tooling | **Blender 5.2 LTS, driven headless by Python scripts** that are the reproducible source of every custom prop; glTF/GLB export into the Godot project. | Scripts can be regenerated, diffed, reviewed, and re-run in CI; no binary `.blend` files as the source of truth. |
 | Asset design agent | **Codex CLI with `gpt-6.1-sol`** (high reasoning) writes and runs the Blender scripts, bakes textures, renders previews, and generates printed-document textures. Invoked from Claude Code through the `codex:rescue` skill or directly by the owner. | Owner's choice; keeps Claude Code focused on runtime code and gives a second model for art iteration and review. |
-| Languages (amended) | GDScript (game), Go (platform, tools), YAML (rooms), **Python only inside `tools/blender/` and `tools/printables/`** (Blender's scripting language; never in the runtime). | Blender is scripted in Python; everything else stays at two languages. |
+| Languages (amended) | GDScript (game), Go (platform, tools), YAML (rooms), **Python only inside `tools/blender/`, `tools/printables/` and `tools/trailer/`** (ADR-0036) (Blender's scripting language; never in the runtime). | Blender is scripted in Python; everything else stays at two languages. |
 
 ---
 

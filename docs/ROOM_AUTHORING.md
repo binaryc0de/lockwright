@@ -172,6 +172,17 @@ Rules: **flags are templates, never literals** (`roomcheck` fails on anything th
 
 Use CC0 assets (Poly Haven, ambientCG, Kenney, Quaternius) or your own; record each in `assets/ATTRIBUTION.md` with URL and licence. Assets only your room uses live under `game/rooms/<id>/assets/` (CC0 downloads in `assets/third_party/` via `tools/thirdparty/fetch_cc0.sh`, Codex props in `assets/props/` via a request whose `**Output:**` names that path), so they ship in your pack only, not in every client (ADR-0034). Textures <= 2048 px; props <= 20k triangles (hero props <= 60k). Custom props for the core library go through an asset request (`docs/ASSET_PIPELINE.md`).
 
+## 6a. Intro video (optional, ADR-0036)
+
+The site shows a room's intro video on its lobby card and game page when `media/rooms/<id>/intro.mp4` exists. To make one:
+
+1. Write `media/rooms/<id>/trailer.json`: `{"quality": "high", "fov": 68, "shots": [{"duration": 4, "from": [x, y, z, yaw, pitch], "to": [...], "caption": "...", "title": "...", "set": {"Node/Path": {"state": "unlocked"}}}]}`. A shot without `to` holds still; `title` draws a title card (the poster is taken 2.25 s in, so open with one); `set` stages node states. Plan paths around props.
+2. Optional narration: `narration.json` (`voice`, `style`, `text` with `<short pause>` tags, `start_s`), then `go run ./tools/narrate media/rooms/<id>` (needs a Gemini API key, see ADR-0036).
+3. Optional story clips from Flow (Veo): save them as `media/rooms/<id>/clips/01-*.mp4`; they play first, in name order.
+4. `tools/trailer/build.sh <id>` writes `intro.mp4` and `poster.jpg`. Watch it, and check the sound is there (`ffmpeg -i media/rooms/<id>/intro.mp4 -af volumedetect -f null -`).
+
+Videos are never part of the room pack.
+
 ## 7. Commands
 
 ```bash

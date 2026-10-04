@@ -48,6 +48,7 @@ func run() error {
 	gamePorts := flag.String("game-ports", "7777-7799", "UDP/TCP port range for game servers")
 	challengePorts := flag.String("challenge-ports", "20000-20999", "TCP port range for challenge proxies")
 	transport := flag.String("transport", "enet", "game transport for clients: enet or ws")
+	mediaDir := flag.String("media", "", "serve per-room intro videos from this directory (media/rooms/<id>/intro.mp4, poster.jpg)")
 	packsDir := flag.String("packs", "", "serve room packs built by tools/packroom from this directory (catalog + /download/packs/, ADR-0025)")
 	maxGames := flag.Int("max-games", 4, "most games (sessions not finished) at once; 0 = no cap")
 	expireAfter := flag.Duration("expire-unjoined", 30*time.Minute, "finish games nobody joined after this long")
@@ -107,7 +108,7 @@ func run() error {
 		slog.Warn("TEST MODE: game servers accept teleporting positions (--test-trust-positions)")
 		extra = append(extra, "--trust-positions")
 	}
-	deps := &api.Deps{Store: st, Rooms: cat, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host, WebDir: *webDir, PacksDir: *packsDir,
+	deps := &api.Deps{Store: st, Rooms: cat, Limiter: flags.NewLimiter(), Secret: secret, AdvertiseHost: host, WebDir: *webDir, PacksDir: *packsDir, MediaDir: *mediaDir,
 		MaxGames: *maxGames, CreateLimit: &api.RateLimit{Max: 6, Window: 10 * time.Minute},
 		JoinLimit: &api.RateLimit{Max: 30, Window: time.Minute}, PublicURL: *publicURL}
 	mgr := sessions.New(sessions.Config{

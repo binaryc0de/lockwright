@@ -73,6 +73,10 @@ type Deps struct {
 	// (<room>-<version>.pck plus its .json entry). The catalog lists each
 	// room's pack and /download/packs/{file} serves it (ADR-0025).
 	PacksDir string
+	// MediaDir, if set, holds per-room intro videos (media/rooms/<id>/intro.mp4
+	// and poster.jpg, tools/trailer/build.sh): the catalog and game API list
+	// them and /media/rooms/{room}/{file} serves them.
+	MediaDir string
 	// MaxGames caps sessions that are not finished (0 = no cap); creating
 	// more answers 503 games_full. Every game holds a game server and its
 	// challenge containers, so the host sets this to what it can carry.
@@ -166,6 +170,9 @@ func NewHandler(d *Deps) http.Handler {
 	if d.PacksDir != "" {
 		mux.HandleFunc("GET /download/packs/{file}", a.downloadPack)
 	}
+	if d.MediaDir != "" {
+		mux.HandleFunc("GET /media/rooms/{room}/{file}", a.media)
+	}
 	mux.HandleFunc("POST /api/sessions", a.createSession)
 	mux.HandleFunc("GET /api/sessions/{id}", a.getSession)
 	mux.HandleFunc("GET /api/games/{code}", a.limitJoins(a.getGame))
@@ -208,6 +215,7 @@ func (a *app) catalog(w http.ResponseWriter, _ *http.Request) {
 		Difficulties    []rooms.Difficulty `json:"difficulties"`
 		Pack            *packInfo          `json:"pack,omitempty"`
 		Summary         string             `json:"summary"`
+		Intro           *introInfo         `json:"intro,omitempty"`
 	}
 	out := []entry{}
 	for _, r := range a.d.Rooms.All() {
@@ -215,7 +223,7 @@ func (a *app) catalog(w http.ResponseWriter, _ *http.Request) {
 		if ds == nil {
 			ds = []rooms.Difficulty{}
 		}
-		out = append(out, entry{r.ID, r.Title, r.Version, r.Mode.DurationMinutes, [2]int{r.Mode.Players.Min, r.Mode.Players.Max}, len(r.CTF.Challenges), ds, a.pack(r), r.Summary})
+		out = append(out, entry{r.ID, r.Title, r.Version, r.Mode.DurationMinutes, [2]int{r.Mode.Players.Min, r.Mode.Players.Max}, len(r.CTF.Challenges), ds, a.pack(r), r.Summary, a.intro(r.ID)})
 	}
 	writeJSON(w, http.StatusOK, out)
 }
@@ -659,6 +667,45 @@ func webClient(dir string) http.Handler {
 	})
 }
 
+// introInfo is a room's intro video as the site shows it.
+type introInfo struct {
+	Video  string `json:"video"`
+	Poster string `json:"poster,omitempty"`
+}
+
+// mediaFiles are the only files /media/rooms/{room}/ serves.
+var mediaFiles = map[string]string{"intro.mp4": "video/mp4", "poster.jpg": "image/jpeg"}
+
+// intro lists a room's intro video, if one has been built.
+func (a *app) intro(roomID string) *introInfo {
+	if a.d.MediaDir == "" {
+		return nil
+	}
+	dir := filepath.Join(a.d.MediaDir, "rooms", roomID)
+	if st, err := os.Stat(filepath.Join(dir, "intro.mp4")); err != nil || st.Size() == 0 {
+		return nil
+	}
+	in := &introInfo{Video: "/media/rooms/" + roomID + "/intro.mp4"}
+	if _, err := os.Stat(filepath.Join(dir, "poster.jpg")); err == nil {
+		in.Poster = "/media/rooms/" + roomID + "/poster.jpg"
+	}
+	return in
+}
+
+// media serves a catalog room's intro video and poster (ranges allowed, so
+// browsers can seek).
+func (a *app) media(w http.ResponseWriter, r *http.Request) {
+	room, file := r.PathValue("room"), r.PathValue("file")
+	ct, ok := mediaFiles[file]
+	if _, listed := a.d.Rooms.Room(room); !ok || !listed {
+		writeErr(w, http.StatusNotFound, "not_found", "No such file.")
+		return
+	}
+	w.Header().Set("Content-Type", ct)
+	w.Header().Set("Cache-Control", "no-cache")
+	http.ServeFile(w, r, filepath.Join(a.d.MediaDir, "rooms", room, file))
+}
+
 // packInfo is a room pack as clients download it.
 type packInfo struct {
 	File   string `json:"file"`
@@ -790,6 +837,7 @@ func (a *app) getGame(w http.ResponseWriter, r *http.Request) {
 		"players_max": room.Mode.Players.Max, "duration_minutes": room.Mode.DurationMinutes,
 		"hacker_room": len(room.CTF.Challenges) > 0, "created_at": sess.CreatedAt.Unix(),
 		"won": sess.Won, "elapsed_s": sess.ElapsedS, "expired": sess.Expired,
+		"intro": a.intro(sess.RoomID),
 	})
 }
 
