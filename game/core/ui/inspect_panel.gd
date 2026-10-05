@@ -56,7 +56,7 @@ func show_item(item: Item) -> void:
 	vp.add_child(light)
 	_pivot = Node3D.new()
 	vp.add_child(_pivot)
-	var aabb := _copy_meshes(item, _pivot)
+	var aabb := ItemIcons.copy_meshes(item, _pivot)
 	_pivot.position = -aabb.get_center()
 	var holder := Node3D.new()
 	vp.add_child(holder)
@@ -145,34 +145,6 @@ func _rich() -> RichTextLabel:
 	r.custom_minimum_size = Vector2(640, 0)
 	r.add_theme_font_size_override("normal_font_size", 20)
 	return r
-
-
-func _copy_meshes(src: Node3D, dest: Node3D) -> AABB:
-	var aabb := AABB()
-	var first := true
-	var inv := src.global_transform.affine_inverse()
-	for m in Interactable._meshes(src):
-		if not _shown_under(m, src):
-			continue  # e.g. a greybox mesh hidden under a hero model
-		var copy := MeshInstance3D.new()
-		copy.mesh = m.mesh
-		copy.material_override = m.material_override
-		copy.transform = inv * m.global_transform
-		dest.add_child(copy)
-		var box := copy.transform * m.get_aabb()
-		aabb = box if first else aabb.merge(box)
-		first = false
-	return aabb
-
-
-## Visible relative to `root`: neither the node nor any parent up to `root` is
-## hidden (the item itself may be hidden, e.g. still in a closed drawer).
-static func _shown_under(n: Node, root: Node) -> bool:
-	while n != null and n != root:
-		if n is Node3D and not (n as Node3D).visible:
-			return false
-		n = n.get_parent()
-	return true
 
 
 func _on_view_input(event: InputEvent) -> void:

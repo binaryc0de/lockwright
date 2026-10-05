@@ -14,6 +14,20 @@ static var display_name: String = "Player"
 ## Last server joined from the menu (host[:port]).
 static var last_server: String = ""
 static var last_ws: bool = false
+## Controls: "auto" (point-and-tap on phones and tablets, classic elsewhere),
+## "classic" (WASD + mouse look) or "point" (drag to look, tap to walk and
+## use; ADR-0038).
+static var controls: String = "auto"
+## Point-and-tap: dragging moves the view like a map (grab the world) instead
+## of turning the head the way the finger moves.
+static var drag_grabs_world: bool = false
+
+const CONTROLS := ["auto", "classic", "point"]
+
+
+## True when the point-and-tap controls are in use.
+static func pointer_controls() -> bool:
+	return controls == "point" or (controls == "auto" and Device.is_touch())
 
 
 static func load_settings() -> void:
@@ -30,6 +44,10 @@ static func load_settings() -> void:
 	display_name = str(cfg.get_value("player", "display_name", display_name)).left(24)
 	last_server = str(cfg.get_value("network", "last_server", last_server)).left(120)
 	last_ws = bool(cfg.get_value("network", "last_ws", last_ws))
+	controls = str(cfg.get_value("input", "controls", controls))
+	if not controls in CONTROLS:
+		controls = "auto"
+	drag_grabs_world = bool(cfg.get_value("input", "drag_grabs_world", drag_grabs_world))
 
 
 static func save_settings() -> void:
@@ -42,4 +60,6 @@ static func save_settings() -> void:
 	cfg.set_value("player", "display_name", display_name)
 	cfg.set_value("network", "last_server", last_server)
 	cfg.set_value("network", "last_ws", last_ws)
+	cfg.set_value("input", "controls", controls)
+	cfg.set_value("input", "drag_grabs_world", drag_grabs_world)
 	cfg.save(PATH)

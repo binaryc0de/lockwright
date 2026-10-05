@@ -2,24 +2,59 @@ class_name ModalPanel
 extends PanelContainer
 ## Base for focused UI panels (locks, documents, terminal, boards). While one
 ## is open the HUD frees the mouse and the player stops moving. Esc closes.
+## Panels fit the screen (ADR-0038): content taller than the screen scrolls,
+## and a panel wider than the screen is scaled down.
 
 signal closed
 
+const SCREEN_MARGIN := 16.0
+
 var _vbox: VBoxContainer
+var _scroll: ScrollContainer
 
 
 func _init() -> void:
-	set_anchors_preset(Control.PRESET_CENTER)
-	grow_horizontal = Control.GROW_DIRECTION_BOTH
-	grow_vertical = Control.GROW_DIRECTION_BOTH
+	set_anchors_preset(Control.PRESET_TOP_LEFT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 18)
 	add_child(margin)
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	margin.add_child(_scroll)
 	_vbox = VBoxContainer.new()
 	_vbox.add_theme_constant_override("separation", 10)
-	margin.add_child(_vbox)
+	_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll.add_child(_vbox)
+	_vbox.minimum_size_changed.connect(_fit)
+
+
+func _ready() -> void:
+	get_viewport().size_changed.connect(_fit)
+	_fit()
+
+
+## Scales the panel down to the screen's width if needed, caps the scroll
+## area at the screen's height, then centres the panel.
+func _fit() -> void:
+	if not is_inside_tree():
+		return
+	var screen := get_viewport().get_visible_rect().size
+	var content := _vbox.get_combined_minimum_size()
+	var chrome := get_combined_minimum_size() - _scroll.get_combined_minimum_size()
+	var s := minf(1.0, (screen.x - 2.0 * SCREEN_MARGIN) / maxf(content.x + chrome.x, 1.0))
+	scale = Vector2(s, s)
+	var max_h := (screen.y - 2.0 * SCREEN_MARGIN) / s - chrome.y
+	_scroll.custom_minimum_size = Vector2(content.x, maxf(minf(content.y, max_h), 60.0))
+	_place.call_deferred()
+
+
+func _place() -> void:
+	if not is_inside_tree():
+		return
+	reset_size()
+	position = ((get_viewport().get_visible_rect().size - size * scale) / 2.0).floor()
 
 
 ## Content container for subclasses.

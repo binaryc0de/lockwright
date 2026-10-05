@@ -7,6 +7,8 @@ extends CanvasLayer
 signal leave_requested
 
 const HELP := "E interact   F inspect item   1-9 select item   Q deselect   Tab evidence   H hints   Esc menu"
+const HELP_POINTER := "Drag to look   Tap the floor to walk   Tap things to use them   Drag an item onto something to use it"
+const HELP_POINTER_MOUSE := "Drag to look   Click the floor to walk   Click things to use them   Drag an item onto something to use it"
 
 var player: FirstPersonPlayer
 var _modal: ModalPanel = null
@@ -23,6 +25,11 @@ var _ended_won := false
 ## Browser build: pointer lock needs a click and Esc releases it (ADR-0023).
 var _click_hint: Label = null
 var _was_captured := false
+## Point-and-tap controls (ADR-0038): buttons for what keys do on a desktop.
+var _toolbar: HBoxContainer
+var _help: Label
+var _portrait_tip: Label
+var pointer_mode := false
 
 
 func setup(p: FirstPersonPlayer) -> void:
@@ -37,6 +44,19 @@ func setup(p: FirstPersonPlayer) -> void:
 	Game.session_finished.connect(func(won: bool) -> void: show_end(won))
 	Game.time_up.connect(func() -> void: show_end(false))
 	Game.hud = self
+	apply_controls()
+
+
+## Applies Settings.controls: classic (captured mouse, keys) or point-and-tap.
+func apply_controls() -> void:
+	pointer_mode = Settings.pointer_controls()
+	if player:
+		player.set_pointer_mode(pointer_mode)
+	_toolbar.visible = pointer_mode
+	_help.text = (HELP_POINTER if Device.is_touch() else HELP_POINTER_MOUSE) if pointer_mode else HELP
+	_inventory.show_inspect_button = pointer_mode
+	_inventory.rebuild()
+	_set_free_mouse(_modal != null)
 
 
 func _ready() -> void:
@@ -69,19 +89,23 @@ func _ready() -> void:
 	_clock.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 
 	var help := _label(root, Control.PRESET_BOTTOM_RIGHT, 15)
+	_help = help
 	help.text = HELP
 	help.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	help.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	help.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	help.position += Vector2(-16, -12)
 	help.modulate.a = 0.7
+	_build_toolbar(root)
 
 	_inventory = InventoryBar.new()
 	_inventory.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	_inventory.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_inventory.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	_inventory.position.y -= 48
+	_inventory.position.y -= 40
 	root.add_child(_inventory)
+	_inventory.item_dragged.connect(_on_item_dragged)
+	_inventory.inspect_requested.connect(_inspect_selected)
 
 	_banner = PanelContainer.new()
 	_banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
@@ -100,6 +124,81 @@ func _ready() -> void:
 	root.add_child(_banner)
 
 
+func _build_toolbar(root: Control) -> void:
+	_toolbar = HBoxContainer.new()
+	_toolbar.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_toolbar.position = Vector2(16, 16)
+	_toolbar.add_theme_constant_override("separation", 10)
+	_toolbar.visible = false
+	root.add_child(_toolbar)
+	_tool("Menu", _open_pause)
+	_tool("Evidence", _open_evidence)
+	_tool("Hints", func() -> void: (_open(HintsPanel.new()) as HintsPanel).setup())
+	if OS.has_feature("web") and bool(JavaScriptBridge.eval("!!document.fullscreenEnabled", true)):
+		_tool("Full screen", func() -> void:
+			var full := DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if full else DisplayServer.WINDOW_MODE_FULLSCREEN))
+	_portrait_tip = _label(root, Control.PRESET_CENTER_TOP, 22)
+	_portrait_tip.position.y += 150
+	_portrait_tip.text = "Tip: turn your phone sideways for a wider view."
+	_portrait_tip.visible = false
+
+
+func _tool(text: String, on_press: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.name = text.replace(" ", "")
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size = Vector2(120, 64)
+	b.add_theme_font_size_override("font_size", 20)
+	b.pressed.connect(on_press)
+	_toolbar.add_child(b)
+	return b
+
+
+func _open_pause() -> void:
+	var p := _open(PauseMenu.new()) as PauseMenu
+	p.setup()
+	p.quit_requested.connect(func() -> void: leave_requested.emit())
+	p.controls_changed.connect(apply_controls)
+
+
+func _open_evidence() -> void:
+	(_open(EvidenceBoard.new()) as EvidenceBoard).setup()
+	if is_instance_valid(tutorial):
+		tutorial.on_evidence_board_opened()
+
+
+func _inspect_selected() -> void:
+	var item := Game.node_at(Game.selected_item) as Item
+	if item:
+		open_item(item)
+	else:
+		toast("Select an item first.")
+
+
+## An inventory item dragged over the room: highlight what it would be used
+## on; when let go, use it there.
+func _on_item_dragged(path: String, pos: Vector2, released: bool) -> void:
+	if player == null or player.pointer == null or _modal != null:
+		return
+	var p := player.pointer
+	if released:
+		p.dragging_item = false
+		p.drag_target = null
+		if pos.x >= 0.0:
+			p.drop(path, pos)
+		return
+	p.dragging_item = true
+	p.drag_target = p.thing_at(pos)
+	_drag_item_name = (Game.node_at(path) as Item).display_name if Game.node_at(path) is Item else ""
+	_drag_pos = pos
+
+
+var _drag_item_name := ""
+var _drag_pos := Vector2.ZERO
+
+
 func _label(parent: Control, preset: Control.LayoutPreset, size: int) -> Label:
 	var l := Label.new()
 	l.set_anchors_preset(preset)
@@ -116,8 +215,22 @@ func _process(_delta: float) -> void:
 	if Game.has_session():
 		_clock.text = SessionClock.format_remaining(Game.remaining_s())
 		_clock.modulate = Color(1, 0.4, 0.4) if Game.remaining_s() < 300 else Color.WHITE
-	if OS.has_feature("web"):
+	if OS.has_feature("web") and not pointer_mode:
 		_web_pointer_lock()
+	if pointer_mode:
+		_place_prompt()
+		var vp := get_viewport().get_visible_rect().size
+		_portrait_tip.visible = Device.is_touch() and vp.y > vp.x and _modal == null
+	elif _click_hint:
+		_click_hint.visible = false
+
+
+## Point-and-tap: the prompt follows the mouse (or the dragged item); fingers
+## do not hover, so on touch screens it only shows while dragging an item.
+func _place_prompt() -> void:
+	var dragging := player != null and player.pointer != null and player.pointer.dragging_item
+	var at := _drag_pos if dragging else (player.pointer.mouse_position() if player and player.pointer else Vector2.ZERO)
+	_prompt.position = at + Vector2(-_prompt.size.x / 2.0, 46 if not dragging else -110)
 
 
 ## Browsers only lock the pointer after a click, and Esc releases it without
@@ -126,9 +239,7 @@ func _process(_delta: float) -> void:
 func _web_pointer_lock() -> void:
 	var captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 	if _was_captured and not captured and _modal == null and Game.has_session():
-		var p := _open(PauseMenu.new()) as PauseMenu
-		p.setup()
-		p.quit_requested.connect(func() -> void: leave_requested.emit())
+		_open_pause()
 	_was_captured = captured
 	if _click_hint == null:
 		_click_hint = Label.new()
@@ -144,6 +255,14 @@ func _update_prompt() -> void:
 	var t := player.target if player else null
 	if t == null:
 		_prompt.text = ""
+		return
+	if pointer_mode:
+		var dragging := player.pointer != null and player.pointer.dragging_item
+		if dragging:
+			_prompt.text = "Use %s on %s" % [_drag_item_name, t.display_name] if t.accepts_items else t.prompt(_drag_item_name)
+			return
+		var sel := Game.node_at(Game.selected_item) as Item
+		_prompt.text = t.prompt(sel.display_name if sel else "")
 		return
 	var item := Game.node_at(Game.selected_item) as Item
 	_prompt.text = "[E] " + t.prompt(item.display_name if item else "")
@@ -206,10 +325,12 @@ var _cross: Label
 
 
 func _set_free_mouse(free: bool) -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if free else Input.MOUSE_MODE_CAPTURED
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if free or pointer_mode else Input.MOUSE_MODE_CAPTURED
 	# The crosshair would sit on top of a panel's middle (a dial's letter).
 	if _cross:
-		_cross.visible = not free
+		_cross.visible = not free and not pointer_mode
+	if _toolbar:
+		_toolbar.visible = pointer_mode and not free
 	if player:
 		player.input_enabled = not free
 
@@ -294,27 +415,19 @@ func sync_end_state() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _modal != null or not Game.has_session():
 		return
-	if event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+	if not pointer_mode and event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		_set_free_mouse(false)
 		get_viewport().set_input_as_handled()
 		return
 	var handled := true
 	if event.is_action_pressed("evidence_board"):
-		(_open(EvidenceBoard.new()) as EvidenceBoard).setup()
-		if is_instance_valid(tutorial):
-			tutorial.on_evidence_board_opened()
+		_open_evidence()
 	elif event.is_action_pressed("hints"):
 		(_open(HintsPanel.new()) as HintsPanel).setup()
 	elif event.is_action_pressed("pause"):
-		var p := _open(PauseMenu.new()) as PauseMenu
-		p.setup()
-		p.quit_requested.connect(func() -> void: leave_requested.emit())
+		_open_pause()
 	elif event.is_action_pressed("inspect_item"):
-		var item := Game.node_at(Game.selected_item) as Item
-		if item:
-			open_item(item)
-		else:
-			toast("Select an item first (1-9).")
+		_inspect_selected()
 	elif event.is_action_pressed("deselect_item"):
 		Game.selected_item = ""
 	elif event.is_action_pressed("next_item"):

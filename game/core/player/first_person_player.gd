@@ -3,6 +3,8 @@ extends CharacterBody3D
 ## The local player (PLAN.md 6.2): walk ~3 m/s, no jump/crouch/sprint, mouse
 ## look, and a 3 m screen-centre ray that targets Interactables. Movement is
 ## client-authoritative; the authority only sanity-checks reach.
+## With point-and-tap controls (ADR-0038) the PointerControls child drives
+## looking, walking and using instead, and the mouse stays free.
 
 signal target_changed(target: Interactable)
 
@@ -29,6 +31,11 @@ var _pitch: float = 0.0
 var _report_timer: float = 0.0
 var _stride := 0.0
 var _focus_tween: Tween
+## Point-and-tap controls, when on (set_pointer_mode).
+var pointer: PointerControls = null
+## The room, for baking the walk mesh used by tap-to-walk.
+var room_root: Node3D = null
+var _walk: WalkMesh = null
 
 
 func _ready() -> void:
@@ -54,6 +61,65 @@ func _ready() -> void:
 	ray.collision_mask = 1 | (1 << (Interactable.INTERACT_LAYER - 1))
 	ray.collide_with_areas = false
 	camera.add_child(ray)
+
+
+## Switches between classic (WASD + captured mouse) and point-and-tap.
+func set_pointer_mode(on: bool) -> void:
+	if on == (pointer != null):
+		return
+	if not on:
+		pointer.queue_free()
+		pointer = null
+		return
+	pointer = PointerControls.new(self)
+	pointer.name = "PointerControls"
+	add_child(pointer)
+	if _walk == null and room_root != null and is_inside_tree():
+		_walk = WalkMesh.new()
+		_walk.name = "WalkMesh"
+		add_child(_walk)
+		_walk.setup(room_root)
+	pointer.walk = _walk
+
+
+func eye() -> Vector3:
+	return camera.global_position
+
+
+## Turns the view by yaw/pitch radians (pitch clamped like mouse look).
+func turn(yaw: float, pitch: float) -> void:
+	rotate_y(yaw)
+	_pitch = clampf(_pitch + pitch, deg_to_rad(-85), deg_to_rad(85))
+	camera.rotation.x = _pitch
+
+
+## Turns body and head to look at `point` over `time` seconds on `tween`.
+func face_point(point: Vector3, time: float, tween: Tween) -> void:
+	var to := point - (global_position + Vector3.UP * EYE_HEIGHT)
+	var yaw := atan2(-to.x, -to.z)
+	var pitch := clampf(atan2(to.y, Vector2(to.x, to.z).length()), deg_to_rad(-85), deg_to_rad(85))
+	var from_yaw := rotation.y
+	yaw = from_yaw + wrapf(yaw - from_yaw, -PI, PI)
+	tween.set_parallel(true)
+	tween.tween_property(self, "rotation:y", yaw, time)
+	tween.tween_method(func(p: float) -> void:
+		_pitch = p
+		camera.rotation.x = p, _pitch, pitch, time)
+
+
+## What is under a viewport position: {position, normal, collider, and
+## interactable if it is an available Interactable}; empty if nothing.
+func pick(pos: Vector2) -> Dictionary:
+	var from := camera.project_ray_origin(pos)
+	var to := from + camera.project_ray_normal(pos) * 30.0
+	var q := PhysicsRayQueryParameters3D.create(from, to, ray.collision_mask, [get_rid()])
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	if hit.is_empty():
+		return {}
+	var i := Interactable.owner_of(hit.collider)
+	if i and i.is_available():
+		hit["interactable"] = i
+	return hit
 
 
 func place_at(t: Transform3D) -> void:
@@ -97,6 +163,10 @@ func _tween_camera(local: Transform3D) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not input_enabled:
 		return
+	if pointer:
+		if pointer.handle(event):
+			get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var m := event as InputEventMouseMotion
 		rotate_y(-m.relative.x * Settings.mouse_sensitivity)
@@ -114,6 +184,13 @@ func _physics_process(delta: float) -> void:
 	if input_enabled:
 		var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 		dir = (transform.basis * Vector3(input.x, 0, input.y)).normalized()
+		if pointer:
+			if dir != Vector3.ZERO:
+				pointer.cancel()  # the keys take over from a tap-to-walk
+			else:
+				dir = pointer.steer(delta)
+	elif pointer:
+		pointer.cancel()
 	var want := dir * WALK_SPEED
 	velocity.x = move_toward(velocity.x, want.x, ACCEL * delta)
 	velocity.z = move_toward(velocity.z, want.z, ACCEL * delta)
@@ -136,7 +213,9 @@ func _physics_process(delta: float) -> void:
 
 func _update_target() -> void:
 	var hit: Interactable = null
-	if input_enabled and ray.is_colliding():
+	if pointer:
+		hit = pointer.update_hover() if input_enabled else null
+	elif input_enabled and ray.is_colliding():
 		var i := Interactable.owner_of(ray.get_collider())
 		if i and i.is_available():
 			hit = i

@@ -432,13 +432,12 @@ func test_inspect_skips_hidden_greybox_meshes() -> void:
 	for path: String in ["Office/Desk/Drawer/Slide/Contents/UVTorch", "Office/FilingCabinet/Drawer/Contents/UsbStick"]:
 		var item := room.get_node(path) as Node3D
 		var dest := auto_free(Node3D.new()) as Node3D
-		var panel := auto_free(InspectPanel.new()) as InspectPanel
-		panel._copy_meshes(item, dest)
+		ItemIcons.copy_meshes(item, dest)
 		assert_int(dest.get_child_count()).override_failure_message("%s copied nothing" % path).is_greater(0)
 		for copy: MeshInstance3D in dest.get_children():
 			for m: MeshInstance3D in Interactable._meshes(item):
 				if copy.mesh == m.mesh:
-					assert_bool(InspectPanel._shown_under(m, item)) \
+					assert_bool(ItemIcons.shown_under(m, item)) \
 						.override_failure_message("%s: hidden mesh %s copied" % [path, m.name]).is_true()
 
 

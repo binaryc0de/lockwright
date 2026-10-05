@@ -3,6 +3,14 @@ extends ModalPanel
 ## Esc menu: resume, accessibility settings (PLAN.md 6.9), leave.
 
 signal quit_requested
+## Settings.controls (or the drag direction) changed; the HUD re-applies it.
+signal controls_changed
+
+const CONTROL_LABELS := {
+	"auto": "Automatic (tap on phones and tablets)",
+	"classic": "Classic: W A S D and mouse look",
+	"point": "Point and click: drag to look, click to walk",
+}
 
 
 func setup() -> void:
@@ -25,6 +33,25 @@ func setup() -> void:
 		body().add_child(row)
 	var grid := GridContainer.new()
 	grid.columns = 2
+	var ctl_label := Label.new()
+	ctl_label.text = "Controls"
+	grid.add_child(ctl_label)
+	var ctl := OptionButton.new()
+	ctl.name = "Controls"
+	for c: String in Settings.CONTROLS:
+		ctl.add_item(CONTROL_LABELS[c])
+	ctl.selected = Settings.CONTROLS.find(Settings.controls)
+	ctl.item_selected.connect(func(i: int) -> void:
+		Settings.controls = Settings.CONTROLS[i]
+		controls_changed.emit())
+	grid.add_child(ctl)
+	var grab_label := Label.new()
+	grab_label.text = "Drag moves the room\n(like a map)"
+	grid.add_child(grab_label)
+	var grab := CheckBox.new()
+	grab.button_pressed = Settings.drag_grabs_world
+	grab.toggled.connect(func(on: bool) -> void: Settings.drag_grabs_world = on)
+	grid.add_child(grab)
 	_slider(grid, "Mouse sensitivity", 0.0005, 0.01, 0.0005, Settings.mouse_sensitivity,
 		func(v: float) -> void: Settings.mouse_sensitivity = v)
 	_slider(grid, "Field of view", 75, 90, 1, Settings.fov, func(v: float) -> void:
@@ -34,7 +61,7 @@ func setup() -> void:
 			cam.fov = v)
 	_slider(grid, "Text size", 0.75, 2.0, 0.05, Settings.text_scale, func(v: float) -> void:
 		Settings.text_scale = v
-		get_tree().root.content_scale_factor = v)
+		Device.apply_ui_scale(get_tree().root))
 	var gfx_label := Label.new()
 	gfx_label.text = "Graphics"
 	grid.add_child(gfx_label)
@@ -55,7 +82,7 @@ func setup() -> void:
 	inv.toggled.connect(func(on: bool) -> void: Settings.invert_y = on)
 	grid.add_child(inv)
 	body().add_child(grid)
-	add_close_button("Resume (Esc)")
+	add_close_button("Resume" if Settings.pointer_controls() else "Resume (Esc)")
 	var quit := Button.new()
 	quit.text = "Leave room"
 	quit.pressed.connect(func() -> void: quit_requested.emit())

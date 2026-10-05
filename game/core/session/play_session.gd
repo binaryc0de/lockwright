@@ -214,6 +214,7 @@ func _load(room_id: String, pack_path: String) -> RoomLoader:
 func _spawn_player_and_hud() -> void:
 	player = FirstPersonPlayer.new()
 	player.name = "LocalPlayer"
+	player.room_root = room
 	add_child(player)
 	player.place_at(room.join_spawn_transform())
 	if not Game.local_player_placed.is_connected(_on_placed):
@@ -288,6 +289,7 @@ func leave() -> void:
 		# Covers leaving before the welcome, when Game is not in CLIENT mode yet.
 		Game.net.disconnect_client()
 	Game.hud = null
+	ItemIcons.clear()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	left.emit()
 	queue_free()

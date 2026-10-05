@@ -7,11 +7,17 @@ extends Node
 ##           [--snapshot <file.json>]
 
 var _menu: MainMenu
+## Godot's web build reads mouse motion from `pointermove`, which browsers
+## also fire for fingers, on top of the touch events Godot turns into mouse
+## motion: every finger drag would count twice (ADR-0038). Stop finger
+## pointermoves before they reach Godot; real mice and pens still pass.
+const WEB_TOUCH_FIX := "window.addEventListener('pointermove', function (e) { if (e.pointerType === 'touch') e.stopImmediatePropagation(); }, true);"
 
 
 func _ready() -> void:
 	var argv := OS.get_cmdline_user_args() + OS.get_cmdline_args()
 	if OS.has_feature("web"):
+		JavaScriptBridge.eval(WEB_TOUCH_FIX, true)
 		argv.append_array(AppArgs.web_query_args(str(JavaScriptBridge.eval("location.origin")), str(JavaScriptBridge.eval("location.search"))))
 	var args := AppArgs.parse(argv, OS.has_feature("dedicated_server"))
 	for e in args.errors:
@@ -37,7 +43,8 @@ func _ready() -> void:
 		_run_server(args)
 		return
 	Settings.load_settings()
-	get_tree().root.content_scale_factor = Settings.text_scale
+	Device.apply_ui_scale(get_tree().root)
+	get_tree().root.size_changed.connect(func() -> void: Device.apply_ui_scale(get_tree().root))
 	if args.is_remote_client():
 		_join(args)
 	elif not args.room_id.is_empty():
