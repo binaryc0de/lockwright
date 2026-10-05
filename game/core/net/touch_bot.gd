@@ -8,6 +8,11 @@ extends Node
 ## finds every gap. Prints "TOUCHBOT: done, N problems"; headless runs quit
 ## with 0 (none) or 2.
 ##   godot --path game -- --room clockmaker --touchbot     (or ?room=..&touchbot=1)
+## With `desktop` (--deskbot, ?deskbot=1) it plays the classic way instead:
+## W A S D and mouse look, the crosshair and E, number keys for items, mouse
+## clicks on panels and Esc to close them. Classic play needs a captured
+## mouse, so it runs in a browser: when the game wants a click to capture the
+## pointer it prints "DESKBOT: CLICK" and the test harness clicks the page.
 
 const STEP_PAUSE_S := 0.4
 const WALK_TIMEOUT_S := 25.0
@@ -15,18 +20,28 @@ const WALK_TIMEOUT_S := 25.0
 const MAX_DRAG := 0.5
 
 var session: PlaySession
+## Classic keyboard and mouse controls instead of touch.
+var desktop := false
+## Desktop: use items by freeing the cursor (I) and dragging them out of the
+## inventory, instead of number keys and E.
+var desktop_drag := false
 ## Steps before this one are done by intent (to start a touch run part-way).
 var first_step := 0
 var problems: Array[String] = []
 
 var _results: Array = []  # [path, verb, ok]
 var _last_change_ms := 0
+## Desktop mode plans walks on its own walk mesh (classic play has none).
+var _planner: WalkMesh
+var TAG := "TOUCHBOT"
 
 
 func _ready() -> void:
+	if desktop:
+		TAG = "DESKBOT"
 	Game.intent_result.connect(func(path: String, verb: String, r: Dictionary) -> void:
 		_results.append([path, verb, bool(r.get("ok", false))]))
-	Game.toasted.connect(func(t: String) -> void: print("TOUCHBOT:   (toast) %s" % t))
+	Game.toasted.connect(func(t: String) -> void: print("%s:   (toast) %s" % [TAG, t]))
 	Game.node_state_changed.connect(func(_p: String, _s: Dictionary) -> void: _last_change_ms = Time.get_ticks_msec())
 	_run.call_deferred()
 
@@ -39,38 +54,46 @@ func _hud() -> Hud:
 	return session.hud
 
 
+func _walk() -> WalkMesh:
+	return _planner if desktop else _player().pointer.walk
+
+
 func _run() -> void:
 	await _frames(30)
-	Settings.controls = "point"
+	Settings.controls = "classic" if desktop else "point"
 	_hud().apply_controls()
+	if desktop:
+		_planner = WalkMesh.new()
+		add_child(_planner)
+		_planner.setup(Game.room)
 	await _frames(10)
-	_close_panels_by_touch()
+	await _close_panels()
 	Game.start_clock()
 	var steps: Array = Game.manifest.solution
-	print("TOUCHBOT: %d steps in %s" % [steps.size(), Game.manifest.id])
+	print("%s: %d steps in %s" % [TAG, steps.size(), Game.manifest.id])
 	for i in steps.size():
 		if i < first_step:
 			var intent := SolutionPlayer.intent_for(steps[i], Game._nodes, Game.vars())
 			if intent.has("path"):
 				var n := Game.node_at(intent["path"])
-				_player().place_at(Transform3D(Basis(), _player().pointer.walk.route(_player().global_position, n.global_position)[-1]))
+				_player().place_at(Transform3D(Basis(), _walk().route(_player().global_position, n.global_position)[-1]))
 				Game.report_position(n.global_position, 0.0)
 				Game.request(n, intent["verb"], intent["payload"])
 				await _wait(0.2)
 			continue
 		if Game.world() and Game.world().won:
-			print("TOUCHBOT: won before step %d; the rest of the solution is not needed" % i)
+			print("%s: won before step %d; the rest of the solution is not needed" % [TAG, i])
 			break
 		await _step(i, steps[i])
 		await _settle()
 	await _wait(1.0)
 	var won := Game.world() != null and Game.world().won
-	print("TOUCHBOT: won=%s" % won)
+	print("%s: won=%s" % [TAG, won])
 	if not won:
 		problems.append("the room was not won")
-	print("TOUCHBOT: done, %d problems" % problems.size())
+	print("%s: done, %d problems" % [TAG, problems.size()])
 	for p in problems:
-		print("TOUCHBOT:   %s" % p)
+		print("%s:   %s" % [TAG, p])
 	if DisplayServer.get_name() == "headless":
 		get_tree().quit(0 if problems.is_empty() else 2)
 
@@ -89,7 +112,7 @@ func _step(i: int, step: Dictionary) -> void:
 		# Observation only (looking at a mark on a wall): turn to it if it exists.
 		if node:
 			await _look_at(_aim_point(node))
-		print("TOUCHBOT: step %d %s %s (looked)" % [i, act, target_path])
+		print("%s: step %d %s %s (looked)" % [TAG, i, act, target_path])
 		return
 	_results.clear()
 	var why := ""
@@ -100,7 +123,7 @@ func _step(i: int, step: Dictionary) -> void:
 			why = await _tap_thing(node, str(intent["verb"]))
 			if why.is_empty() and _hud().is_modal_open():
 				await _wait(0.3)
-				_close_panels_by_touch()
+				await _close_panels()
 		"input_code":
 			why = await _enter_code(node, str(intent["payload"]["value"]))
 		"use_on":
@@ -108,7 +131,7 @@ func _step(i: int, step: Dictionary) -> void:
 		"submit_flag":
 			why = await _submit_flag(node as Terminal, str(intent["payload"]["value"]))
 		_:
-			why = "no touch way to %s" % act
+			why = "no way to %s" % act
 	var t := 0.0
 	while why.is_empty() and not _succeeded(str(intent["path"]), node) and t < 8.0:
 		await _wait(0.25)
@@ -118,8 +141,8 @@ func _step(i: int, step: Dictionary) -> void:
 	if not why.is_empty():
 		_fail(i, act, "%s: %s" % [target_path, why], intent)
 	else:
-		print("TOUCHBOT: step %d %s %s ok (at %s)" % [i, act, target_path, _player().global_position.snapped(Vector3.ONE * 0.1)])
-	_close_panels_by_touch()
+		print("%s: step %d %s %s ok (at %s)" % [TAG, i, act, target_path, _player().global_position.snapped(Vector3.ONE * 0.1)])
+	await _close_panels()
 
 
 ## Waits, as a player watching would, until nothing has changed for a moment
@@ -128,7 +151,7 @@ func _step(i: int, step: Dictionary) -> void:
 func _settle() -> void:
 	await _wait(STEP_PAUSE_S)
 	var t := 0.0
-	while t < 10.0 and (Time.get_ticks_msec() - _last_change_ms < 2500 or _player().pointer.walk.pending()):
+	while t < 10.0 and (Time.get_ticks_msec() - _last_change_ms < 2500 or _walk().pending()):
 		await _wait(0.25)
 		t += 0.25
 
@@ -144,8 +167,8 @@ func _succeeded(path: String, node: Node) -> bool:
 func _fail(i: int, act: String, why: String, intent: Dictionary) -> void:
 	var line := "step %d %s: %s (player at %s)" % [i, act, why, _player().global_position.snapped(Vector3.ONE * 0.1)]
 	problems.append(line)
-	print("TOUCHBOT: TOUCH-FAIL %s" % line)
-	_close_panels_by_touch()
+	print("%s: %s %s" % [TAG, "DESK-FAIL" if desktop else "TOUCH-FAIL", line])
+	await _close_panels()
 	if intent.has("path"):
 		Game.report_position(Game.node_at(intent["path"]).global_position, 0.0)
 		Game.request(Game.node_at(intent["path"]), intent["verb"], intent["payload"])
@@ -161,6 +184,19 @@ func _tap_thing(node: Interactable, verb: String) -> String:
 		pass
 	elif node.current_verb() != verb and node.current_verb() != "use":
 		return "a tap would %s, the step needs %s" % [node.current_verb(), verb]
+	if desktop:
+		# Like a player reading the prompt before pressing E: aim until the
+		# crosshair is on it, and check again just before the key.
+		for attempt in 3:
+			var why := await _aim(node)
+			if not why.is_empty():
+				return why
+			await get_tree().physics_frame
+			if _player().target == node:
+				await _key(KEY_E)
+				await _wait(0.3)
+				return ""
+		return "the crosshair kept slipping off it onto %s" % (_player().target.eb_path if _player().target else "nothing")
 	var at: Variant = await _reach(node)
 	if at is String:
 		return at
@@ -249,8 +285,12 @@ func _over_ui(s: Vector2) -> bool:
 	return false
 
 
-## Turns the view onto `point` with finger drags, as a player would.
+## Turns the view onto `point` with finger drags (or the mouse), as a player
+## would.
 func _look_at(point: Vector3) -> void:
+	if desktop:
+		await _mouse_look_at(point)
+		return
 	var p := _player()
 	var width := p.get_viewport().get_visible_rect().size.x
 	var k := PointerControls.DRAG_TURN / maxf(width, 1.0)
@@ -270,6 +310,8 @@ func _look_at(point: Vector3) -> void:
 
 
 func _wait_walk() -> void:
+	if desktop:
+		return
 	var t := 0.0
 	while _player().pointer.is_walking() and t < WALK_TIMEOUT_S:
 		await get_tree().physics_frame
@@ -307,7 +349,7 @@ func _enter_code(lock: Interactable, value: String) -> String:
 			var fwd := posmod(want[w] - cur, n)
 			var down := fwd <= n / 2
 			for _t in (fwd if down else n - fwd):
-				await _touch_control(arrows[w * 2 + (1 if down else 0)])
+				await _press_control(arrows[w * 2 + (1 if down else 0)])
 		return ""
 	return "tapping it opened %s, not a code panel" % (panel.get_class() if panel else "nothing")
 
@@ -328,7 +370,7 @@ func _patch(pp: PatchPanel, value: String) -> String:
 		var picker: OptionButton = ui._pickers.get(kv[0].strip_edges())
 		if picker == null:
 			return "no picker for cable %s" % kv[0]
-		await _touch_control(picker)
+		await _press_control(picker)
 		await _frames(3)
 		if not picker.get_popup().visible:
 			return "tapping cable %s's picker did not open its list" % kv[0]
@@ -365,7 +407,7 @@ func _submit_flag(term: Terminal, value: String) -> String:
 	if not panel is TerminalPanel:
 		return "tapping it opened %s" % (panel.get_class() if panel else "nothing")
 	var field: LineEdit = (panel as TerminalPanel)._input
-	await _touch_control(field)  # focus (a phone would raise its keyboard here)
+	await _press_control(field)  # focus (a phone would raise its keyboard here)
 	field.text = value
 	field.text_submitted.emit(value)
 	await _wait(0.5)
@@ -375,26 +417,31 @@ func _submit_flag(term: Terminal, value: String) -> String:
 func _press_button(panel: Node, text: String) -> bool:
 	for b: Button in panel.find_children("*", "Button", true, false):
 		if b.text == text and b.is_visible_in_tree():
-			await _touch_control(b)
+			await _press_control(b)
 			return true
 	return false
 
 
-## Closes any open panel with its own Close/Resume button.
-func _close_panels_by_touch() -> void:
+## Closes any open panel with its own Close/Resume button (Esc on a desktop).
+func _close_panels() -> void:
 	var panel: Node = _hud()._modal
 	if panel == null or panel is EndScreen:
 		return  # the end screen is meant to stay
+	if desktop:
+		await _key(KEY_ESCAPE)
+		await _frames(3)
+		if _hud()._modal == null:
+			return
 	var screen := Rect2(Vector2.ZERO, _player().get_viewport().get_visible_rect().size)
 	for b: Button in panel.find_children("*", "Button", true, false):
 		if (b.text.begins_with("Close") or b.text.begins_with("Start") or b.text.begins_with("Resume")) \
 				and b.is_visible_in_tree() and screen.has_point(_centre(b)) and _visible_in_scroll(b):
-			await _touch_control(b)
+			await _press_control(b)
 			await _frames(3)
 			if _hud()._modal == null:
 				return
-	problems.append("a %s panel had no Close button a finger could reach" % panel.get_class())
-	print("TOUCHBOT: TOUCH-FAIL %s" % problems[-1])
+	problems.append("a %s panel could not be closed%s" % [panel.get_class(), " with Esc or its Close button" if desktop else " with a Close button a finger could reach"])
+	print("%s: FAIL %s" % [TAG, problems[-1]])
 	(panel as ModalPanel).close()
 
 
@@ -413,6 +460,8 @@ func _visible_in_scroll(c: Control) -> bool:
 # --- Inventory drag ----------------------------------------------------------
 
 func _use_item(item_path: String, target: Interactable) -> String:
+	if desktop:
+		return await _use_item_keys(item_path, target)
 	var at: Variant = await _reach(target)
 	if at is String:
 		return at
@@ -435,8 +484,12 @@ func _centre(c: Control) -> Vector2:
 	return c.get_global_transform_with_canvas() * (c.size / 2.0)
 
 
-func _touch_control(c: Control) -> void:
-	await _tap(_centre(c))
+## Presses a button: a finger tap, or a mouse click on a desktop.
+func _press_control(c: Control) -> void:
+	if desktop:
+		await _click(_centre(c))
+	else:
+		await _tap(_centre(c))
 
 
 ## A finger tap at a viewport position.
@@ -486,3 +539,216 @@ func _frames(n: int) -> void:
 
 func _wait(s: float) -> void:
 	await get_tree().create_timer(s).timeout
+
+
+# --- Desktop: keyboard and mouse ---------------------------------------------
+
+## Classic play needs the pointer captured; in a browser only a real click on
+## the page can do that, so ask the harness for one, as a player clicks to play.
+func _ensure_captured() -> String:
+	var t := 0.0
+	while Input.mouse_mode != Input.MOUSE_MODE_CAPTURED and t < 15.0:
+		if _hud()._modal != null:
+			await _close_panels()
+		if OS.has_feature("web"):
+			print("DESKBOT: CLICK")
+		else:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		await _wait(0.5)
+		t += 0.5
+	return "" if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else "the mouse could not be captured (a headless engine cannot; run --deskbot in a browser)"
+
+
+## Turns the view with mouse movement until the crosshair is on `point`.
+func _mouse_look_at(point: Vector3) -> void:
+	if not (await _ensure_captured()).is_empty():
+		return
+	var p := _player()
+	var sens := Settings.mouse_sensitivity
+	for pass_i in 4:
+		var to := point - p.eye()
+		var yaw := wrapf(atan2(-to.x, -to.z) - p.rotation.y, -PI, PI)
+		var pitch := atan2(to.y, Vector2(to.x, to.z).length()) - p.camera.rotation.x
+		if absf(yaw) < 0.01 and absf(pitch) < 0.01:
+			return
+		# Classic look: yaw -= x * sens, pitch -= y * sens (not inverted).
+		var rel := Vector2(-yaw / sens, -pitch / sens * (-1.0 if Settings.invert_y else 1.0))
+		var steps := maxi(1, int(ceil(rel.length() / 120.0)))
+		for k in steps:
+			var ev := InputEventMouseMotion.new()
+			ev.relative = rel / steps
+			Input.parse_input_event(ev)
+			await get_tree().physics_frame
+	await get_tree().physics_frame
+
+
+## Puts the crosshair on `node` from within reach, walking there with the keys
+## if needed. Returns "" or why not.
+func _aim(node: Interactable) -> String:
+	var why := await _ensure_captured()
+	if not why.is_empty():
+		return why
+	if await _crosshair_on(node):
+		return ""
+	var aim := _aim_point(node)
+	var toward := _player().eye() - aim
+	toward.y = 0.0
+	var spots: Array[Vector3] = []
+	if toward.length() > 0.01:
+		spots.append(aim + toward.normalized() * 1.0 + Vector3.DOWN * 1.1)
+	for r: float in [1.0, 1.6]:
+		for k in 8:
+			var a := TAU * k / 8.0
+			spots.append(aim + Vector3(sin(a) * r, -1.1, cos(a) * r))
+	for spot in spots.slice(0, 9):
+		await _walk_keys_to(spot)
+		if await _crosshair_on(node):
+			return ""
+	return "the crosshair could not be put on it from 9 spots (last at %s, %.1f m away; the crosshair hits %s)" % [
+		_player().global_position.snapped(Vector3.ONE * 0.1), _player().eye().distance_to(aim),
+		Game.room.get_path_to(_player().ray.get_collider()) if _player().ray.is_colliding() else "nothing"]
+
+
+## Looks at the node's centre and around its collider until the crosshair
+## targets it within reach.
+func _crosshair_on(node: Interactable) -> bool:
+	var box := _bounds(node)
+	var points: Array[Vector3] = [box.get_center()]
+	for f in [0.25, 0.75]:
+		for h in [0.3, 0.7]:
+			points.append(box.position + box.size * Vector3(f, h, 0.5))
+			points.append(box.position + box.size * Vector3(0.5, h, f))
+	for pt in points:
+		if _player().eye().distance_to(pt) > FirstPersonPlayer.REACH + 0.2:
+			continue
+		await _mouse_look_at(pt)
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		if _player().target == node:
+			return true
+	return false
+
+
+## Walks to `spot` on the planned route with W held, steering with the mouse.
+func _walk_keys_to(spot: Vector3) -> void:
+	var route := _walk().route(_player().global_position, spot)
+	_hold(KEY_W, true)
+	for wp in route:
+		var t := 0.0
+		var last := _player().global_position
+		var stuck := 0.0
+		while t < WALK_TIMEOUT_S:
+			var pos := _player().global_position
+			var flat := Vector2(wp.x - pos.x, wp.z - pos.z)
+			if flat.length() < 0.25:
+				break
+			await _mouse_look_at(Vector3(wp.x, _player().eye().y, wp.z))
+			for f in 6:
+				await get_tree().physics_frame
+			t += 6.0 / Engine.physics_ticks_per_second
+			stuck += 6.0 / Engine.physics_ticks_per_second
+			if stuck > 0.8:
+				if pos.distance_to(last) < 0.1:
+					break
+				last = pos
+				stuck = 0.0
+	_hold(KEY_W, false)
+	await get_tree().physics_frame
+
+
+func _use_item_keys(item_path: String, target: Interactable) -> String:
+	var i := Game.inventory().find(item_path)
+	if i < 0:
+		return "the item is not in the inventory"
+	if desktop_drag:
+		return await _use_item_cursor_drag(item_path, i, target)
+	if i > 8:
+		return "item %d has no number key (only 1-9)" % (i + 1)
+	if Game.selected_item != item_path:
+		await _key(KEY_1 + i)
+	if Game.selected_item != item_path:
+		return "key %d did not select it" % (i + 1)
+	var why := await _aim(target)
+	if not why.is_empty():
+		return why
+	await _key(KEY_E)
+	await _wait(0.3)
+	if Game.selected_item == item_path and Game.inventory().has(item_path):
+		await _key(KEY_Q)  # put it away again
+	return ""
+
+
+## A key tapped (pressed and released) through the real input path.
+func _key(k: Key) -> void:
+	_hold(k, true)
+	await get_tree().physics_frame
+	_hold(k, false)
+	await _frames(2)
+
+
+func _hold(k: Key, down: bool) -> void:
+	var ev := InputEventKey.new()
+	ev.physical_keycode = k
+	ev.keycode = k
+	ev.pressed = down
+	Input.parse_input_event(ev)
+
+
+## A left click at a viewport position, with the mouse moved there first.
+func _click(at: Vector2) -> void:
+	var m := InputEventMouseMotion.new()
+	m.position = _to_window(at)
+	m.global_position = m.position
+	Input.parse_input_event(m)
+	await _frames(1)
+	for down: bool in [true, false]:
+		var b := InputEventMouseButton.new()
+		b.button_index = MOUSE_BUTTON_LEFT
+		b.pressed = down
+		b.position = _to_window(at)
+		b.global_position = b.position
+		Input.parse_input_event(b)
+		await _frames(1)
+	await _frames(2)
+
+
+## Desktop drag and drop: aim at the target, free the cursor with I, drag the
+## item's slot onto it with the mouse, then I again to look around.
+func _use_item_cursor_drag(item_path: String, i: int, target: Interactable) -> String:
+	var why := await _aim(target)
+	if not why.is_empty():
+		return why
+	await _key(KEY_I)
+	await _frames(3)
+	if not _hud().cursor_mode:
+		return "I did not free the cursor"
+	var slot := _hud()._inventory.get_node_or_null("Slot%d" % (i + 1)) as Control
+	if slot == null:
+		await _key(KEY_I)
+		return "no inventory slot for it"
+	var from := _centre(slot)
+	var to := _player().camera.unproject_position(_aim_point(target))
+	_mouse_button(from, true)
+	await _frames(1)
+	for k in range(1, 13):
+		var m := InputEventMouseMotion.new()
+		m.position = _to_window(from.lerp(to, k / 12.0))
+		m.global_position = m.position
+		m.relative = _to_window(to - from) / 12.0
+		m.button_mask = MOUSE_BUTTON_MASK_LEFT
+		Input.parse_input_event(m)
+		await _frames(1)
+	_mouse_button(to, false)
+	await _wait(0.4)
+	if _hud().cursor_mode:
+		await _key(KEY_I)
+	return ""
+
+
+func _mouse_button(at: Vector2, down: bool) -> void:
+	var b := InputEventMouseButton.new()
+	b.button_index = MOUSE_BUTTON_LEFT
+	b.pressed = down
+	b.position = _to_window(at)
+	b.global_position = b.position
+	Input.parse_input_event(b)

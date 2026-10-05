@@ -258,6 +258,72 @@ func test_pause_menu_checkboxes_are_finger_sized() -> void:
 	pm.close()
 
 
+func test_mouse_wheel_zooms_in_point_and_click() -> void:
+	var up := InputEventMouseButton.new()
+	up.button_index = MOUSE_BUTTON_WHEEL_UP
+	up.pressed = true
+	for k in 5:
+		player.pointer.handle(up)
+	assert_float(player.zoom).is_greater(1.9)
+
+
+func test_classic_zoom_is_held_with_the_right_button() -> void:
+	Settings.controls = "classic"
+	hud.apply_controls()
+	player.input_enabled = true
+	var rmb := InputEventMouseButton.new()
+	rmb.button_index = MOUSE_BUTTON_RIGHT
+	rmb.pressed = true
+	player._unhandled_input(rmb)
+	await get_tree().create_timer(0.4).timeout
+	assert_float(player.zoom).is_greater(2.0)
+	rmb.pressed = false
+	player._unhandled_input(rmb)
+	await get_tree().create_timer(0.4).timeout
+	assert_float(player.zoom).is_equal_approx(1.0, 0.01)
+
+
+func test_classic_cursor_mode_drags_an_item_onto_a_thing_in_reach() -> void:
+	Settings.controls = "classic"
+	hud.apply_controls()
+	Game.request(room.get_node("Key") as EBNode, "pick_up")
+	var key_path := (room.get_node("Key") as Item).eb_path
+	var box := room.get_node("Box") as KeyLock
+	var at := _place_ahead(box, 1.5)
+	await _frames(2)
+	var i_key := InputEventKey.new()
+	i_key.physical_keycode = KEY_I
+	i_key.keycode = KEY_I
+	i_key.pressed = true
+	hud._unhandled_input(i_key)
+	assert_bool(hud.cursor_mode).is_true()
+	assert_bool(player.input_enabled).is_false()
+	hud._on_item_dragged(key_path, at, false)
+	assert_str(hud._prompt.text).contains("Use")
+	hud._on_item_dragged(key_path, at, true)
+	await _frames(2)
+	assert_bool(box.is_unlocked()).is_true()
+	hud._unhandled_input(i_key)
+	assert_bool(hud.cursor_mode).is_false()
+	assert_bool(player.input_enabled).is_true()
+
+
+func test_classic_drop_out_of_reach_says_so() -> void:
+	Settings.controls = "classic"
+	hud.apply_controls()
+	Game.request(room.get_node("Key") as EBNode, "pick_up")
+	var key_path := (room.get_node("Key") as Item).eb_path
+	var box := room.get_node("Box") as KeyLock
+	var at := _place_ahead(box, 6.0)
+	await _frames(2)
+	var toasts: Array[String] = []
+	Game.toasted.connect(func(t: String) -> void: toasts.append(t))
+	hud._on_item_dragged(key_path, at, true)
+	await _frames(2)
+	assert_bool(box.is_unlocked()).is_false()
+	assert_array(toasts).override_failure_message("toasts: %s" % [toasts]).contains(["Too far away. Walk closer, then try again."])
+
+
 func _touch(i: int, at: Vector2, down: bool) -> InputEventScreenTouch:
 	var e := InputEventScreenTouch.new()
 	e.index = i

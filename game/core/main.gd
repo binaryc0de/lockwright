@@ -9,6 +9,8 @@ extends Node
 var _menu: MainMenu
 var _touchbot := false
 var _touchbot_from := 0
+var _deskbot := false
+var _deskbot_drag := false
 ## Phone browsers double up touches for Godot (ADR-0038):
 ## - Godot's web build reads mouse motion from `pointermove`, which browsers
 ##   also fire for fingers, on top of the touch events Godot turns into mouse
@@ -65,6 +67,8 @@ func _ready() -> void:
 	elif not args.room_id.is_empty():
 		_touchbot = args.touchbot
 		_touchbot_from = args.touchbot_from
+		_deskbot = args.deskbot
+		_deskbot_drag = args.deskbot_drag
 		_play(args.room_id, args.pack_path, args.difficulty)
 	else:
 		_show_menu()
@@ -109,6 +113,8 @@ func _play(room_id: String, pack_path: String, difficulty: String = "") -> void:
 		var bot := TouchBot.new()
 		bot.session = session
 		bot.first_step = _touchbot_from
+		bot.desktop = _deskbot
+		bot.desktop_drag = _deskbot_drag
 		session.add_child(bot)
 
 

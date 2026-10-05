@@ -56,6 +56,9 @@ var bot_wait_card: bool = false
 var touchbot: bool = false
 ## With touchbot: do the steps before this one by intent, then touch.
 var touchbot_from: int = 0
+## Tests only: the same play-through with classic keyboard and mouse.
+var deskbot: bool = false
+var deskbot_drag: bool = false
 ## Print frames per second every few seconds (performance checks).
 var stats: bool = false
 ## Server, tests only: accept teleporting positions (bots).
@@ -143,6 +146,13 @@ func _apply(key: String, value: String) -> void:
 			bot_wait_card = true
 		"touchbot":
 			touchbot = true
+		"deskbot":
+			touchbot = true
+			deskbot = true
+		"deskbot-drag":
+			touchbot = true
+			deskbot = true
+			deskbot_drag = true
 		"touchbot-from":
 			touchbot_from = int(value)
 		"trust-positions":
@@ -214,7 +224,9 @@ static func web_query_args(origin: String, query: String) -> PackedStringArray:
 		out.append_array(["--difficulty", str(q["difficulty"])])
 	if q.get("stats", "") == "1":
 		out.append("--stats")
-	if q.get("touchbot", "") == "1" and q.has("room"):
+	if q.get("deskbot", "") == "1" and q.has("room"):
+		out.append("--deskbot-drag" if q.get("deskdrag", "") == "1" else "--deskbot")  # tests only
+	elif q.get("touchbot", "") == "1" and q.has("room"):
 		out.append("--touchbot")  # tests only
 		if q.has("touchbot_from"):
 			out.append_array(["--touchbot-from", str(q["touchbot_from"])])

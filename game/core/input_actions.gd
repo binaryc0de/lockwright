@@ -14,9 +14,12 @@ const BINDINGS := {
 	"hints": [KEY_H],
 	"deselect_item": [KEY_Q],
 	"pause": [KEY_ESCAPE],
+	"zoom": [KEY_Z],
+	"free_cursor": [KEY_I],
 }
 const MOUSE_BINDINGS := {
 	"interact": [MOUSE_BUTTON_LEFT],
+	"zoom": [MOUSE_BUTTON_RIGHT],
 	"next_item": [MOUSE_BUTTON_WHEEL_DOWN],
 	"prev_item": [MOUSE_BUTTON_WHEEL_UP],
 }

@@ -6,9 +6,9 @@ extends CanvasLayer
 
 signal leave_requested
 
-const HELP := "E interact   F inspect item   1-9 select item   Q deselect   Tab evidence   H hints   Esc menu"
+const HELP := "E use   F inspect   1-9 item   Q put away   I cursor   Right mouse/Z zoom   Tab evidence   H hints   Esc menu"
 const HELP_POINTER := "Drag to look   Pinch to zoom   Tap the floor to walk   Tap things to use them   Drag an item onto something to use it"
-const HELP_POINTER_MOUSE := "Drag to look   Click the floor to walk   Click things to use them   Drag an item onto something to use it"
+const HELP_POINTER_MOUSE := "Drag to look   Wheel to zoom   Click the floor to walk   Click things to use them   Drag an item onto something to use it"
 
 var player: FirstPersonPlayer
 var _modal: ModalPanel = null
@@ -30,6 +30,9 @@ var _toolbar: HBoxContainer
 var _help: Label
 var _portrait_tip: Label
 var pointer_mode := false
+## Classic controls with the cursor freed (I): the view holds still and the
+## inventory can be clicked, and items dragged onto things in reach.
+var cursor_mode := false
 
 
 func setup(p: FirstPersonPlayer) -> void:
@@ -54,9 +57,25 @@ func apply_controls() -> void:
 		player.set_pointer_mode(pointer_mode)
 	_toolbar.visible = pointer_mode
 	_help.text = (HELP_POINTER if Device.is_touch() else HELP_POINTER_MOUSE) if pointer_mode else HELP
+	cursor_mode = false
 	_inventory.show_inspect_button = pointer_mode
 	_inventory.rebuild()
 	_set_free_mouse(_modal != null)
+
+
+## Classic controls: frees the cursor over the game (or takes it back).
+func set_cursor_mode(on: bool) -> void:
+	if pointer_mode or _modal != null:
+		return
+	cursor_mode = on
+	_inventory.show_inspect_button = on
+	_inventory.rebuild()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if on else Input.MOUSE_MODE_CAPTURED
+	_cross.visible = not on
+	if player:
+		player.input_enabled = not on
+	if on:
+		Game.toast("Cursor free: click or drag items. I, Esc or right-click to look around again.")
 
 
 func _ready() -> void:
@@ -185,7 +204,10 @@ func _inspect_selected() -> void:
 ## An inventory item dragged over the room: highlight what it would be used
 ## on; when let go, use it there.
 func _on_item_dragged(path: String, pos: Vector2, released: bool) -> void:
-	if player == null or player.pointer == null or _modal != null:
+	if player == null or _modal != null:
+		return
+	if player.pointer == null:
+		_classic_drag(path, pos, released)
 		return
 	var p := player.pointer
 	if released:
@@ -202,6 +224,36 @@ func _on_item_dragged(path: String, pos: Vector2, released: bool) -> void:
 
 var _drag_item_name := ""
 var _drag_pos := Vector2.ZERO
+var _classic_drag_target: Interactable = null
+
+
+## Classic controls (cursor freed with I): an item dragged onto something
+## within reach is used on it. The player walks with the keys, so nothing is
+## walked to; things out of reach say so.
+func _classic_drag(path: String, pos: Vector2, released: bool) -> void:
+	var item := Game.node_at(path) as Item
+	var hit := player.pick_near(pos, 8.0 * get_viewport().get_visible_rect().size.x / maxf(Device.window_css().x, 1.0)) if pos.x >= 0.0 else {}
+	var thing: Interactable = hit.get("interactable")
+	if is_instance_valid(_classic_drag_target):
+		_classic_drag_target.set_highlighted(false)
+	_classic_drag_target = null
+	if not released:
+		if thing:
+			thing.set_highlighted(true)
+			_classic_drag_target = thing
+		_prompt.text = ("Use %s on %s" % [item.display_name if item else "", thing.display_name]) if thing else ""
+		_prompt.position = pos + Vector2(-_prompt.size.x / 2.0, -110)
+		return
+	_prompt.text = ""
+	if pos.x < 0.0:
+		return
+	Game.selected_item = path
+	if thing == null:
+		Game.toast("You hold up the %s." % (item.display_name if item else "item"))
+	elif player.eye().distance_to(hit.position) > FirstPersonPlayer.REACH:
+		Game.toast("Too far away. Walk closer, then try again.")
+	else:
+		thing.client_interact(path)
 
 
 func _label(parent: Control, preset: Control.LayoutPreset, size: int) -> Label:
@@ -243,7 +295,7 @@ func _place_prompt() -> void:
 ## treat a lost lock as Esc (open the pause menu).
 func _web_pointer_lock() -> void:
 	var captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
-	if _was_captured and not captured and _modal == null and Game.has_session():
+	if _was_captured and not captured and _modal == null and not cursor_mode and Game.has_session():
 		_open_pause()
 	_was_captured = captured
 	if _click_hint == null:
@@ -253,7 +305,7 @@ func _web_pointer_lock() -> void:
 		_click_hint.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 		_click_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(_click_hint)
-	_click_hint.visible = not captured and _modal == null and Game.has_session()
+	_click_hint.visible = not captured and _modal == null and not cursor_mode and Game.has_session()
 
 
 func _update_prompt() -> void:
@@ -330,6 +382,7 @@ var _cross: Label
 
 
 func _set_free_mouse(free: bool) -> void:
+	cursor_mode = false
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if free or pointer_mode else Input.MOUSE_MODE_CAPTURED
 	# The crosshair would sit on top of a panel's middle (a dial's letter).
 	if _cross:
@@ -424,8 +477,20 @@ func sync_end_state() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _modal != null or not Game.has_session():
 		return
+	if cursor_mode:
+		# Back to looking: I, Esc, a right click, or a click into the room
+		# (clicks on the inventory are taken by it before they get here).
+		if event.is_action_pressed("free_cursor") or event.is_action_pressed("pause") \
+				or (event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]):
+			set_cursor_mode(false)
+			get_viewport().set_input_as_handled()
+		return
 	if not pointer_mode and event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		_set_free_mouse(false)
+		get_viewport().set_input_as_handled()
+		return
+	if not pointer_mode and event.is_action_pressed("free_cursor"):
+		set_cursor_mode(true)
 		get_viewport().set_input_as_handled()
 		return
 	var handled := true
@@ -439,9 +504,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_inspect_selected()
 	elif event.is_action_pressed("deselect_item"):
 		Game.selected_item = ""
-	elif event.is_action_pressed("next_item"):
+	elif event.is_action_pressed("next_item") and not pointer_mode:
 		_inventory.cycle(1)
-	elif event.is_action_pressed("prev_item"):
+	elif event.is_action_pressed("prev_item") and not pointer_mode:
 		_inventory.cycle(-1)
 	else:
 		handled = false

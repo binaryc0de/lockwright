@@ -75,4 +75,10 @@ else
   "$GODOT" --headless --path game --export-release client-web > build/export-client-web.log 2>&1
   for f in build/client-web/*.pck build/client-web/*.wasm build/client-web/*.js; do gzip -9 -k -f "$f"; done
   tools/web_smoke.sh standard
+  if [[ "${EB_BROWSER_BOTS:-}" == "1" ]]; then
+    tools/web_mobile_pack.sh build/client-web > /dev/null
+    tools/browser_bots.sh
+  else
+    echo "(set EB_BROWSER_BOTS=1 to also play every room in the browser by keyboard, mouse and touch; ~20 min)"
+  fi
 fi

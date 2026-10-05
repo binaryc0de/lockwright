@@ -6,7 +6,7 @@ extends Node
 ##   drag            look around
 ##   tap the floor   walk there (routed around furniture by the WalkMesh)
 ##   tap a thing     walk up to it if needed, turn to it, and use it
-##   pinch           zoom the view in on small things
+##   pinch / wheel   zoom the view in on small things
 ## A tap that lands just beside a small thing still counts (fingers are
 ## wide), and on touch screens things you can pick up glint when in reach.
 ## Items dragged out of the inventory and dropped on a thing are used on it.
@@ -114,6 +114,10 @@ func handle(event: InputEvent) -> bool:
 		return true
 	if event is InputEventMouseButton:
 		var b := event as InputEventMouseButton
+		if b.pressed and (b.button_index == MOUSE_BUTTON_WHEEL_UP or b.button_index == MOUSE_BUTTON_WHEEL_DOWN):
+			# The mouse wheel zooms (the inventory is clickable in this mode).
+			player.set_zoom(player.zoom * (1.15 if b.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.15))
+			return true
 		if b.button_index != MOUSE_BUTTON_LEFT and b.button_index != MOUSE_BUTTON_RIGHT:
 			return false
 		if b.pressed:
@@ -187,22 +191,7 @@ func thing_at(pos: Vector2) -> Interactable:
 ## What a tap at `pos` means: the thing under it, or, if nothing usable is
 ## exactly there, the nearest usable thing within a fingertip of it.
 func pick_near(pos: Vector2) -> Dictionary:
-	var hit := player.pick(pos)
-	if hit.get("interactable") != null:
-		return hit
-	var r := finger_radius()
-	for ring: float in [0.5, 1.0]:
-		var best := {}
-		var best_d := INF
-		for k in 8:
-			var p := pos + Vector2.from_angle(TAU * k / 8.0) * r * ring
-			var h := player.pick(p)
-			if h.get("interactable") != null and p.distance_to(pos) < best_d:
-				best = h
-				best_d = p.distance_to(pos)
-		if not best.is_empty():
-			return best
-	return hit
+	return player.pick_near(pos, finger_radius())
 
 
 ## A fingertip (or a mouse's few pixels) in viewport units.

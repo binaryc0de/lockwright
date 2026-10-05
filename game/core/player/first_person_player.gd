@@ -88,11 +88,23 @@ func eye() -> Vector3:
 
 ## Pinch zoom (point-and-tap): 1 = the player's field of view, up to 3x.
 var zoom := 1.0
+## Classic controls: zoom held in (right mouse button or Z) eases towards 2.5x.
+const HOLD_ZOOM := 2.5
+var _zoom_held := false
 
 
 func set_zoom(z: float) -> void:
 	zoom = clampf(z, 1.0, 3.0)
 	camera.fov = Settings.fov / zoom
+
+
+func _process(delta: float) -> void:
+	if not input_enabled:
+		_zoom_held = false  # a panel opened mid-zoom; let go of it
+	if pointer == null:
+		var goal := HOLD_ZOOM if _zoom_held else 1.0
+		if not is_equal_approx(zoom, goal):
+			set_zoom(move_toward(zoom, goal, delta * 8.0))
 
 
 ## Turns the view by yaw/pitch radians (pitch clamped like mouse look).
@@ -128,6 +140,27 @@ func pick(pos: Vector2) -> Dictionary:
 	var i := Interactable.owner_of(hit.collider)
 	if i and i.is_available():
 		hit["interactable"] = i
+	return hit
+
+
+## Like pick(), but if nothing usable is exactly under `pos`, the nearest
+## usable thing within `radius` (viewport units) of it: fingers are wide and
+## small things are small.
+func pick_near(pos: Vector2, radius: float) -> Dictionary:
+	var hit := pick(pos)
+	if hit.get("interactable") != null:
+		return hit
+	for ring: float in [0.5, 1.0]:
+		var best := {}
+		var best_d := INF
+		for k in 8:
+			var p := pos + Vector2.from_angle(TAU * k / 8.0) * radius * ring
+			var h := pick(p)
+			if h.get("interactable") != null and p.distance_to(pos) < best_d:
+				best = h
+				best_d = p.distance_to(pos)
+		if not best.is_empty():
+			return best
 	return hit
 
 
@@ -176,10 +209,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		if pointer.handle(event):
 			get_viewport().set_input_as_handled()
 		return
+	if event.is_action("zoom"):
+		_zoom_held = event.is_pressed()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var m := event as InputEventMouseMotion
-		rotate_y(-m.relative.x * Settings.mouse_sensitivity)
-		var dy := m.relative.y * Settings.mouse_sensitivity * (-1.0 if Settings.invert_y else 1.0)
+		var sens := Settings.mouse_sensitivity / zoom  # zoomed in, aim finer
+		rotate_y(-m.relative.x * sens)
+		var dy := m.relative.y * sens * (-1.0 if Settings.invert_y else 1.0)
 		_pitch = clampf(_pitch - dy, deg_to_rad(-85), deg_to_rad(85))
 		camera.rotation.x = _pitch
 	elif event.is_action_pressed("interact") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:

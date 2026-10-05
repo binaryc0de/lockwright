@@ -199,6 +199,8 @@ go run ./tools/packroom -verify <room_id>                   # export build/packs
                                                             # then replay your tests against the pack alone
 godot --headless --path game -- --room <room_id> --touchbot  # play the solution by finger touches only (ADR-0038);
                                                             # every TOUCH-FAIL is something a phone player cannot do
+tools/browser_bots.sh <room_id>                             # the room in a browser by keyboard and mouse, by
+                                                            # drag and drop, and on a phone (needs tools/export.sh)
 ```
 
 ## 8. Done means
