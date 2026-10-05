@@ -24,6 +24,9 @@ const VERB_LABELS := {
 @export var accepts_items: bool = false
 
 static var _highlight: StandardMaterial3D
+static var _glint_mat: StandardMaterial3D
+var _highlighted := false
+var _glinting := false
 
 
 func _ready() -> void:
@@ -58,14 +61,34 @@ func client_interact(item_path: String = "") -> void:
 
 
 func set_highlighted(on: bool) -> void:
+	_highlighted = on
+	_apply_overlay()
+
+
+## A faint glint (touch screens, things in reach that can be picked up).
+func set_glint(on: bool) -> void:
+	if on == _glinting:
+		return
+	_glinting = on
+	_apply_overlay()
+
+
+func _apply_overlay() -> void:
 	if _highlight == null:
-		_highlight = StandardMaterial3D.new()
-		_highlight.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		_highlight.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		_highlight.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-		_highlight.albedo_color = Color(1.0, 0.8, 0.35, 0.22)
+		_highlight = _overlay(Color(1.0, 0.8, 0.35, 0.22))
+		_glint_mat = _overlay(Color(1.0, 0.9, 0.6, 0.12))
+	var mat: Material = _highlight if _highlighted else (_glint_mat if _glinting else null)
 	for m in _meshes(self):
-		m.material_overlay = _highlight if on else null
+		m.material_overlay = mat
+
+
+static func _overlay(c: Color) -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	mat.albedo_color = c
+	return mat
 
 
 static func _bodies(n: Node) -> Array[CollisionObject3D]:

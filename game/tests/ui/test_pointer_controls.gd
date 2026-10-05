@@ -193,6 +193,94 @@ func test_inventory_shows_thumbnails_and_drags_items_out() -> void:
 	assert_str(Game.selected_item).is_equal("")
 
 
+func test_a_tap_just_beside_a_small_thing_still_takes_it() -> void:
+	var key := room.get_node("Key") as Item
+	key.position = Vector3(0, FirstPersonPlayer.EYE_HEIGHT - 0.3, -1.5)
+	_box(key, "Body", Vector3.ZERO, Vector3(0.02, 0.01, 0.02))  # a small key
+	Device.force_touch(true)
+	await _frames(2)
+	var at := player.camera.unproject_position(key.global_position)
+	var beside := at + Vector2(player.pointer.finger_radius() * 0.9, 0)
+	assert_object(player.pick(beside).get("interactable")).is_null()  # the ray alone misses
+	player.pointer.tap(beside)
+	Device.force_touch(false)
+	await get_tree().create_timer(PointerControls.TURN_TIME + 0.2).timeout
+	assert_array(results).contains(["Key pick_up true"])
+
+
+func test_pinch_zooms_and_does_not_tap() -> void:
+	var lever := room.get_node("Lever") as Interactable
+	var at := _place_ahead(lever, 2.0)
+	await _frames(2)
+	var fov := player.camera.fov
+	for ev: InputEvent in [_touch(0, at, true), _touch(1, at + Vector2(100, 0), true),
+			_drag(1, at + Vector2(250, 0)), _touch(1, at + Vector2(250, 0), false), _touch(0, at, false)]:
+		player.pointer.handle(ev)
+		var m := _as_mouse(ev)
+		if m:
+			player.pointer.handle(m)
+	assert_float(player.zoom).is_greater(2.0)
+	assert_float(player.camera.fov).is_less(fov / 2.0)
+	await get_tree().create_timer(PointerControls.TURN_TIME + 0.2).timeout
+	assert_array(results).is_empty()  # lifting the fingers did not tap the lever
+
+
+func test_things_in_reach_glint_on_touch_screens() -> void:
+	Device.force_touch(true)
+	var key := room.get_node("Key") as Item
+	key.position = Vector3(0, FirstPersonPlayer.EYE_HEIGHT - 0.3, -1.5)
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = BoxMesh.new()
+	key.add_child(mesh)
+	await _frames(30)
+	assert_object(mesh.material_overlay).is_not_null()
+	Settings.glint_items = false
+	await _frames(30)
+	assert_object(mesh.material_overlay).is_null()
+	Settings.glint_items = true
+	Device.force_touch(false)
+
+
+func test_pause_menu_checkboxes_are_finger_sized() -> void:
+	var pm := PauseMenu.new()
+	hud._open(pm)
+	pm.setup()
+	await _frames(2)
+	for name: String in ["DragGrabs", "InvertY"]:
+		var c := pm.find_child(name, true, false) as CheckBox
+		assert_object(c).is_not_null()
+		assert_float(c.size.y).is_greater_equal(52.0)
+		assert_float(c.size.x).is_greater_equal(160.0)
+	pm.close()
+
+
+func _touch(i: int, at: Vector2, down: bool) -> InputEventScreenTouch:
+	var e := InputEventScreenTouch.new()
+	e.index = i
+	e.position = at
+	e.pressed = down
+	return e
+
+
+func _drag(i: int, at: Vector2) -> InputEventScreenDrag:
+	var e := InputEventScreenDrag.new()
+	e.index = i
+	e.position = at
+	return e
+
+
+## What Godot's touch-to-mouse emulation makes of finger 0.
+func _as_mouse(ev: InputEvent) -> InputEvent:
+	if ev is InputEventScreenTouch and (ev as InputEventScreenTouch).index == 0:
+		var b := InputEventMouseButton.new()
+		b.button_index = MOUSE_BUTTON_LEFT
+		b.pressed = (ev as InputEventScreenTouch).pressed
+		b.position = (ev as InputEventScreenTouch).position
+		b.device = InputEvent.DEVICE_ID_EMULATION
+		return b
+	return null
+
+
 func test_walk_mesh_routes_around_a_wall() -> void:
 	_box(room, "Wall", Vector3(0, 1, -3), Vector3(4, 2, 0.3))
 	await _frames(2)

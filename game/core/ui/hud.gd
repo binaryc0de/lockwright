@@ -7,7 +7,7 @@ extends CanvasLayer
 signal leave_requested
 
 const HELP := "E interact   F inspect item   1-9 select item   Q deselect   Tab evidence   H hints   Esc menu"
-const HELP_POINTER := "Drag to look   Tap the floor to walk   Tap things to use them   Drag an item onto something to use it"
+const HELP_POINTER := "Drag to look   Pinch to zoom   Tap the floor to walk   Tap things to use them   Drag an item onto something to use it"
 const HELP_POINTER_MOUSE := "Drag to look   Click the floor to walk   Click things to use them   Drag an item onto something to use it"
 
 var player: FirstPersonPlayer

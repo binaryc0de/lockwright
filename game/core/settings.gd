@@ -21,6 +21,8 @@ static var controls: String = "auto"
 ## Point-and-tap: dragging moves the view like a map (grab the world) instead
 ## of turning the head the way the finger moves.
 static var drag_grabs_world: bool = false
+## Touch screens: things in reach that can be picked up glint faintly.
+static var glint_items: bool = true
 
 const CONTROLS := ["auto", "classic", "point"]
 
@@ -48,6 +50,7 @@ static func load_settings() -> void:
 	if not controls in CONTROLS:
 		controls = "auto"
 	drag_grabs_world = bool(cfg.get_value("input", "drag_grabs_world", drag_grabs_world))
+	glint_items = bool(cfg.get_value("input", "glint_items", glint_items))
 
 
 static func save_settings() -> void:
@@ -62,4 +65,5 @@ static func save_settings() -> void:
 	cfg.set_value("network", "last_ws", last_ws)
 	cfg.set_value("input", "controls", controls)
 	cfg.set_value("input", "drag_grabs_world", drag_grabs_world)
+	cfg.set_value("input", "glint_items", glint_items)
 	cfg.save(PATH)

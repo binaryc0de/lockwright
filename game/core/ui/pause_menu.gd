@@ -48,7 +48,7 @@ func setup() -> void:
 	var grab_label := Label.new()
 	grab_label.text = "Drag moves the room\n(like a map)"
 	grid.add_child(grab_label)
-	var grab := CheckBox.new()
+	var grab := PauseMenu.check_box("DragGrabs")
 	grab.button_pressed = Settings.drag_grabs_world
 	grab.toggled.connect(func(on: bool) -> void: Settings.drag_grabs_world = on)
 	grid.add_child(grab)
@@ -79,10 +79,18 @@ func setup() -> void:
 	var inv_label := Label.new()
 	inv_label.text = "Invert mouse Y" if mouse else "Invert up/down drag"
 	grid.add_child(inv_label)
-	var inv := CheckBox.new()
+	var inv := PauseMenu.check_box("InvertY")
 	inv.button_pressed = Settings.invert_y
 	inv.toggled.connect(func(on: bool) -> void: Settings.invert_y = on)
 	grid.add_child(inv)
+	if not mouse:
+		var glint_label := Label.new()
+		glint_label.text = "Glint on things within reach"
+		grid.add_child(glint_label)
+		var glint := PauseMenu.check_box("Glint")
+		glint.button_pressed = Settings.glint_items
+		glint.toggled.connect(func(on: bool) -> void: Settings.glint_items = on)
+		grid.add_child(glint)
 	body().add_child(grid)
 	add_close_button("Resume" if Settings.pointer_controls() else "Resume (Esc)")
 	var quit := Button.new()
@@ -104,6 +112,16 @@ func _slider(grid: GridContainer, label: String, lo: float, hi: float, step: flo
 	s.custom_minimum_size = Vector2(260, 0)
 	s.value_changed.connect(on_change)
 	grid.add_child(s)
+
+
+## A checkbox big enough for a finger: the whole cell toggles it, not just
+## the small box.
+static func check_box(n: String) -> CheckBox:
+	var c := CheckBox.new()
+	c.name = n
+	c.custom_minimum_size = Vector2(160, 52)
+	c.focus_mode = Control.FOCUS_NONE
+	return c
 
 
 ## What to share: in the browser, the game page's link on this site; on the

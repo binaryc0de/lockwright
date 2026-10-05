@@ -14,7 +14,7 @@ const STEPS := [
 ]
 ## The same steps for point-and-tap controls (ADR-0038).
 const STEPS_POINTER := [
-	["move", "Drag to look around. Tap the floor to walk there."],
+	["move", "Drag to look around, pinch to zoom in. Tap the floor to walk there."],
 	["read", "Read the notice on the wall: tap it."],
 	["board", "Tap Evidence: everything anyone reads lands on the team's shared evidence board."],
 	["enter", "Stuck later? Tap Hints. Items you find go in the bar at the bottom: tap one to pick it, or drag it onto something. Step through the door when your team is ready."],

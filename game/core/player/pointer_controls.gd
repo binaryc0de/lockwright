@@ -6,6 +6,9 @@ extends Node
 ##   drag            look around
 ##   tap the floor   walk there (routed around furniture by the WalkMesh)
 ##   tap a thing     walk up to it if needed, turn to it, and use it
+##   pinch           zoom the view in on small things
+## A tap that lands just beside a small thing still counts (fingers are
+## wide), and on touch screens things you can pick up glint when in reach.
 ## Items dragged out of the inventory and dropped on a thing are used on it.
 ## Only intents leave the client; the server still checks reach.
 
@@ -18,6 +21,11 @@ const ARRIVE_M := 1.9
 const DRAG_TURN := 2.8
 const STUCK_TIME := 0.6
 const TURN_TIME := 0.22
+## How far around a tap to look for a small thing, in CSS pixels.
+const FINGER_PX := 28.0
+const MOUSE_PX := 8.0
+## Items glint (touch screens) within this distance of the eye.
+const GLINT_M := 2.6
 
 var player: FirstPersonPlayer
 var walk: WalkMesh
@@ -49,6 +57,11 @@ var _replans := 0
 ## Waiting for a re-bake (a door just opened) before planning again.
 var _await_bake := false
 var _turn: Tween
+var _fingers := {}  # touch index -> position
+var _pinch_d := 0.0
+var _pinching := false
+var _glinting: Array[Interactable] = []
+var _glint_timer := 0.0
 
 
 func _init(p: FirstPersonPlayer) -> void:
@@ -72,6 +85,33 @@ func cancel() -> void:
 
 ## Returns true if the event was used.
 func handle(event: InputEvent) -> bool:
+	if event is InputEventScreenTouch:
+		var t := event as InputEventScreenTouch
+		if t.pressed:
+			_fingers[t.index] = t.position
+		else:
+			_fingers.erase(t.index)
+		if _fingers.size() == 2:
+			_pinching = true
+			_down = false  # the first finger's press is no longer a tap or a look
+			var f: Array = _fingers.values()
+			_pinch_d = (f[0] as Vector2).distance_to(f[1])
+		elif _fingers.is_empty():
+			_pinching = false
+		return false
+	if event is InputEventScreenDrag:
+		var d := event as InputEventScreenDrag
+		_fingers[d.index] = d.position
+		if _pinching and _fingers.size() == 2:
+			var f: Array = _fingers.values()
+			var dist := (f[0] as Vector2).distance_to(f[1])
+			if _pinch_d > 1.0:
+				player.set_zoom(player.zoom * dist / _pinch_d)
+			_pinch_d = dist
+			return true
+		return false
+	if _pinching and (event is InputEventMouseButton or event is InputEventMouseMotion):
+		return true
 	if event is InputEventMouseButton:
 		var b := event as InputEventMouseButton
 		if b.button_index != MOUSE_BUTTON_LEFT and b.button_index != MOUSE_BUTTON_RIGHT:
@@ -102,13 +142,14 @@ func handle(event: InputEvent) -> bool:
 
 func _look(relative: Vector2) -> void:
 	var width := player.get_viewport().get_visible_rect().size.x
-	var k := DRAG_TURN / maxf(width, 1.0) * (-1.0 if Settings.drag_grabs_world else 1.0)
+	# Zoomed in, the same finger travel turns less (the view is narrower).
+	var k := DRAG_TURN / maxf(width, 1.0) / player.zoom * (-1.0 if Settings.drag_grabs_world else 1.0)
 	player.turn(-relative.x * k, -relative.y * k * (-1.0 if Settings.invert_y else 1.0))
 
 
 ## A tap (or click) at a viewport position.
 func tap(pos: Vector2) -> void:
-	var hit := player.pick(pos)
+	var hit := pick_near(pos)
 	if hit.is_empty():
 		return
 	var thing: Interactable = hit.get("interactable")
@@ -128,18 +169,47 @@ func tap(pos: Vector2) -> void:
 ## nothing usable, it is just held up (selected), which is also how a UV
 ## torch lights up ink on the walls.
 func drop(item_path: String, pos: Vector2) -> void:
-	var thing: Interactable = player.pick(pos).get("interactable")
+	var hit := pick_near(pos)
+	var thing: Interactable = hit.get("interactable")
 	Game.selected_item = item_path
 	if thing == null:
 		var item := Game.node_at(item_path) as Item
 		Game.toast("You hold up the %s." % (item.display_name if item else "item"))
 		return
-	act_on(thing, player.pick(pos).position, item_path)
+	act_on(thing, hit.position, item_path)
 
 
 ## The thing an item dragged to `pos` would be used on, for highlighting.
 func thing_at(pos: Vector2) -> Interactable:
-	return player.pick(pos).get("interactable")
+	return pick_near(pos).get("interactable")
+
+
+## What a tap at `pos` means: the thing under it, or, if nothing usable is
+## exactly there, the nearest usable thing within a fingertip of it.
+func pick_near(pos: Vector2) -> Dictionary:
+	var hit := player.pick(pos)
+	if hit.get("interactable") != null:
+		return hit
+	var r := finger_radius()
+	for ring: float in [0.5, 1.0]:
+		var best := {}
+		var best_d := INF
+		for k in 8:
+			var p := pos + Vector2.from_angle(TAU * k / 8.0) * r * ring
+			var h := player.pick(p)
+			if h.get("interactable") != null and p.distance_to(pos) < best_d:
+				best = h
+				best_d = p.distance_to(pos)
+		if not best.is_empty():
+			return best
+	return hit
+
+
+## A fingertip (or a mouse's few pixels) in viewport units.
+func finger_radius() -> float:
+	var css := Device.window_css().x
+	var per_css := player.get_viewport().get_visible_rect().size.x / css if css > 0.0 else 1.0
+	return (FINGER_PX if Device.is_touch() else MOUSE_PX) * per_css
 
 
 func act_on(thing: Interactable, point: Vector3, item_path: String) -> void:
@@ -246,8 +316,37 @@ func _flat_distance(p: Vector3) -> float:
 	return Vector2(player.global_position.x - p.x, player.global_position.z - p.z).length()
 
 
+## Touch screens show no hover highlight, so things in reach that can be
+## picked up glint faintly instead (Settings.glint_items).
+func _update_glints(delta: float) -> void:
+	_glint_timer -= delta
+	if _glint_timer > 0.0:
+		return
+	_glint_timer = 0.3
+	var want: Array[Interactable] = []
+	if Settings.glint_items and Device.is_touch() and player.input_enabled:
+		for n: Variant in Game._nodes.values():
+			var item := n as Item
+			if item and item.is_available() and player.eye().distance_to(item.global_position) <= GLINT_M \
+					and player.camera.is_position_in_frustum(item.global_position):
+				want.append(item)
+	for i in _glinting:
+		if is_instance_valid(i) and not i in want:
+			i.set_glint(false)
+	for i in want:
+		i.set_glint(true)
+	_glinting = want
+
+
+func _exit_tree() -> void:
+	for i in _glinting:
+		if is_instance_valid(i):
+			i.set_glint(false)
+
+
 ## The mouse-hovered thing (updated every physics step as the view moves).
 func update_hover() -> Interactable:
+	_update_glints(player.get_physics_process_delta_time())
 	hover = null
 	if dragging_item:
 		hover = drag_target

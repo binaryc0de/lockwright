@@ -86,6 +86,15 @@ func eye() -> Vector3:
 	return camera.global_position
 
 
+## Pinch zoom (point-and-tap): 1 = the player's field of view, up to 3x.
+var zoom := 1.0
+
+
+func set_zoom(z: float) -> void:
+	zoom = clampf(z, 1.0, 3.0)
+	camera.fov = Settings.fov / zoom
+
+
 ## Turns the view by yaw/pitch radians (pitch clamped like mouse look).
 func turn(yaw: float, pitch: float) -> void:
 	rotate_y(yaw)
