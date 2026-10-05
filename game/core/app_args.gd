@@ -9,6 +9,8 @@ extends RefCounted
 ##         | --connect <host[:port]> --name <display name> [--token <invite>]
 ##           [--transport enet|ws] [--pack <file.pck>]
 ##           [--bot [--bot-steps A-B] [--bot-wait-win]]   (headless test client)
+##   touch:  godot --path game -- --room <id> --touchbot   (plays the solution
+##           through the touch controls, ADR-0038; tests only)
 ## Server extras: [--snapshot <file.json>] (default user://snapshots/<session>.json)
 ## Godot passes user arguments after `--`; dedicated-server exports also
 ## receive them directly, so both forms are accepted.
@@ -17,7 +19,7 @@ enum Mode { CLIENT, SERVER }
 
 const VALUE_FLAGS: PackedStringArray = [
 	"session", "room", "pack", "port", "platform", "token", "transport",
-	"connect", "name", "snapshot", "bot-steps", "join", "code", "bot-flag", "difficulty",
+	"connect", "name", "snapshot", "bot-steps", "touchbot-from", "join", "code", "bot-flag", "difficulty",
 ]
 
 var mode: Mode = Mode.CLIENT
@@ -50,6 +52,10 @@ var bot_wait_win: bool = false
 var bot_flag: String = ""
 ## Bot stays until a challenge's connection card shows an address (M3 tests).
 var bot_wait_card: bool = false
+## Tests only: play the room's solution offline through the touch controls.
+var touchbot: bool = false
+## With touchbot: do the steps before this one by intent, then touch.
+var touchbot_from: int = 0
 ## Print frames per second every few seconds (performance checks).
 var stats: bool = false
 ## Server, tests only: accept teleporting positions (bots).
@@ -135,6 +141,10 @@ func _apply(key: String, value: String) -> void:
 			bot_flag = value
 		"bot-wait-card":
 			bot_wait_card = true
+		"touchbot":
+			touchbot = true
+		"touchbot-from":
+			touchbot_from = int(value)
 		"trust-positions":
 			trust_positions = true
 		"stats":
@@ -204,6 +214,10 @@ static func web_query_args(origin: String, query: String) -> PackedStringArray:
 		out.append_array(["--difficulty", str(q["difficulty"])])
 	if q.get("stats", "") == "1":
 		out.append("--stats")
+	if q.get("touchbot", "") == "1" and q.has("room"):
+		out.append("--touchbot")  # tests only
+		if q.has("touchbot_from"):
+			out.append_array(["--touchbot-from", str(q["touchbot_from"])])
 	if q.get("bot", "") == "1":
 		out.append_array(["--bot", "--bot-wait-win"])
 		if q.has("flag"):

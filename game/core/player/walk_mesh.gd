@@ -21,6 +21,8 @@ var _map: RID
 var _region: RID
 var _rebake_timer: SceneTreeTimer
 var baked_polygons: int = 0
+## Counts bakes, so a walk can tell its route came from an older mesh.
+var generation: int = 0
 
 
 func setup(room: Node3D) -> void:
@@ -32,7 +34,11 @@ func setup(room: Node3D) -> void:
 	# Joining a game in progress: doors already open in the snapshot are still
 	# animating open now, so bake again once they have finished.
 	_schedule_rebake()
-	Game.node_state_changed.connect(func(_p: String, _s: Dictionary) -> void: _schedule_rebake())
+	Game.node_state_changed.connect(func(path: String, _s: Dictionary) -> void:
+		# Wait for that door or lid to finish moving.
+		var n := Game.node_at(path)
+		var anim: float = n.get("anim_time") if n and n.get("anim_time") is float else 0.0
+		_schedule_rebake(maxf(REBAKE_DELAY, anim + 0.3)))
 
 
 func _exit_tree() -> void:
@@ -66,6 +72,7 @@ func bake() -> void:
 		NavigationServer3D.free_rid(_region)
 	_region = region
 	baked_polygons = nm.get_polygon_count()
+	generation += 1
 	print("walk mesh: %d polygons in %d ms" % [baked_polygons, Time.get_ticks_msec() - t])
 
 
@@ -90,23 +97,49 @@ static func _add_flipped_backfaces(src: NavigationMeshSourceGeometryData3D, root
 		src.add_faces(flipped, cs.global_transform)
 
 
-func _schedule_rebake() -> void:
+## True while a re-bake is waiting for doors to finish moving.
+func pending() -> bool:
+	return _rebake_timer != null and _rebake_timer.time_left > 0.0
+
+
+func _schedule_rebake(delay: float = REBAKE_DELAY) -> void:
 	if not is_inside_tree():
 		return
-	var timer := get_tree().create_timer(REBAKE_DELAY)
+	if pending() and _rebake_timer.time_left >= delay:
+		return  # a later bake is already due
+	var timer := get_tree().create_timer(delay)
 	_rebake_timer = timer
 	timer.timeout.connect(func() -> void:
 		if _rebake_timer == timer:
+			_rebake_timer = null
 			bake())
 
 
 ## A walking route from `from` to the walkable point nearest `to`. Falls back
 ## to a straight line when nothing is baked (the player slides along walls).
+## The walkable point nearest `to` can be an island nobody can reach (the top
+## of a ledge); when the route ends far short, nearby goals a little lower or
+## to the side are tried too and the route that gets closest wins.
 func route(from: Vector3, to: Vector3) -> PackedVector3Array:
 	if baked_polygons == 0 or NavigationServer3D.map_get_iteration_id(_map) == 0:
 		return PackedVector3Array([to])
-	var goal := NavigationServer3D.map_get_closest_point(_map, to)
-	var path := NavigationServer3D.map_get_path(_map, from, goal, true)
-	if path.is_empty():
+	var best := _path(from, to)
+	if best.is_empty():
 		return PackedVector3Array([to])
-	return path
+	var best_d := best[best.size() - 1].distance_to(to)
+	if best_d > 0.8:
+		for off: Vector3 in [Vector3(0, -0.6, 0), Vector3(0, -1.2, 0), Vector3(0, -1.8, 0),
+				Vector3(0.6, -1.0, 0), Vector3(-0.6, -1.0, 0), Vector3(0, -1.0, 0.6), Vector3(0, -1.0, -0.6)]:
+			var p := _path(from, to + off)
+			if p.is_empty():
+				continue
+			var d := p[p.size() - 1].distance_to(to)
+			if d < best_d - 0.2:
+				best = p
+				best_d = d
+	return best
+
+
+func _path(from: Vector3, to: Vector3) -> PackedVector3Array:
+	var goal := NavigationServer3D.map_get_closest_point(_map, to)
+	return NavigationServer3D.map_get_path(_map, from, goal, true)

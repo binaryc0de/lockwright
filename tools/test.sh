@@ -46,6 +46,18 @@ for room_yaml in game/rooms/*/room.yaml; do
   fi
 done
 
+step "touch play-through (every room's solution by injected finger touches, ADR-0038)"
+for room_yaml in game/rooms/*/room.yaml; do
+  id="$(basename "$(dirname "$room_yaml")")"
+  log="$(mktemp "${TMPDIR:-/tmp}/escapebox-touch-XXXXXX")"
+  set +e
+  "$GODOT" --headless --path game -- --room "$id" --touchbot > "$log" 2>&1
+  code=$?
+  set -e
+  grep -E "^TOUCHBOT: (TOUCH-FAIL|won=|done)" "$log" | sed "s/^/  $id: /"
+  [[ $code -eq 0 ]] || { echo "touch play-through of $id found problems (log: $log)"; exit 1; }
+done
+
 step "multiplayer smoke (server + bots + crash/restore + ws, ADR-0015)"
 GODOT="$GODOT" tools/m2_smoke.sh
 

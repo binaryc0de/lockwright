@@ -19,6 +19,7 @@ const DRAG_SLOP := 14.0
 ## Shows the "Look closer" button (when the mouse is free).
 var show_inspect_button := false
 
+var _slot_size := SLOT
 var _ghost: TextureRect
 var _drag_path := ""
 var _press_path := ""
@@ -38,8 +39,10 @@ func rebuild() -> void:
 		_end_drag(Vector2(-1, -1))
 	_press_path = ""
 	for c in get_children():
+		c.name = "Old%d" % c.get_instance_id()  # so the new slots keep their names
 		c.queue_free()
 	var inv := Game.inventory()
+	_slot_size = _fit_slot(inv.size() + (1 if show_inspect_button and not Game.selected_item.is_empty() else 0))
 	for i in inv.size():
 		var item := Game.node_at(inv[i]) as Item
 		add_child(_slot(i, inv[i], item))
@@ -48,7 +51,7 @@ func rebuild() -> void:
 		look.name = "LookCloser"
 		look.text = "Look\ncloser"
 		look.focus_mode = Control.FOCUS_NONE
-		look.custom_minimum_size = Vector2(SLOT.x * 0.8, SLOT.y)
+		look.custom_minimum_size = Vector2(_slot_size.x * 0.8, _slot_size.y)
 		look.pressed.connect(func() -> void: inspect_requested.emit())
 		add_child(look)
 
@@ -68,7 +71,7 @@ func _slot(i: int, path: String, item: Item) -> Button:
 		held.set_corner_radius_all(6)
 		for st in ["normal", "pressed", "hover", "hover_pressed"]:
 			b.add_theme_stylebox_override(st, held)
-	b.custom_minimum_size = SLOT
+	b.custom_minimum_size = _slot_size
 	b.tooltip_text = item.display_name if item else path
 	if item:
 		b.icon = ItemIcons.icon(item, self)
@@ -88,6 +91,15 @@ func _slot(i: int, path: String, item: Item) -> Button:
 	b.add_child(label)
 	b.gui_input.connect(_on_slot_input.bind(path))
 	return b
+
+
+## Slot size that fits `n` slots across the screen (many items on a phone).
+func _fit_slot(n: int) -> Vector2:
+	if n == 0 or not is_inside_tree():
+		return SLOT
+	var room := get_viewport().get_visible_rect().size.x - 32.0
+	var w := minf(SLOT.x, room / n - 8.0)
+	return Vector2(maxf(w, 56.0), maxf(w, 56.0))
 
 
 func _caption(text: String, size: int) -> Label:

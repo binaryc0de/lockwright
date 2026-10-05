@@ -7,6 +7,8 @@ extends Node
 ##           [--snapshot <file.json>]
 
 var _menu: MainMenu
+var _touchbot := false
+var _touchbot_from := 0
 ## Godot's web build reads mouse motion from `pointermove`, which browsers
 ## also fire for fingers, on top of the touch events Godot turns into mouse
 ## motion: every finger drag would count twice (ADR-0038). Stop finger
@@ -48,6 +50,8 @@ func _ready() -> void:
 	if args.is_remote_client():
 		_join(args)
 	elif not args.room_id.is_empty():
+		_touchbot = args.touchbot
+		_touchbot_from = args.touchbot_from
 		_play(args.room_id, args.pack_path, args.difficulty)
 	else:
 		_show_menu()
@@ -88,6 +92,11 @@ func _play(room_id: String, pack_path: String, difficulty: String = "") -> void:
 	session.left.connect(func() -> void:
 		if not _back_to_site(""):
 			_show_menu())
+	if _touchbot:
+		var bot := TouchBot.new()
+		bot.session = session
+		bot.first_step = _touchbot_from
+		session.add_child(bot)
 
 
 func _join(args: AppArgs) -> void:

@@ -42,6 +42,12 @@ var _pending_item := ""
 var _pending_point := Vector3.ZERO
 var _last_pos := Vector3.ZERO
 var _stuck := 0.0
+## Where the current walk is headed, and which walk mesh planned it.
+var _goal := Vector3.ZERO
+var _route_gen := 0
+var _replans := 0
+## Waiting for a re-bake (a door just opened) before planning again.
+var _await_bake := false
 var _turn: Tween
 
 
@@ -50,7 +56,7 @@ func _init(p: FirstPersonPlayer) -> void:
 
 
 func is_walking() -> bool:
-	return not _route.is_empty()
+	return not _route.is_empty() or _await_bake
 
 
 ## Stops walking and drops any interaction still to come (a pending walk-up
@@ -58,6 +64,7 @@ func is_walking() -> bool:
 func cancel() -> void:
 	_route = PackedVector3Array()
 	_pending = null
+	_await_bake = false
 	if _turn:
 		_turn.kill()
 		_turn = null
@@ -140,7 +147,14 @@ func act_on(thing: Interactable, point: Vector3, item_path: String) -> void:
 	if player.eye().distance_to(point) <= FirstPersonPlayer.REACH:
 		_use(thing, point, item_path)
 		return
-	_start_route(point)
+	# Head for the side it was tapped from: the walkable spot nearest the
+	# thing itself can be behind a thin wall.
+	var toward := player.eye() - point
+	toward.y = 0.0
+	var approach := point + toward.normalized() * 0.7 if toward.length() > 0.01 else point
+	approach.y = point.y - 1.0
+	_replans = 0
+	_start_route(approach)
 	_pending = thing
 	_pending_item = item_path
 	_pending_point = point
@@ -148,10 +162,13 @@ func act_on(thing: Interactable, point: Vector3, item_path: String) -> void:
 
 func walk_to(point: Vector3) -> void:
 	cancel()
+	_replans = 0
 	_start_route(point)
 
 
 func _start_route(point: Vector3) -> void:
+	_goal = point
+	_route_gen = walk.generation if walk else 0
 	_route = walk.route(player.global_position, point) if walk else PackedVector3Array([point])
 	_route_i = 0
 	_last_pos = player.global_position
@@ -172,6 +189,11 @@ func _use(thing: Interactable, point: Vector3, item_path: String) -> void:
 ## Called from the player's physics step: the direction to walk this frame
 ## (zero when not walking).
 func steer(delta: float) -> Vector3:
+	if _await_bake:
+		if walk.pending():
+			return Vector3.ZERO
+		_await_bake = false
+		_start_route(_goal)
 	if _route.is_empty():
 		return Vector3.ZERO
 	var pos := player.global_position
@@ -201,6 +223,14 @@ func steer(delta: float) -> Vector3:
 
 
 func _arrive() -> void:
+	# Stopped short because the route came from before a door opened (the
+	# walk mesh re-bakes once doors finish moving): plan again on the new one.
+	var short := player.eye().distance_to(_pending_point) > FirstPersonPlayer.REACH if _pending else _flat_distance(_goal) > 0.6
+	if walk and _replans < 2 and short and (walk.pending() or walk.generation != _route_gen):
+		_replans += 1
+		_route = PackedVector3Array()
+		_await_bake = true
+		return
 	var thing := _pending
 	_route = PackedVector3Array()
 	_pending = null
@@ -210,6 +240,10 @@ func _arrive() -> void:
 		_use(thing, _pending_point, _pending_item)
 	else:
 		Game.toast("You can't reach that from here.")
+
+
+func _flat_distance(p: Vector3) -> float:
+	return Vector2(player.global_position.x - p.x, player.global_position.z - p.z).length()
 
 
 ## The mouse-hovered thing (updated every physics step as the view moves).
