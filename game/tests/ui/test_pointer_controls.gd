@@ -159,11 +159,13 @@ func test_inventory_shows_thumbnails_and_drags_items_out() -> void:
 	release.global_position = move.global_position
 	hud._inventory._on_slot_input(release, key_path)
 	assert_array(seen).contains_exactly([[key_path, false], [key_path, true]])
-	assert_str(Game.selected_item).is_equal("")  # let go over nothing: no use, no selection
-	# A plain click (no movement) selects it instead.
+	assert_str(Game.selected_item).is_equal(key_path)  # let go over nothing: held up
+	assert_array(results).contains_exactly(["Key pick_up true"])  # nothing used
+	# A plain click (no movement) toggles the selection.
+	await get_tree().process_frame
 	hud._inventory._on_slot_input(press, key_path)
 	hud._inventory._on_slot_input(release, key_path)
-	assert_str(Game.selected_item).is_equal(key_path)
+	assert_str(Game.selected_item).is_equal("")
 
 
 func test_walk_mesh_routes_around_a_wall() -> void:

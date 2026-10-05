@@ -112,15 +112,17 @@ func tap(pos: Vector2) -> void:
 
 
 ## An inventory item released over a viewport position: use it on what is
-## there (select it, then act as if the thing was tapped).
+## there (select it, then act as if the thing was tapped). Let go over
+## nothing usable, it is just held up (selected), which is also how a UV
+## torch lights up ink on the walls.
 func drop(item_path: String, pos: Vector2) -> void:
-	var hit := player.pick(pos)
-	var thing: Interactable = hit.get("interactable")
-	if thing == null:
-		Game.toast("Drop it onto something to use it there.")
-		return
+	var thing: Interactable = player.pick(pos).get("interactable")
 	Game.selected_item = item_path
-	act_on(thing, hit.position, item_path)
+	if thing == null:
+		var item := Game.node_at(item_path) as Item
+		Game.toast("You hold up the %s." % (item.display_name if item else "item"))
+		return
+	act_on(thing, player.pick(pos).position, item_path)
 
 
 ## The thing an item dragged to `pos` would be used on, for highlighting.

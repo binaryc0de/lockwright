@@ -59,6 +59,15 @@ func _slot(i: int, path: String, item: Item) -> Button:
 	b.focus_mode = Control.FOCUS_NONE
 	b.toggle_mode = true
 	b.button_pressed = path == Game.selected_item
+	if b.button_pressed:
+		# The held item: an amber frame, not just the darker pressed shade.
+		var held := StyleBoxFlat.new()
+		held.bg_color = Color(0.22, 0.17, 0.08, 0.85)
+		held.border_color = Color(1.0, 0.75, 0.3)
+		held.set_border_width_all(4)
+		held.set_corner_radius_all(6)
+		for st in ["normal", "pressed", "hover", "hover_pressed"]:
+			b.add_theme_stylebox_override(st, held)
 	b.custom_minimum_size = SLOT
 	b.tooltip_text = item.display_name if item else path
 	if item:
