@@ -90,6 +90,10 @@ func withMobilePreset(presets, preset string) (string, error) {
 	}
 	body[dst] = main
 	body[dst+".options"] = opts
+	return joinSections(order, body), nil
+}
+
+func joinSections(order []string, body map[string][]string) string {
 	var b strings.Builder
 	for _, k := range order {
 		fmt.Fprintf(&b, "[preset.%s]\n", k)
@@ -97,5 +101,72 @@ func withMobilePreset(presets, preset string) (string, error) {
 			b.WriteString(l + "\n")
 		}
 	}
-	return strings.TrimRight(b.String(), "\n") + "\n", nil
+	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// Room art in assets/core (props, materials, CC0 textures) is not in the
+// browser client's own pack: a browser holds that pack in memory, and most of
+// it belonged to one room (ADR-0038). Each room pack therefore carries the
+// shared assets it uses. The room's preset exports the room's own resources
+// plus their dependencies; packroom writes that list on every run.
+
+// sharedArt lists the assets/core folders that travel with the room packs
+// that use them. assets/core/third_party/kenney stays in the client (SDK
+// sounds).
+var sharedArt = []string{
+	"res://assets/core/props/*", "res://assets/core/materials/*",
+	"res://assets/core/third_party/ambientcg/*", "res://assets/core/third_party/polyhaven/*",
+}
+
+// resourceExts are the files under a room that are Godot resources; data
+// files (yaml, json, md) come in through the preset's include_filter.
+var resourceExts = map[string]bool{
+	".tscn": true, ".scn": true, ".tres": true, ".res": true, ".gd": true, ".gdshader": true,
+	".glb": true, ".gltf": true, ".obj": true, ".png": true, ".jpg": true, ".jpeg": true,
+	".webp": true, ".svg": true, ".exr": true, ".hdr": true, ".ogg": true, ".wav": true,
+	".mp3": true, ".ttf": true, ".otf": true, ".woff": true, ".woff2": true,
+}
+
+// withRoomResources sets the preset to export `files` and their dependencies
+// (Godot's "resources" filter), and keeps assets/core out of its excludes so
+// those dependencies are packed.
+func withRoomResources(presets, preset string, files []string) (string, error) {
+	order, body := presetSections(presets)
+	k := sectionNamed(body, order, preset)
+	if k == "" {
+		return "", fmt.Errorf("export preset %q missing", preset)
+	}
+	quoted := make([]string, len(files))
+	for i, f := range files {
+		quoted[i] = fmt.Sprintf("%q", f)
+	}
+	lines := body[k]
+	hasFiles := false
+	for i, l := range lines {
+		switch {
+		case strings.HasPrefix(l, "export_filter="):
+			lines[i] = `export_filter="resources"`
+		case strings.HasPrefix(l, "export_files="):
+			lines[i] = "export_files=PackedStringArray(" + strings.Join(quoted, ", ") + ")"
+			hasFiles = true
+		case strings.HasPrefix(l, "exclude_filter="):
+			var keep []string
+			for _, p := range strings.Split(strings.Trim(strings.TrimPrefix(l, "exclude_filter="), `"`), ",") {
+				if p != "" && p != "res://assets/*" {
+					keep = append(keep, p)
+				}
+			}
+			lines[i] = fmt.Sprintf("exclude_filter=%q", strings.Join(keep, ","))
+		}
+	}
+	if !hasFiles {
+		for i, l := range lines {
+			if strings.HasPrefix(l, "export_filter=") {
+				lines = append(lines[:i+1], append([]string{"export_files=PackedStringArray(" + strings.Join(quoted, ", ") + ")"}, lines[i+1:]...)...)
+				break
+			}
+		}
+	}
+	body[k] = lines
+	return joinSections(order, body), nil
 }

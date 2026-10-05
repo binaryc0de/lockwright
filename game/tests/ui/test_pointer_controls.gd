@@ -102,6 +102,31 @@ func test_tap_uses_a_thing_within_reach() -> void:
 	assert_array(results).contains(["Lever toggle true"])
 
 
+func test_cancel_drops_a_use_still_to_come() -> void:
+	var lever := room.get_node("Lever") as Interactable
+	var at := _place_ahead(lever, 2.0)
+	await _frames(2)
+	player.pointer.tap(at)
+	player.pointer.cancel()  # e.g. the Menu opened during the turn
+	await get_tree().create_timer(PointerControls.TURN_TIME + 0.2).timeout
+	assert_array(results).is_empty()
+
+
+func test_a_new_tap_replaces_a_walk_under_way() -> void:
+	var lever := room.get_node("Lever") as Interactable
+	_place_ahead(lever, 7.0)
+	var key := room.get_node("Key") as Interactable
+	key.position = Vector3(0.8, FirstPersonPlayer.EYE_HEIGHT, -1.5)
+	_box(key, "Body", Vector3.ZERO, Vector3(0.3, 0.3, 0.3))
+	await _frames(2)
+	player.pointer.tap(player.camera.unproject_position(lever.global_position))
+	assert_bool(player.pointer.is_walking()).is_true()
+	player.pointer.tap(player.camera.unproject_position(key.global_position))
+	assert_bool(player.pointer.is_walking()).is_false()
+	await _frames(150)
+	assert_array(results).contains_exactly(["Key pick_up true"])  # never the lever
+
+
 func test_tap_on_a_far_thing_walks_up_to_it_first() -> void:
 	var lever := room.get_node("Lever") as Interactable
 	var at := _place_ahead(lever, 7.0)

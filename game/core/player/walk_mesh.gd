@@ -5,9 +5,13 @@ extends Node
 ## authors do nothing. Re-baked shortly after any world state change, since
 ## doors and hidden passages open.
 
-const AGENT_RADIUS := 0.3
+## Thinner than the player's 0.3 m capsule: the mesh only plans the route and
+## the capsule slides along walls, but Recast's erosion and voxel rounding
+## closed 0.7 m passages (beside Clockmaker's swung case, its spiral stair) at
+## the full radius.
+const AGENT_RADIUS := 0.2
 const AGENT_HEIGHT := 1.75
-const CELL := 0.1
+const CELL := 0.05
 const CELL_H := 0.05
 ## Waits for door animations to finish before re-baking.
 const REBAKE_DELAY := 1.5
@@ -25,6 +29,9 @@ func setup(room: Node3D) -> void:
 	NavigationServer3D.map_set_cell_size(_map, CELL)
 	NavigationServer3D.map_set_cell_height(_map, CELL_H)
 	bake()
+	# Joining a game in progress: doors already open in the snapshot are still
+	# animating open now, so bake again once they have finished.
+	_schedule_rebake()
 	Game.node_state_changed.connect(func(_p: String, _s: Dictionary) -> void: _schedule_rebake())
 
 
@@ -48,6 +55,7 @@ func bake() -> void:
 	nm.geometry_collision_mask = 1
 	var src := NavigationMeshSourceGeometryData3D.new()
 	NavigationServer3D.parse_source_geometry_data(nm, src, _room)
+	_add_flipped_backfaces(src, _room)
 	NavigationServer3D.bake_from_source_geometry_data(nm, src)
 	# A fresh region each time: swapping the mesh on a live region did not
 	# always reach the map's paths (seen in the gdUnit run on Godot 4.7.2).
@@ -59,6 +67,27 @@ func bake() -> void:
 	_region = region
 	baked_polygons = nm.get_polygon_count()
 	print("walk mesh: %d polygons in %d ms" % [baked_polygons, Time.get_ticks_msec() - t])
+
+
+## Concave colliders with backface_collision are solid from both sides for the
+## player, but the baker only walks on their front faces: a ramp built facing
+## down (Clockmaker's stair) would be left out. Add their faces flipped too.
+static func _add_flipped_backfaces(src: NavigationMeshSourceGeometryData3D, root: Node) -> void:
+	for cs: CollisionShape3D in root.find_children("*", "CollisionShape3D", true, false):
+		var shape := cs.shape as ConcavePolygonShape3D
+		if shape == null or not shape.backface_collision or cs.disabled:
+			continue
+		var body := cs.get_parent() as StaticBody3D
+		if body == null or body.collision_layer & 1 == 0:
+			continue
+		var faces := shape.get_faces()
+		var flipped := PackedVector3Array()
+		flipped.resize(faces.size())
+		for i in range(0, faces.size(), 3):
+			flipped[i] = faces[i]
+			flipped[i + 1] = faces[i + 2]
+			flipped[i + 2] = faces[i + 1]
+		src.add_faces(flipped, cs.global_transform)
 
 
 func _schedule_rebake() -> void:

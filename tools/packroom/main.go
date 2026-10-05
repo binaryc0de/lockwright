@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/binaryc0de/escapebox/internal/room"
@@ -117,6 +118,23 @@ func run(args []string) error {
 	if err := os.MkdirAll(*out, 0o755); err != nil {
 		return err
 	}
+	// The room's resources and their dependencies (shared props included).
+	files, err := roomResources(gameDir, id)
+	if err != nil {
+		return err
+	}
+	updated, err := withRoomResources(string(presets), preset, files)
+	if err != nil {
+		return err
+	}
+	if updated != string(presets) {
+		if err := os.WriteFile(filepath.Join(gameDir, "export_presets.cfg"), []byte(updated), 0o644); err != nil {
+			return err
+		}
+		presets = []byte(updated)
+		fmt.Printf("export preset %s: room resources list updated\n", preset)
+	}
+
 	packName := fmt.Sprintf("%s-%s.pck", id, m.Version)
 	packPath, err := filepath.Abs(filepath.Join(*out, packName))
 	if err != nil {
@@ -179,8 +197,18 @@ func verifyPack(godot, gameDir, id, packPath string) error {
 	}
 	defer os.RemoveAll(tmp)
 	if err := copyTree(gameDir, tmp, func(rel string) bool {
-		top := strings.Split(filepath.ToSlash(rel), "/")[0]
-		return top == "rooms" || top == ".godot" || top == "reports"
+		r := filepath.ToSlash(rel)
+		top := strings.Split(r, "/")[0]
+		if top == "rooms" || top == ".godot" || top == "reports" {
+			return true
+		}
+		// Shared room art too: the pack must carry what the room uses.
+		for _, p := range sharedArt {
+			if dir := strings.TrimSuffix(strings.TrimPrefix(p, "res://"), "/*"); r == dir || strings.HasPrefix(r, dir+"/") {
+				return true
+			}
+		}
+		return false
 	}); err != nil {
 		return err
 	}
@@ -294,7 +322,6 @@ func findRoot() (string, error) {
 	}
 }
 
-
 // exportPack exports one room-pack preset to packPath, checks it holds no
 // other room's files, writes the gzip copy, and returns its sha256 and size.
 func exportPack(godot, gameDir, preset, packPath string, others []string) (string, int64, error) {
@@ -318,4 +345,30 @@ func exportPack(godot, gameDir, preset, packPath string, others []string) (strin
 		return "", 0, err
 	}
 	return hashFile(packPath)
+}
+
+// roomResources lists the Godot resources under game/rooms/<id> (outside
+// ctf/), as res:// paths in a stable order.
+func roomResources(gameDir, id string) ([]string, error) {
+	root := filepath.Join(gameDir, "rooms", id)
+	var out []string
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, _ := filepath.Rel(gameDir, path)
+		rel = filepath.ToSlash(rel)
+		if d.IsDir() {
+			if rel == "rooms/"+id+"/ctf" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if resourceExts[strings.ToLower(filepath.Ext(path))] {
+			out = append(out, "res://"+rel)
+		}
+		return nil
+	})
+	sort.Strings(out)
+	return out, err
 }

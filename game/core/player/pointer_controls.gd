@@ -53,9 +53,14 @@ func is_walking() -> bool:
 	return not _route.is_empty()
 
 
+## Stops walking and drops any interaction still to come (a pending walk-up
+## or the turn before a use).
 func cancel() -> void:
 	_route = PackedVector3Array()
 	_pending = null
+	if _turn:
+		_turn.kill()
+		_turn = null
 
 
 ## Returns true if the event was used.
@@ -131,6 +136,7 @@ func thing_at(pos: Vector2) -> Interactable:
 
 
 func act_on(thing: Interactable, point: Vector3, item_path: String) -> void:
+	cancel()  # a new tap replaces any walk or use still under way
 	if player.eye().distance_to(point) <= FirstPersonPlayer.REACH:
 		_use(thing, point, item_path)
 		return
@@ -141,7 +147,7 @@ func act_on(thing: Interactable, point: Vector3, item_path: String) -> void:
 
 
 func walk_to(point: Vector3) -> void:
-	_pending = null
+	cancel()
 	_start_route(point)
 
 

@@ -293,6 +293,29 @@ func test_interactables_lie_inside_the_room_and_within_reach() -> void:
 			.is_between(0.2, MAX_INTERACT_HEIGHT)
 
 
+## Point-and-tap (ADR-0038): with the cage open, tapping inside it walks the
+## player there from the office along the client's walk mesh.
+func test_tap_to_walk_reaches_inside_the_cage() -> void:
+	replay_all()
+	await get_tree().create_timer(2.5).timeout  # doors finish swinging
+	var player := FirstPersonPlayer.new()
+	player.room_root = room
+	room.add_child(player)
+	player.place_at(room.airlock().late_spawn_transform())
+	player.set_pointer_mode(true)
+	for i in 20:
+		await get_tree().physics_frame
+	var goal := Vector3(7.4, 0, 4.1)
+	player.pointer.walk_to(goal)
+	var frames := 0
+	while player.pointer.is_walking() and frames < 60 * 30:
+		await get_tree().physics_frame
+		frames += 1
+	assert_float(Vector2(player.global_position.x - goal.x, player.global_position.z - goal.z).length()) \
+		.override_failure_message("stopped at %s after %d frames" % [player.global_position, frames]).is_less(0.6)
+	player.queue_free()
+
+
 func test_spawns_are_clear_corridor_first_then_office() -> void:
 	var start := room.spawn_transform().origin
 	assert_bool(start.x > -1.7 and start.x < -0.1 and start.z > 2.0 and start.z < 3.0) \

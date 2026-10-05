@@ -5,13 +5,20 @@ extends RefCounted
 
 static var _touch: int = -1
 
+## The main pointer is a finger; or, where a browser says otherwise (an
+## Android emulator did), a touch screen on a phone or tablet. iPads ask for
+## desktop pages and say "Macintosh".
+const TOUCH_TEST := "matchMedia('(pointer: coarse)').matches" \
+	+ " || (navigator.maxTouchPoints > 0 && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))" \
+	+ " || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent))"
+
 
 ## True when the main pointer is a finger (phone, tablet). A laptop with a
 ## touch screen still counts as a mouse device.
 static func is_touch() -> bool:
 	if _touch < 0:
 		if OS.has_feature("web"):
-			_touch = 1 if bool(JavaScriptBridge.eval("window.matchMedia('(pointer: coarse)').matches", true)) else 0
+			_touch = 1 if bool(JavaScriptBridge.eval(TOUCH_TEST, true)) else 0
 		else:
 			_touch = 1 if OS.has_feature("mobile") else 0
 	return _touch == 1
