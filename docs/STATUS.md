@@ -156,6 +156,15 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 - [ ] R4: three blind play-tests logged in the room README (after shipping, owner's choice)
 - [ ] R4 ship: 3 blind play-tests logged in the room README, then remove `draft: true`
 
+## Third room: The Quiet Sun (owner request 2026-10-05; ADR-0039)
+Branch `room-ruins`. Design: `game/rooms/quiet_sun/README.md` (spoilers below its marked line); rounds in `docs/design/ruins/`.
+- [x] Co-design with Codex (2026-10-05): independent pitches, cross-critiques, merged draft, adversarial review. `docs/design/ruins/checks/check_r3.py` and `check_r4.py` (Codex; re-run on the Alienware 2026-10-05, both PASS) enumerated M02, M04, M05, M06, M07, M08, M09, M12, M13, M15 and both M16 port tables: one answer each for the adopted data (revised M16: 1 of 6,912 states)
+- [ ] Owner review of the premise (safe section only)
+- [ ] R1 SDK: `IndexedMechanism`, `OpticalNetwork`, `LoadPlate`, `OverlayFrame`, `PosePresenter`
+- [ ] R2 greybox, then owner greybox play (blind)
+- [ ] R3 look: Codex props and printables
+- [ ] R4 ship: trailer, blind play-tests logged in the room README
+
 ## M6: Deployment and prototype sign-off (was M5)
 Not started. Includes `docker compose up` for the platform and challenge images (moved from M3, ADR-0019).
 
