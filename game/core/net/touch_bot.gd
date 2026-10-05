@@ -119,6 +119,8 @@ func _step(i: int, step: Dictionary) -> void:
 	match act:
 		"interact" when node is PatchPanel:
 			why = await _patch(node as PatchPanel, str(intent["payload"].get("value", "")))
+		"interact" when node is IndexedMechanism and intent["verb"] == "set":
+			why = await _set_mechanism(node as IndexedMechanism, str(intent["payload"].get("value", "")))
 		"pick_up", "interact", "examine", "use":
 			why = await _tap_thing(node, str(intent["verb"]))
 			if why.is_empty() and _hud().is_modal_open():
@@ -132,6 +134,8 @@ func _step(i: int, step: Dictionary) -> void:
 			why = await _submit_flag(node as Terminal, str(intent["payload"]["value"]))
 		_:
 			why = "no way to %s" % act
+	if why.is_empty() and node is IndexedMechanism and intent["verb"] == "set":
+		_results.append([str(intent["path"]), "set", true])  # _set_mechanism checked the position
 	var t := 0.0
 	while why.is_empty() and not _succeeded(str(intent["path"]), node) and t < 8.0:
 		await _wait(0.25)
@@ -352,6 +356,26 @@ func _enter_code(lock: Interactable, value: String) -> String:
 				await _press_control(arrows[w * 2 + (1 if down else 0)])
 		return ""
 	return "tapping it opened %s, not a code panel" % (panel.get_class() if panel else "nothing")
+
+
+## A stepped control (plate, screen, mirror): tap it until it shows the
+## position, as a player would; each tap moves it one step.
+func _set_mechanism(m: IndexedMechanism, value: String) -> String:
+	var want := m.index_of(value)
+	if want < 0:
+		return "it has no position %s" % value
+	for _t in m.detents.size():
+		if int(m.current_state.get("index", 0)) == want:
+			return ""
+		var before := int(m.current_state.get("index", 0))
+		var why := await _tap_thing(m, "turn")
+		if not why.is_empty():
+			return why
+		var t := 0.0
+		while t < 3.0 and int(m.current_state.get("index", 0)) == before:
+			await _wait(0.1)
+			t += 0.1
+	return "" if int(m.current_state.get("index", 0)) == want else "tapping it did not bring it to %s" % value
 
 
 ## Patch panel: tap each cable's port picker (a dropdown), choose the port,

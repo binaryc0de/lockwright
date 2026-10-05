@@ -234,8 +234,9 @@ func _prerequisites_met(n: EBNode) -> bool:
 		gates = gates + _gates_by_item.get((n as Item).item_id, [])
 	if n is Terminal:
 		gates = gates + _gates_by_challenge.get((n as Terminal).challenge_id, [])
-	if n is Socket and (n as Socket).lock() != null:
-		gates = gates + _gates_by_path.get((n as Socket).lock().eb_path, [])
+	var owner := n.gate_owner()
+	if owner != null:
+		gates = gates + _gates_by_path.get(owner.eb_path, [])
 	for pid: String in gates:
 		if state.is_solved(pid):
 			continue

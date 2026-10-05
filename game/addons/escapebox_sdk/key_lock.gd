@@ -13,6 +13,8 @@ func _init() -> void:
 
 
 func _server_intent(_player_id: String, verb: String, payload: Dictionary) -> Dictionary:
+	if not is_powered():
+		return {"ok": false, "error": "no_power", "message": dead_message}
 	if verb != "use_item":
 		return {"ok": false, "error": "needs_item", "message": "It needs a key."}
 	var item := authority.node(payload.get("item", "")) as Item
@@ -25,6 +27,9 @@ func _server_intent(_player_id: String, verb: String, payload: Dictionary) -> Di
 
 
 func client_interact(item_path: String = "") -> void:
+	if not is_powered():
+		Game.toast(dead_message)
+		return
 	if item_path.is_empty():
 		Game.toast("It needs a key.")
 		return

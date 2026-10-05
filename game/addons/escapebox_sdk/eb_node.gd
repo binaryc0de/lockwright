@@ -69,6 +69,12 @@ func _server_intent(_player_id: String, _verb: String, _payload: Dictionary) -> 
 	return {"ok": false, "error": "unsupported_verb"}
 
 
+## The SDK node whose puzzle gates this one (a Socket's lock, a control's
+## lock): room.yaml prerequisites of puzzles watching that node apply here too.
+func gate_owner() -> EBNode:
+	return null
+
+
 ## Called when another node (FlagGate, PatchPanel, Lever) activates this one.
 func _server_activate() -> void:
 	pass

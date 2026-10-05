@@ -31,6 +31,10 @@ func lock() -> SocketLock:
 	return p as SocketLock
 
 
+func gate_owner() -> EBNode:
+	return lock()
+
+
 func seated_id() -> String:
 	return str(my_state().get("item_id", "")) if my_state().get("state") == "seated" else ""
 

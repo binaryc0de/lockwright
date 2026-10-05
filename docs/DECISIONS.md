@@ -359,3 +359,15 @@ Found by the browser smoke: the web build must leave decompression to the browse
 - Process: independent pitches, cross-critiques, a merged draft, an adversarial review with exhaustive checks (`docs/design/ruins/`, checks in `docs/design/ruins/checks/`). Design: `game/rooms/quiet_sun/README.md`, spoilers below a marked line.
 - New generic SDK: `IndexedMechanism`, `OpticalNetwork`, `LoadPlate`, `OverlayFrame`, `PosePresenter`.
 **Consequences.** Five new SDK nodes before the greybox. The room ships as a draft until the owner's blind play. Per-session variables are curated profiles that drive art, solutions and hints together, added after the first blind play.
+
+## ADR-0040: Generic SDK for stepped controls, light, weights and poses (2026-10-05)
+
+**Context.** The Quiet Sun (ADR-0039) needs screens and mirrors that turn in steps, light routed through a building, weighing pans and a building that changes pose. The existing nodes (DialLock, SocketLock) open once and freeze, and a Socket refuses Take after its lock opens.
+**Decision.**
+- `IndexedMechanism`: a persistent N-position control. One use = one step (phones: a tap, no dragging); `set` intents for solution steps. Never opens anything itself; it can freeze once its lock opens and take its puzzle gate from that lock (`gated_by`).
+- `MechanismLock`: opens on a set of positions and/or other nodes' states, at once or on use (`on_submit`). Replaces the round-3 idea of a separate `OverlayFrame`: documents laid in a frame are positions of controls.
+- `OpticalNetwork`: authored places and edges, conditional on station positions, lane masks from screens, gated places; acceptance on the current path and the exact lit lanes. No ray tracing or free angles: every outcome is enumerable (the tests enumerate the room's 6,912 states).
+- `LoadPlate` + `LoadPan`: fixed item weights, per-pan targets, multipliers (lever arms), a total, required items; items come back off after it opens.
+- `PosePresenter`: presentation-only stable poses, snapped on join and restore.
+- Small generic changes: `EBNode.gate_owner()` (replaces the Socket special case in the authority's prerequisite check), `Item.pick_up_requires`, and `KeyLock` now refuses while unpowered (no shipped room has an unpowered KeyLock).
+**Consequences.** The play bots set a stepped control by tapping it until it shows the position. The idol cradle's force is 11 with one block per arm (unique without an inequality rule), replacing round 3's "exactly 7 and the long-arm block heavier".

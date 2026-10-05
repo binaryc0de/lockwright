@@ -16,6 +16,12 @@ extends Interactable
 ## computer for real tools. `file_text` may use {{vars}}.
 @export var file_name: String = ""
 @export_multiline var file_text: String = ""
+## Optional guard: the item can only be picked up while this SDK node's
+## `state` is `pick_up_requires_state` (an idol that stays put until its
+## counterweight is set). Players are told `pick_up_refused_message`.
+@export var pick_up_requires: NodePath
+@export var pick_up_requires_state: String = "unlocked"
+@export var pick_up_refused_message: String = "It won't come free."
 
 
 func _init() -> void:
@@ -39,6 +45,9 @@ func _server_intent(player_id: String, verb: String, _payload: Dictionary) -> Di
 		return {"ok": false, "error": "unsupported_verb"}
 	if my_state().get("state") != "world":
 		return {"ok": false, "error": "already_taken", "message": "Someone already took it."}
+	var guard := get_node_or_null(pick_up_requires) as EBNode if not pick_up_requires.is_empty() else null
+	if guard != null and state_of(guard).get("state") != pick_up_requires_state:
+		return {"ok": false, "error": "held", "message": pick_up_refused_message}
 	set_state({"state": "inventory"})
 	authority.give_item(eb_path, item_id, player_id)
 	return {"ok": true}

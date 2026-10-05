@@ -160,7 +160,7 @@ Branch `room-clockmaker` (from `m5-browser`). Design: `game/rooms/clockmaker/REA
 Branch `room-ruins`. Design: `game/rooms/quiet_sun/README.md` (spoilers below its marked line); rounds in `docs/design/ruins/`.
 - [x] Co-design with Codex (2026-10-05): independent pitches, cross-critiques, merged draft, adversarial review. `docs/design/ruins/checks/check_r3.py` and `check_r4.py` (Codex; re-run on the Alienware 2026-10-05, both PASS) enumerated M02, M04, M05, M06, M07, M08, M09, M12, M13, M15 and both M16 port tables: one answer each for the adopted data (revised M16: 1 of 6,912 states)
 - [ ] Owner review of the premise (safe section only)
-- [ ] R1 SDK: `IndexedMechanism`, `OpticalNetwork`, `LoadPlate`, `OverlayFrame`, `PosePresenter`
+- [x] R1 SDK (ADR-0040): `IndexedMechanism`, `MechanismLock`, `OpticalNetwork`, `LoadPlate` + `LoadPan`, `PosePresenter`; `Item.pick_up_requires`, `EBNode.gate_owner()`, KeyLock power check; play bots set stepped controls by tapping. `tests/core/test_ruins_nodes.gd` (20 tests, with the room's data: arch 1 of 9, teeth 1 of 16, gallery light 1 of 6,912 enumerated through the authority). gdUnit4 191/191 on the Alienware; `tools/test.sh --no-godot` PASS. M09 changed to force 11, one block per arm (unique without an extra rule); checks updated
 - [ ] R2 greybox, then owner greybox play (blind)
 - [ ] R3 look: Codex props and printables
 - [ ] R4 ship: trailer, blind play-tests logged in the room README
