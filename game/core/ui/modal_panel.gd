@@ -16,6 +16,12 @@ var _scroll: ScrollContainer
 func _init() -> void:
 	set_anchors_preset(Control.PRESET_TOP_LEFT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	# Nearly opaque, so the room behind does not compete with text on small
+	# screens.
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.09, 0.09, 0.11, 0.95)
+	bg.set_corner_radius_all(6)
+	add_theme_stylebox_override("panel", bg)
 	var margin := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 18)

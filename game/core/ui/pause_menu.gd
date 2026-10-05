@@ -52,8 +52,10 @@ func setup() -> void:
 	grab.button_pressed = Settings.drag_grabs_world
 	grab.toggled.connect(func(on: bool) -> void: Settings.drag_grabs_world = on)
 	grid.add_child(grab)
-	_slider(grid, "Mouse sensitivity", 0.0005, 0.01, 0.0005, Settings.mouse_sensitivity,
-		func(v: float) -> void: Settings.mouse_sensitivity = v)
+	var mouse := not Device.is_touch()
+	if mouse:
+		_slider(grid, "Mouse sensitivity", 0.0005, 0.01, 0.0005, Settings.mouse_sensitivity,
+			func(v: float) -> void: Settings.mouse_sensitivity = v)
 	_slider(grid, "Field of view", 75, 90, 1, Settings.fov, func(v: float) -> void:
 		Settings.fov = v
 		var cam := get_viewport().get_camera_3d()
@@ -75,7 +77,7 @@ func setup() -> void:
 			GraphicsQuality.apply(Game.room, Settings.graphics))
 	grid.add_child(gfx)
 	var inv_label := Label.new()
-	inv_label.text = "Invert mouse Y"
+	inv_label.text = "Invert mouse Y" if mouse else "Invert up/down drag"
 	grid.add_child(inv_label)
 	var inv := CheckBox.new()
 	inv.button_pressed = Settings.invert_y

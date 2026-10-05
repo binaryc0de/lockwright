@@ -331,6 +331,10 @@ func _set_free_mouse(free: bool) -> void:
 		_cross.visible = not free and not pointer_mode
 	if _toolbar:
 		_toolbar.visible = pointer_mode and not free
+	# The bar and help line would show through or under a panel.
+	for c: CanvasItem in [_inventory, _help, _prompt]:
+		if c:
+			c.visible = not free
 	if player:
 		player.input_enabled = not free
 
