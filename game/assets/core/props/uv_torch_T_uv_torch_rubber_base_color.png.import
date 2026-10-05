@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bily3ahtl52go"
 path.s3tc="res://.godot/imported/uv_torch_T_uv_torch_rubber_base_color.png-9148a44c40d346380839f87093e481ea.s3tc.ctex"
+path.etc2="res://.godot/imported/uv_torch_T_uv_torch_rubber_base_color.png-9148a44c40d346380839f87093e481ea.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/uv_torch_T_uv_torch_rubber_base_color.png"
-dest_files=["res://.godot/imported/uv_torch_T_uv_torch_rubber_base_color.png-9148a44c40d346380839f87093e481ea.s3tc.ctex"]
+dest_files=["res://.godot/imported/uv_torch_T_uv_torch_rubber_base_color.png-9148a44c40d346380839f87093e481ea.s3tc.ctex", "res://.godot/imported/uv_torch_T_uv_torch_rubber_base_color.png-9148a44c40d346380839f87093e481ea.etc2.ctex"]
 
 [params]
 

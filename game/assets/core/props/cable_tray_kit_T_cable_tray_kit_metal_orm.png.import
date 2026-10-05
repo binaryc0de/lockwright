@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://37w8s0u6ish1"
 path.s3tc="res://.godot/imported/cable_tray_kit_T_cable_tray_kit_metal_orm.png-3c30e2f51f1c9d214a97fa57a1136c7b.s3tc.ctex"
+path.etc2="res://.godot/imported/cable_tray_kit_T_cable_tray_kit_metal_orm.png-3c30e2f51f1c9d214a97fa57a1136c7b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/cable_tray_kit_T_cable_tray_kit_metal_orm.png"
-dest_files=["res://.godot/imported/cable_tray_kit_T_cable_tray_kit_metal_orm.png-3c30e2f51f1c9d214a97fa57a1136c7b.s3tc.ctex"]
+dest_files=["res://.godot/imported/cable_tray_kit_T_cable_tray_kit_metal_orm.png-3c30e2f51f1c9d214a97fa57a1136c7b.s3tc.ctex", "res://.godot/imported/cable_tray_kit_T_cable_tray_kit_metal_orm.png-3c30e2f51f1c9d214a97fa57a1136c7b.etc2.ctex"]
 
 [params]
 

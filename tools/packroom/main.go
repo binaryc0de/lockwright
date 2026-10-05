@@ -38,6 +38,15 @@ type CatalogEntry struct {
 	PackFile        string `json:"pack_file"`
 	SHA256          string `json:"sha256"`
 	Size            int64  `json:"size"`
+	// Mobile is the same room with phone/tablet textures (ETC2/ASTC, ADR-0038).
+	Mobile *PackVariant `json:"mobile,omitempty"`
+}
+
+// PackVariant is another export of the same room pack.
+type PackVariant struct {
+	PackFile string `json:"pack_file"`
+	SHA256   string `json:"sha256"`
+	Size     int64  `json:"size"`
 }
 
 func main() {
@@ -113,35 +122,33 @@ func run(args []string) error {
 	if err != nil {
 		return err
 	}
-	_ = os.Remove(packPath)
-	cmd := exec.Command(*godot, "--headless", "--path", gameDir, "--export-pack", preset, packPath)
-	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("godot export: %w", err)
-	}
-	if _, err := os.Stat(packPath); err != nil {
-		return fmt.Errorf("godot reported success but %s is missing", packPath)
-	}
-
-	if b, err := os.ReadFile(packPath); err != nil {
-		return err
-	} else if f := foreignRooms(b, others); len(f) != 0 {
-		_ = os.Remove(packPath)
-		return fmt.Errorf("%s contains files of other rooms (%s); check the preset's filters", packName, strings.Join(f, ","))
-	}
-
-	if err := gzipFile(packPath); err != nil {
-		return err
-	}
-
-	sum, size, err := hashFile(packPath)
+	sum, size, err := exportPack(*godot, gameDir, preset, packPath, others)
 	if err != nil {
 		return err
 	}
+
+	// The phone/tablet variant, from a preset derived from the desktop one.
+	withMobile, err := withMobilePreset(string(presets), preset)
+	if err != nil {
+		return err
+	}
+	if withMobile != string(presets) {
+		if err := os.WriteFile(filepath.Join(gameDir, "export_presets.cfg"), []byte(withMobile), 0o644); err != nil {
+			return err
+		}
+		fmt.Printf("export preset %s-mobile written to game/export_presets.cfg (derived; edit %s instead)\n", preset, preset)
+	}
+	mobileName := fmt.Sprintf("%s-%s-mobile.pck", id, m.Version)
+	mobileSum, mobileSize, err := exportPack(*godot, gameDir, preset+"-mobile", filepath.Join(filepath.Dir(packPath), mobileName), others)
+	if err != nil {
+		return err
+	}
+
 	entry := CatalogEntry{
 		RoomID: id, Title: m.Title, Version: m.Version,
 		DurationMinutes: m.Mode.DurationMinutes, PlayersMin: m.Mode.Players.Min, PlayersMax: m.Mode.Players.Max,
 		PackFile: packName, SHA256: sum, Size: size,
+		Mobile: &PackVariant{PackFile: mobileName, SHA256: mobileSum, Size: mobileSize},
 	}
 	js, _ := json.MarshalIndent(entry, "", "  ")
 	if err := os.WriteFile(strings.TrimSuffix(packPath, ".pck")+".json", append(js, '\n'), 0o644); err != nil {
@@ -151,6 +158,7 @@ func run(args []string) error {
 		return err
 	}
 	fmt.Printf("packed %s (%d bytes, sha256 %s)\n", packPath, size, sum)
+	fmt.Printf("packed %s (%d bytes, sha256 %s)\n", mobileName, mobileSize, mobileSum)
 
 	if *verify {
 		return verifyPack(*godot, gameDir, id, packPath)
@@ -284,4 +292,30 @@ func findRoot() (string, error) {
 		}
 		dir = parent
 	}
+}
+
+
+// exportPack exports one room-pack preset to packPath, checks it holds no
+// other room's files, writes the gzip copy, and returns its sha256 and size.
+func exportPack(godot, gameDir, preset, packPath string, others []string) (string, int64, error) {
+	_ = os.Remove(packPath)
+	cmd := exec.Command(godot, "--headless", "--path", gameDir, "--export-pack", preset, packPath)
+	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	if err := cmd.Run(); err != nil {
+		return "", 0, fmt.Errorf("godot export of %s: %w", preset, err)
+	}
+	if _, err := os.Stat(packPath); err != nil {
+		return "", 0, fmt.Errorf("godot reported success but %s is missing", packPath)
+	}
+	name := filepath.Base(packPath)
+	if b, err := os.ReadFile(packPath); err != nil {
+		return "", 0, err
+	} else if f := foreignRooms(b, others); len(f) != 0 {
+		_ = os.Remove(packPath)
+		return "", 0, fmt.Errorf("%s contains files of other rooms (%s); check the preset's filters", name, strings.Join(f, ","))
+	}
+	if err := gzipFile(packPath); err != nil {
+		return "", 0, err
+	}
+	return hashFile(packPath)
 }

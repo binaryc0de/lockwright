@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ciy4lv8ps6csi"
 path.s3tc="res://.godot/imported/ups_tower_T_ups_tower_metal_normal.png-419da3d4ed5a7589e4bed0110d0ae497.s3tc.ctex"
+path.etc2="res://.godot/imported/ups_tower_T_ups_tower_metal_normal.png-419da3d4ed5a7589e4bed0110d0ae497.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/ups_tower_T_ups_tower_metal_normal.png"
-dest_files=["res://.godot/imported/ups_tower_T_ups_tower_metal_normal.png-419da3d4ed5a7589e4bed0110d0ae497.s3tc.ctex"]
+dest_files=["res://.godot/imported/ups_tower_T_ups_tower_metal_normal.png-419da3d4ed5a7589e4bed0110d0ae497.s3tc.ctex", "res://.godot/imported/ups_tower_T_ups_tower_metal_normal.png-419da3d4ed5a7589e4bed0110d0ae497.etc2.ctex"]
 
 [params]
 

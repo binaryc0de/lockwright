@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://g4r5g65fxpsr"
 path.s3tc="res://.godot/imported/OfficeCeiling001_2K-JPG_Roughness.jpg-e160a8f07b174c6629dc29b27614d8fe.s3tc.ctex"
+path.etc2="res://.godot/imported/OfficeCeiling001_2K-JPG_Roughness.jpg-e160a8f07b174c6629dc29b27614d8fe.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/ambientcg/OfficeCeiling001/OfficeCeiling001_2K-JPG_Roughness.jpg"
-dest_files=["res://.godot/imported/OfficeCeiling001_2K-JPG_Roughness.jpg-e160a8f07b174c6629dc29b27614d8fe.s3tc.ctex"]
+dest_files=["res://.godot/imported/OfficeCeiling001_2K-JPG_Roughness.jpg-e160a8f07b174c6629dc29b27614d8fe.s3tc.ctex", "res://.godot/imported/OfficeCeiling001_2K-JPG_Roughness.jpg-e160a8f07b174c6629dc29b27614d8fe.etc2.ctex"]
 
 [params]
 

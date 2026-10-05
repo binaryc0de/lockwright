@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://xpkmwycl3qtg"
 path.s3tc="res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_orm.png-32b7f16f1c90fe52b2d1785fa48e90b1.s3tc.ctex"
+path.etc2="res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_orm.png-32b7f16f1c90fe52b2d1785fa48e90b1.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/desk_3drawer_T_desk_3drawer_carcass_orm.png"
-dest_files=["res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_orm.png-32b7f16f1c90fe52b2d1785fa48e90b1.s3tc.ctex"]
+dest_files=["res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_orm.png-32b7f16f1c90fe52b2d1785fa48e90b1.s3tc.ctex", "res://.godot/imported/desk_3drawer_T_desk_3drawer_carcass_orm.png-32b7f16f1c90fe52b2d1785fa48e90b1.etc2.ctex"]
 
 [params]
 

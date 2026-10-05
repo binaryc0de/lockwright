@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c70rl870lmrib"
 path.s3tc="res://.godot/imported/office_trim_kit_T_office_trim_kit_led_base_color.png-ce1d2b42942b54b1156d1f9a4f43319d.s3tc.ctex"
+path.etc2="res://.godot/imported/office_trim_kit_T_office_trim_kit_led_base_color.png-ce1d2b42942b54b1156d1f9a4f43319d.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/office_trim_kit_T_office_trim_kit_led_base_color.png"
-dest_files=["res://.godot/imported/office_trim_kit_T_office_trim_kit_led_base_color.png-ce1d2b42942b54b1156d1f9a4f43319d.s3tc.ctex"]
+dest_files=["res://.godot/imported/office_trim_kit_T_office_trim_kit_led_base_color.png-ce1d2b42942b54b1156d1f9a4f43319d.s3tc.ctex", "res://.godot/imported/office_trim_kit_T_office_trim_kit_led_base_color.png-ce1d2b42942b54b1156d1f9a4f43319d.etc2.ctex"]
 
 [params]
 

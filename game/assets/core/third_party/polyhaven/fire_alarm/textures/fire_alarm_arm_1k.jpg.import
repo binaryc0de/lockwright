@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c7djr4cn7ij10"
 path.s3tc="res://.godot/imported/fire_alarm_arm_1k.jpg-094c03fd6146e76acc828aaf1ce9f3c3.s3tc.ctex"
+path.etc2="res://.godot/imported/fire_alarm_arm_1k.jpg-094c03fd6146e76acc828aaf1ce9f3c3.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/polyhaven/fire_alarm/textures/fire_alarm_arm_1k.jpg"
-dest_files=["res://.godot/imported/fire_alarm_arm_1k.jpg-094c03fd6146e76acc828aaf1ce9f3c3.s3tc.ctex"]
+dest_files=["res://.godot/imported/fire_alarm_arm_1k.jpg-094c03fd6146e76acc828aaf1ce9f3c3.s3tc.ctex", "res://.godot/imported/fire_alarm_arm_1k.jpg-094c03fd6146e76acc828aaf1ce9f3c3.etc2.ctex"]
 
 [params]
 

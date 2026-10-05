@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bns7a167gyq6i"
 path.s3tc="res://.godot/imported/keypad_4_T_keypad_4_body_base_color.png-4c218b869dcbb1338e88e35d1ee3f159.s3tc.ctex"
+path.etc2="res://.godot/imported/keypad_4_T_keypad_4_body_base_color.png-4c218b869dcbb1338e88e35d1ee3f159.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/keypad_4_T_keypad_4_body_base_color.png"
-dest_files=["res://.godot/imported/keypad_4_T_keypad_4_body_base_color.png-4c218b869dcbb1338e88e35d1ee3f159.s3tc.ctex"]
+dest_files=["res://.godot/imported/keypad_4_T_keypad_4_body_base_color.png-4c218b869dcbb1338e88e35d1ee3f159.s3tc.ctex", "res://.godot/imported/keypad_4_T_keypad_4_body_base_color.png-4c218b869dcbb1338e88e35d1ee3f159.etc2.ctex"]
 
 [params]
 

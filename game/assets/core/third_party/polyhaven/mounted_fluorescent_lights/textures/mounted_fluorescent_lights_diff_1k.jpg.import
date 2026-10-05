@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ca54ou4340smj"
 path.s3tc="res://.godot/imported/mounted_fluorescent_lights_diff_1k.jpg-9a8fee8cfc026294f153eb217950621a.s3tc.ctex"
+path.etc2="res://.godot/imported/mounted_fluorescent_lights_diff_1k.jpg-9a8fee8cfc026294f153eb217950621a.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/polyhaven/mounted_fluorescent_lights/textures/mounted_fluorescent_lights_diff_1k.jpg"
-dest_files=["res://.godot/imported/mounted_fluorescent_lights_diff_1k.jpg-9a8fee8cfc026294f153eb217950621a.s3tc.ctex"]
+dest_files=["res://.godot/imported/mounted_fluorescent_lights_diff_1k.jpg-9a8fee8cfc026294f153eb217950621a.s3tc.ctex", "res://.godot/imported/mounted_fluorescent_lights_diff_1k.jpg-9a8fee8cfc026294f153eb217950621a.etc2.ctex"]
 
 [params]
 

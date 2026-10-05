@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b5oguf4b82q8l"
 path.s3tc="res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.s3tc.ctex"
+path.etc2="res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png"
-dest_files=["res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.s3tc.ctex"]
+dest_files=["res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.s3tc.ctex", "res://.godot/imported/filing_cabinet_keypad_T_filing_cabinet_keypad_paint_base_color.png-9c303703e3f2833a51b2b10eb0cf9b2a.etc2.ctex"]
 
 [params]
 

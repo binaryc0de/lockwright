@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c573s7405s70"
 path.s3tc="res://.godot/imported/cable_tray_kit_T_cable_tray_kit_velcro_orm.png-765ad9e10c0abd4e09c98b2d881a3b44.s3tc.ctex"
+path.etc2="res://.godot/imported/cable_tray_kit_T_cable_tray_kit_velcro_orm.png-765ad9e10c0abd4e09c98b2d881a3b44.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/cable_tray_kit_T_cable_tray_kit_velcro_orm.png"
-dest_files=["res://.godot/imported/cable_tray_kit_T_cable_tray_kit_velcro_orm.png-765ad9e10c0abd4e09c98b2d881a3b44.s3tc.ctex"]
+dest_files=["res://.godot/imported/cable_tray_kit_T_cable_tray_kit_velcro_orm.png-765ad9e10c0abd4e09c98b2d881a3b44.s3tc.ctex", "res://.godot/imported/cable_tray_kit_T_cable_tray_kit_velcro_orm.png-765ad9e10c0abd4e09c98b2d881a3b44.etc2.ctex"]
 
 [params]
 

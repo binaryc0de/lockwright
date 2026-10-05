@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dqr56uafav3bi"
 path.s3tc="res://.godot/imported/desk_3drawer_T_desk_3drawer_interior_normal.png-2286711fbab90696718abb567e40c8f2.s3tc.ctex"
+path.etc2="res://.godot/imported/desk_3drawer_T_desk_3drawer_interior_normal.png-2286711fbab90696718abb567e40c8f2.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/desk_3drawer_T_desk_3drawer_interior_normal.png"
-dest_files=["res://.godot/imported/desk_3drawer_T_desk_3drawer_interior_normal.png-2286711fbab90696718abb567e40c8f2.s3tc.ctex"]
+dest_files=["res://.godot/imported/desk_3drawer_T_desk_3drawer_interior_normal.png-2286711fbab90696718abb567e40c8f2.s3tc.ctex", "res://.godot/imported/desk_3drawer_T_desk_3drawer_interior_normal.png-2286711fbab90696718abb567e40c8f2.etc2.ctex"]
 
 [params]
 

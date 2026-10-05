@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c1tkho361mxjr"
 path.s3tc="res://.godot/imported/mounted_fluorescent_lights_arm_1k.jpg-93c0680e07136bd6f2fbd80fd8123940.s3tc.ctex"
+path.etc2="res://.godot/imported/mounted_fluorescent_lights_arm_1k.jpg-93c0680e07136bd6f2fbd80fd8123940.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/polyhaven/mounted_fluorescent_lights/textures/mounted_fluorescent_lights_arm_1k.jpg"
-dest_files=["res://.godot/imported/mounted_fluorescent_lights_arm_1k.jpg-93c0680e07136bd6f2fbd80fd8123940.s3tc.ctex"]
+dest_files=["res://.godot/imported/mounted_fluorescent_lights_arm_1k.jpg-93c0680e07136bd6f2fbd80fd8123940.s3tc.ctex", "res://.godot/imported/mounted_fluorescent_lights_arm_1k.jpg-93c0680e07136bd6f2fbd80fd8123940.etc2.ctex"]
 
 [params]
 

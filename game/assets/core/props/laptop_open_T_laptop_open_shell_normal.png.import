@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cpqewb2ggxq8d"
 path.s3tc="res://.godot/imported/laptop_open_T_laptop_open_shell_normal.png-fe7262c622a4ff9f85cb46b7ef0dfbc5.s3tc.ctex"
+path.etc2="res://.godot/imported/laptop_open_T_laptop_open_shell_normal.png-fe7262c622a4ff9f85cb46b7ef0dfbc5.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/laptop_open_T_laptop_open_shell_normal.png"
-dest_files=["res://.godot/imported/laptop_open_T_laptop_open_shell_normal.png-fe7262c622a4ff9f85cb46b7ef0dfbc5.s3tc.ctex"]
+dest_files=["res://.godot/imported/laptop_open_T_laptop_open_shell_normal.png-fe7262c622a4ff9f85cb46b7ef0dfbc5.s3tc.ctex", "res://.godot/imported/laptop_open_T_laptop_open_shell_normal.png-fe7262c622a4ff9f85cb46b7ef0dfbc5.etc2.ctex"]
 
 [params]
 

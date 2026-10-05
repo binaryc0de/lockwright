@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b2h4tu2bsm2pu"
 path.s3tc="res://.godot/imported/concrete_floor_painted_diff_2k.jpg-4c86bd6b5822263413b9dd1fac8e3c36.s3tc.ctex"
+path.etc2="res://.godot/imported/concrete_floor_painted_diff_2k.jpg-4c86bd6b5822263413b9dd1fac8e3c36.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/polyhaven/concrete_floor_painted/concrete_floor_painted_diff_2k.jpg"
-dest_files=["res://.godot/imported/concrete_floor_painted_diff_2k.jpg-4c86bd6b5822263413b9dd1fac8e3c36.s3tc.ctex"]
+dest_files=["res://.godot/imported/concrete_floor_painted_diff_2k.jpg-4c86bd6b5822263413b9dd1fac8e3c36.s3tc.ctex", "res://.godot/imported/concrete_floor_painted_diff_2k.jpg-4c86bd6b5822263413b9dd1fac8e3c36.etc2.ctex"]
 
 [params]
 

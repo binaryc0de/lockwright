@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dcerhiw20b3bf"
 path.s3tc="res://.godot/imported/painted_plaster_wall_arm_2k.jpg-ddb4ac99519a7cf65a044999aeeaf330.s3tc.ctex"
+path.etc2="res://.godot/imported/painted_plaster_wall_arm_2k.jpg-ddb4ac99519a7cf65a044999aeeaf330.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/polyhaven/painted_plaster_wall/painted_plaster_wall_arm_2k.jpg"
-dest_files=["res://.godot/imported/painted_plaster_wall_arm_2k.jpg-ddb4ac99519a7cf65a044999aeeaf330.s3tc.ctex"]
+dest_files=["res://.godot/imported/painted_plaster_wall_arm_2k.jpg-ddb4ac99519a7cf65a044999aeeaf330.s3tc.ctex", "res://.godot/imported/painted_plaster_wall_arm_2k.jpg-ddb4ac99519a7cf65a044999aeeaf330.etc2.ctex"]
 
 [params]
 

@@ -414,6 +414,15 @@ func test_sdk_exports_avoid_packed_arrays() -> void:
 ## Gzipped packs (ADR-0035): desktop counts compressed bytes against the
 ## response's Content-Length; a browser counts decompressed bytes, so there
 ## the pack's size is the total (measured 2026-10-03 in both).
+func test_phones_take_the_mobile_pack() -> void:
+	var desk := {"file": "r-1.0.0.pck", "url": "/download/packs/r-1.0.0.pck"}
+	var pack := desk.duplicate()
+	pack["mobile"] = {"file": "r-1.0.0-mobile.pck", "url": "/download/packs/r-1.0.0-mobile.pck"}
+	assert_str(str(RoomPackFetcher.variant_for(pack, true)["file"])).is_equal("r-1.0.0-mobile.pck")
+	assert_str(str(RoomPackFetcher.variant_for(pack, false)["file"])).is_equal("r-1.0.0.pck")
+	assert_str(str(RoomPackFetcher.variant_for(desk, true)["file"])).is_equal("r-1.0.0.pck")  # none built
+
+
 func test_pack_progress_total() -> void:
 	assert_int(RoomPackFetcher.progress_total(82166424, 53014105, false)).is_equal(53014105)
 	assert_int(RoomPackFetcher.progress_total(82166424, -1, false)).is_equal(82166424)

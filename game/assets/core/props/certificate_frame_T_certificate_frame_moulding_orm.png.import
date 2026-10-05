@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bt70ckt7mew3m"
 path.s3tc="res://.godot/imported/certificate_frame_T_certificate_frame_moulding_orm.png-264e24c395ebbb370610d6d078b2595f.s3tc.ctex"
+path.etc2="res://.godot/imported/certificate_frame_T_certificate_frame_moulding_orm.png-264e24c395ebbb370610d6d078b2595f.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/certificate_frame_T_certificate_frame_moulding_orm.png"
-dest_files=["res://.godot/imported/certificate_frame_T_certificate_frame_moulding_orm.png-264e24c395ebbb370610d6d078b2595f.s3tc.ctex"]
+dest_files=["res://.godot/imported/certificate_frame_T_certificate_frame_moulding_orm.png-264e24c395ebbb370610d6d078b2595f.s3tc.ctex", "res://.godot/imported/certificate_frame_T_certificate_frame_moulding_orm.png-264e24c395ebbb370610d6d078b2595f.etc2.ctex"]
 
 [params]
 

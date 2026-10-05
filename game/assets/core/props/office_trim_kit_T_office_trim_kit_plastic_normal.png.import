@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c18voxx7s3m0l"
 path.s3tc="res://.godot/imported/office_trim_kit_T_office_trim_kit_plastic_normal.png-81c68e6fef850ce7835e2377d748a5b4.s3tc.ctex"
+path.etc2="res://.godot/imported/office_trim_kit_T_office_trim_kit_plastic_normal.png-81c68e6fef850ce7835e2377d748a5b4.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/office_trim_kit_T_office_trim_kit_plastic_normal.png"
-dest_files=["res://.godot/imported/office_trim_kit_T_office_trim_kit_plastic_normal.png-81c68e6fef850ce7835e2377d748a5b4.s3tc.ctex"]
+dest_files=["res://.godot/imported/office_trim_kit_T_office_trim_kit_plastic_normal.png-81c68e6fef850ce7835e2377d748a5b4.s3tc.ctex", "res://.godot/imported/office_trim_kit_T_office_trim_kit_plastic_normal.png-81c68e6fef850ce7835e2377d748a5b4.etc2.ctex"]
 
 [params]
 

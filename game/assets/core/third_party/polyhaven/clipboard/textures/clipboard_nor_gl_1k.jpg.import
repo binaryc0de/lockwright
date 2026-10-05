@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://by40weuc5e1vc"
 path.s3tc="res://.godot/imported/clipboard_nor_gl_1k.jpg-49ae3ba6dfeb28ca68ccb94f788586ad.s3tc.ctex"
+path.etc2="res://.godot/imported/clipboard_nor_gl_1k.jpg-49ae3ba6dfeb28ca68ccb94f788586ad.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/polyhaven/clipboard/textures/clipboard_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/clipboard_nor_gl_1k.jpg-49ae3ba6dfeb28ca68ccb94f788586ad.s3tc.ctex"]
+dest_files=["res://.godot/imported/clipboard_nor_gl_1k.jpg-49ae3ba6dfeb28ca68ccb94f788586ad.s3tc.ctex", "res://.godot/imported/clipboard_nor_gl_1k.jpg-49ae3ba6dfeb28ca68ccb94f788586ad.etc2.ctex"]
 
 [params]
 

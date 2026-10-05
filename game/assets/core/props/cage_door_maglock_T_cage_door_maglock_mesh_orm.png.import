@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://oq0wg21jku0k"
 path.s3tc="res://.godot/imported/cage_door_maglock_T_cage_door_maglock_mesh_orm.png-ede2d31e22ac49ca6556aaa7f6b31ed3.s3tc.ctex"
+path.etc2="res://.godot/imported/cage_door_maglock_T_cage_door_maglock_mesh_orm.png-ede2d31e22ac49ca6556aaa7f6b31ed3.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/cage_door_maglock_T_cage_door_maglock_mesh_orm.png"
-dest_files=["res://.godot/imported/cage_door_maglock_T_cage_door_maglock_mesh_orm.png-ede2d31e22ac49ca6556aaa7f6b31ed3.s3tc.ctex"]
+dest_files=["res://.godot/imported/cage_door_maglock_T_cage_door_maglock_mesh_orm.png-ede2d31e22ac49ca6556aaa7f6b31ed3.s3tc.ctex", "res://.godot/imported/cage_door_maglock_T_cage_door_maglock_mesh_orm.png-ede2d31e22ac49ca6556aaa7f6b31ed3.etc2.ctex"]
 
 [params]
 

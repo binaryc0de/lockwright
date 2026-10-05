@@ -28,6 +28,7 @@ func fetch(platform_url: String, room_id: String) -> String:
 	if pack.is_empty():
 		error = "the platform has no pack for room %s" % room_id
 		return ""
+	pack = RoomPackFetcher.variant_for(pack, Device.wants_mobile_textures())
 	var file := str(pack.get("file", "")).get_file()
 	var want := str(pack.get("sha256", "")).to_lower()
 	var path := DIR.path_join(file)
@@ -63,6 +64,14 @@ func fetch(platform_url: String, room_id: String) -> String:
 ## (ADR-0035): desktop builds count the compressed bytes they receive, so the
 ## response's Content-Length is the total; a browser hands Godot bytes it has
 ## already decompressed, so there the pack's own size is.
+## The pack to download: GPUs with phone texture formats only take the
+## mobile export (ETC2/ASTC textures, ADR-0038) when the platform has one.
+static func variant_for(pack: Dictionary, mobile_textures: bool) -> Dictionary:
+	if mobile_textures and pack.get("mobile") is Dictionary:
+		return pack["mobile"]
+	return pack
+
+
 static func progress_total(pack_size: int, content_length: int, is_web: bool) -> int:
 	if not is_web and content_length > 0:
 		return content_length

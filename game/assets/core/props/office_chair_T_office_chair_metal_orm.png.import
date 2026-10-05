@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://iraio1lm2hs5"
 path.s3tc="res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.s3tc.ctex"
+path.etc2="res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/office_chair_T_office_chair_metal_orm.png"
-dest_files=["res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.s3tc.ctex"]
+dest_files=["res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.s3tc.ctex", "res://.godot/imported/office_chair_T_office_chair_metal_orm.png-faeaab6d2d7af386d92a71c10668458b.etc2.ctex"]
 
 [params]
 

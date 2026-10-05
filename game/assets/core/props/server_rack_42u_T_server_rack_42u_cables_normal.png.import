@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c2p3pe1cldyff"
 path.s3tc="res://.godot/imported/server_rack_42u_T_server_rack_42u_cables_normal.png-577c6f2274a5eb49e670d069dfd6ac23.s3tc.ctex"
+path.etc2="res://.godot/imported/server_rack_42u_T_server_rack_42u_cables_normal.png-577c6f2274a5eb49e670d069dfd6ac23.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/server_rack_42u_T_server_rack_42u_cables_normal.png"
-dest_files=["res://.godot/imported/server_rack_42u_T_server_rack_42u_cables_normal.png-577c6f2274a5eb49e670d069dfd6ac23.s3tc.ctex"]
+dest_files=["res://.godot/imported/server_rack_42u_T_server_rack_42u_cables_normal.png-577c6f2274a5eb49e670d069dfd6ac23.s3tc.ctex", "res://.godot/imported/server_rack_42u_T_server_rack_42u_cables_normal.png-577c6f2274a5eb49e670d069dfd6ac23.etc2.ctex"]
 
 [params]
 

@@ -458,6 +458,56 @@ func TestCatalogListsAndServesRoomPacks(t *testing.T) {
 	}
 }
 
+// Phones and tablets get the room's mobile pack (ETC2/ASTC textures, ADR-0038).
+func TestCatalogListsTheMobilePack(t *testing.T) {
+	e := setup(t)
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "night_shift-0.1.0.pck"), []byte("GDPC-desk"), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "night_shift-0.1.0-mobile.pck"), []byte("GDPC-phone"), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "night_shift-0.1.0.json"), []byte(`{"pack_file":"night_shift-0.1.0.pck","sha256":"abc","size":9,
+		"mobile":{"pack_file":"night_shift-0.1.0-mobile.pck","sha256":"def","size":10}}`), 0o644)
+	cat, _ := rooms.Load("../../../game/rooms")
+	ts := httptest.NewServer(NewHandler(&Deps{Store: e.st, Rooms: cat, PacksDir: dir}))
+	defer ts.Close()
+	resp, _ := http.Get(ts.URL + "/api/catalog")
+	var all []struct {
+		RoomID string `json:"room_id"`
+		Pack   *struct {
+			URL    string `json:"url"`
+			Mobile *struct {
+				URL    string `json:"url"`
+				SHA256 string `json:"sha256"`
+				Size   int64  `json:"size"`
+			} `json:"mobile"`
+		} `json:"pack"`
+	}
+	_ = json.NewDecoder(resp.Body).Decode(&all)
+	resp.Body.Close()
+	var url string
+	for _, r := range all {
+		if r.RoomID == "night_shift" && r.Pack != nil && r.Pack.Mobile != nil {
+			url = r.Pack.Mobile.URL
+			if r.Pack.Mobile.SHA256 != "def" || r.Pack.Mobile.Size != 10 {
+				t.Fatalf("mobile pack entry %+v", r.Pack.Mobile)
+			}
+		}
+	}
+	if url != "/download/packs/night_shift-0.1.0-mobile.pck" {
+		t.Fatalf("mobile pack url %q", url)
+	}
+	resp, _ = http.Get(ts.URL + url)
+	b, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if string(b) != "GDPC-phone" {
+		t.Fatalf("mobile pack body %q", b)
+	}
+	// A mobile pack whose size disagrees with its entry is left out.
+	_ = os.WriteFile(filepath.Join(dir, "night_shift-0.1.0-mobile.pck"), []byte("GDPC-phone-stale"), 0o644)
+	if resp, _ := http.Get(ts.URL + url); resp.StatusCode == 200 {
+		t.Fatal("stale mobile pack served")
+	}
+}
+
 func TestWebSocketProxyReachesTheGameServer(t *testing.T) {
 	// A stand-in game server: answers the upgrade, then echoes bytes.
 	ln, err := net.Listen("tcp", "127.0.0.1:0")

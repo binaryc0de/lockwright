@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b254cp3xmyb0a"
 path.s3tc="res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_base_color.png-92f41c707270d0d95653be3ce04dbc8f.s3tc.ctex"
+path.etc2="res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_base_color.png-92f41c707270d0d95653be3ce04dbc8f.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/server_rack_42u_T_server_rack_42u_cabinet_base_color.png"
-dest_files=["res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_base_color.png-92f41c707270d0d95653be3ce04dbc8f.s3tc.ctex"]
+dest_files=["res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_base_color.png-92f41c707270d0d95653be3ce04dbc8f.s3tc.ctex", "res://.godot/imported/server_rack_42u_T_server_rack_42u_cabinet_base_color.png-92f41c707270d0d95653be3ce04dbc8f.etc2.ctex"]
 
 [params]
 

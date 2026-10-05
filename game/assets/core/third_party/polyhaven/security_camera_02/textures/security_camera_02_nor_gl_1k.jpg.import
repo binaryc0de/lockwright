@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://4shn8i0mqbe7"
 path.s3tc="res://.godot/imported/security_camera_02_nor_gl_1k.jpg-4b2c0f29fac69b48b35d038917a999be.s3tc.ctex"
+path.etc2="res://.godot/imported/security_camera_02_nor_gl_1k.jpg-4b2c0f29fac69b48b35d038917a999be.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/polyhaven/security_camera_02/textures/security_camera_02_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/security_camera_02_nor_gl_1k.jpg-4b2c0f29fac69b48b35d038917a999be.s3tc.ctex"]
+dest_files=["res://.godot/imported/security_camera_02_nor_gl_1k.jpg-4b2c0f29fac69b48b35d038917a999be.s3tc.ctex", "res://.godot/imported/security_camera_02_nor_gl_1k.jpg-4b2c0f29fac69b48b35d038917a999be.etc2.ctex"]
 
 [params]
 

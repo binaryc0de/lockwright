@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cma87qi3epmtr"
 path.s3tc="res://.godot/imported/exit_sign_lightbox_T_exit_sign_lightbox_housing_orm.png-87a7c8a79c0ab60867572812164b2637.s3tc.ctex"
+path.etc2="res://.godot/imported/exit_sign_lightbox_T_exit_sign_lightbox_housing_orm.png-87a7c8a79c0ab60867572812164b2637.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/exit_sign_lightbox_T_exit_sign_lightbox_housing_orm.png"
-dest_files=["res://.godot/imported/exit_sign_lightbox_T_exit_sign_lightbox_housing_orm.png-87a7c8a79c0ab60867572812164b2637.s3tc.ctex"]
+dest_files=["res://.godot/imported/exit_sign_lightbox_T_exit_sign_lightbox_housing_orm.png-87a7c8a79c0ab60867572812164b2637.s3tc.ctex", "res://.godot/imported/exit_sign_lightbox_T_exit_sign_lightbox_housing_orm.png-87a7c8a79c0ab60867572812164b2637.etc2.ctex"]
 
 [params]
 

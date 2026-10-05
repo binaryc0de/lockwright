@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bdtxylsghgrhh"
 path.s3tc="res://.godot/imported/whiteboard_wall_T_whiteboard_wall_accessories_normal.png-16b8903925e1208e8e29eb6696fff497.s3tc.ctex"
+path.etc2="res://.godot/imported/whiteboard_wall_T_whiteboard_wall_accessories_normal.png-16b8903925e1208e8e29eb6696fff497.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/whiteboard_wall_T_whiteboard_wall_accessories_normal.png"
-dest_files=["res://.godot/imported/whiteboard_wall_T_whiteboard_wall_accessories_normal.png-16b8903925e1208e8e29eb6696fff497.s3tc.ctex"]
+dest_files=["res://.godot/imported/whiteboard_wall_T_whiteboard_wall_accessories_normal.png-16b8903925e1208e8e29eb6696fff497.s3tc.ctex", "res://.godot/imported/whiteboard_wall_T_whiteboard_wall_accessories_normal.png-16b8903925e1208e8e29eb6696fff497.etc2.ctex"]
 
 [params]
 

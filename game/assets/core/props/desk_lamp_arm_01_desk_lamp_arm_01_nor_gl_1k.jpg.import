@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c5axrsamqm88w"
 path.s3tc="res://.godot/imported/desk_lamp_arm_01_desk_lamp_arm_01_nor_gl_1k.jpg-a9689d16c9de47d8f7219b9e0b59f8fc.s3tc.ctex"
+path.etc2="res://.godot/imported/desk_lamp_arm_01_desk_lamp_arm_01_nor_gl_1k.jpg-a9689d16c9de47d8f7219b9e0b59f8fc.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/desk_lamp_arm_01_desk_lamp_arm_01_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/desk_lamp_arm_01_desk_lamp_arm_01_nor_gl_1k.jpg-a9689d16c9de47d8f7219b9e0b59f8fc.s3tc.ctex"]
+dest_files=["res://.godot/imported/desk_lamp_arm_01_desk_lamp_arm_01_nor_gl_1k.jpg-a9689d16c9de47d8f7219b9e0b59f8fc.s3tc.ctex", "res://.godot/imported/desk_lamp_arm_01_desk_lamp_arm_01_nor_gl_1k.jpg-a9689d16c9de47d8f7219b9e0b59f8fc.etc2.ctex"]
 
 [params]
 

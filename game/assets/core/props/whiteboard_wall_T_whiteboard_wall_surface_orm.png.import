@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bqbwnookdnd1"
 path.s3tc="res://.godot/imported/whiteboard_wall_T_whiteboard_wall_surface_orm.png-335eb59d13f9c9ac8373fcc5c5179ebe.s3tc.ctex"
+path.etc2="res://.godot/imported/whiteboard_wall_T_whiteboard_wall_surface_orm.png-335eb59d13f9c9ac8373fcc5c5179ebe.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/whiteboard_wall_T_whiteboard_wall_surface_orm.png"
-dest_files=["res://.godot/imported/whiteboard_wall_T_whiteboard_wall_surface_orm.png-335eb59d13f9c9ac8373fcc5c5179ebe.s3tc.ctex"]
+dest_files=["res://.godot/imported/whiteboard_wall_T_whiteboard_wall_surface_orm.png-335eb59d13f9c9ac8373fcc5c5179ebe.s3tc.ctex", "res://.godot/imported/whiteboard_wall_T_whiteboard_wall_surface_orm.png-335eb59d13f9c9ac8373fcc5c5179ebe.etc2.ctex"]
 
 [params]
 

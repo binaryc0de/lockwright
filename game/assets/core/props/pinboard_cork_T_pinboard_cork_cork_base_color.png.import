@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4fpvukb8sx0h"
 path.s3tc="res://.godot/imported/pinboard_cork_T_pinboard_cork_cork_base_color.png-0e71e2bb6e8512045ff83e8ccaab2c68.s3tc.ctex"
+path.etc2="res://.godot/imported/pinboard_cork_T_pinboard_cork_cork_base_color.png-0e71e2bb6e8512045ff83e8ccaab2c68.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/pinboard_cork_T_pinboard_cork_cork_base_color.png"
-dest_files=["res://.godot/imported/pinboard_cork_T_pinboard_cork_cork_base_color.png-0e71e2bb6e8512045ff83e8ccaab2c68.s3tc.ctex"]
+dest_files=["res://.godot/imported/pinboard_cork_T_pinboard_cork_cork_base_color.png-0e71e2bb6e8512045ff83e8ccaab2c68.s3tc.ctex", "res://.godot/imported/pinboard_cork_T_pinboard_cork_cork_base_color.png-0e71e2bb6e8512045ff83e8ccaab2c68.etc2.ctex"]
 
 [params]
 

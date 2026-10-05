@@ -712,6 +712,8 @@ type packInfo struct {
 	SHA256 string `json:"sha256"`
 	Size   int64  `json:"size"`
 	URL    string `json:"url"`
+	// Mobile is the same room with phone/tablet textures (ADR-0038), when built.
+	Mobile *packInfo `json:"mobile,omitempty"`
 }
 
 var packFileRe = regexp.MustCompile(`^[a-z0-9_]+-[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?\.pck$`)
@@ -725,25 +727,39 @@ func (a *app) pack(r rooms.Room) *packInfo {
 	if err != nil {
 		return nil
 	}
-	var e struct {
+	type variant struct {
 		File   string `json:"pack_file"`
 		SHA256 string `json:"sha256"`
 		Size   int64  `json:"size"`
 	}
-	if json.Unmarshal(b, &e) != nil || !packFileRe.MatchString(e.File) {
+	var e struct {
+		variant
+		Mobile *variant `json:"mobile"`
+	}
+	if json.Unmarshal(b, &e) != nil {
 		return nil
 	}
-	if st, err := os.Stat(filepath.Join(a.d.PacksDir, e.File)); err != nil || st.Size() != e.Size {
-		return nil // entry and pack disagree: rebuild with tools/packroom
+	info := func(v variant) *packInfo {
+		if !packFileRe.MatchString(v.File) {
+			return nil
+		}
+		if st, err := os.Stat(filepath.Join(a.d.PacksDir, v.File)); err != nil || st.Size() != v.Size {
+			return nil // entry and pack disagree: rebuild with tools/packroom
+		}
+		return &packInfo{File: v.File, SHA256: v.SHA256, Size: v.Size, URL: "/download/packs/" + v.File}
 	}
-	return &packInfo{File: e.File, SHA256: e.SHA256, Size: e.Size, URL: "/download/packs/" + e.File}
+	p := info(e.variant)
+	if p != nil && e.Mobile != nil {
+		p.Mobile = info(*e.Mobile)
+	}
+	return p
 }
 
 // offersPack reports whether file is the current pack of a catalog room, so
 // packs of draft rooms (ADR-0030) and stale versions are not served.
 func (a *app) offersPack(file string) bool {
 	for _, room := range a.d.Rooms.All() {
-		if p := a.pack(room); p != nil && p.File == file {
+		if p := a.pack(room); p != nil && (p.File == file || p.Mobile != nil && p.Mobile.File == file) {
 			return true
 		}
 	}

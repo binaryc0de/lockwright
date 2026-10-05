@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://s5sjfe7a7uok"
 path.s3tc="res://.godot/imported/exit_door_maglock_T_exit_door_maglock_sticker_base_color.png-fe37ac5a6cef9cfd7152aceba5731e85.s3tc.ctex"
+path.etc2="res://.godot/imported/exit_door_maglock_T_exit_door_maglock_sticker_base_color.png-fe37ac5a6cef9cfd7152aceba5731e85.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/exit_door_maglock_T_exit_door_maglock_sticker_base_color.png"
-dest_files=["res://.godot/imported/exit_door_maglock_T_exit_door_maglock_sticker_base_color.png-fe37ac5a6cef9cfd7152aceba5731e85.s3tc.ctex"]
+dest_files=["res://.godot/imported/exit_door_maglock_T_exit_door_maglock_sticker_base_color.png-fe37ac5a6cef9cfd7152aceba5731e85.s3tc.ctex", "res://.godot/imported/exit_door_maglock_T_exit_door_maglock_sticker_base_color.png-fe37ac5a6cef9cfd7152aceba5731e85.etc2.ctex"]
 
 [params]
 

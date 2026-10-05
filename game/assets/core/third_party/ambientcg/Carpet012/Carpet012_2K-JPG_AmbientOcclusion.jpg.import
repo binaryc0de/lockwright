@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bhxaxf5vme40o"
 path.s3tc="res://.godot/imported/Carpet012_2K-JPG_AmbientOcclusion.jpg-1747d4b089fa2876a7237ddade614936.s3tc.ctex"
+path.etc2="res://.godot/imported/Carpet012_2K-JPG_AmbientOcclusion.jpg-1747d4b089fa2876a7237ddade614936.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/ambientcg/Carpet012/Carpet012_2K-JPG_AmbientOcclusion.jpg"
-dest_files=["res://.godot/imported/Carpet012_2K-JPG_AmbientOcclusion.jpg-1747d4b089fa2876a7237ddade614936.s3tc.ctex"]
+dest_files=["res://.godot/imported/Carpet012_2K-JPG_AmbientOcclusion.jpg-1747d4b089fa2876a7237ddade614936.s3tc.ctex", "res://.godot/imported/Carpet012_2K-JPG_AmbientOcclusion.jpg-1747d4b089fa2876a7237ddade614936.etc2.ctex"]
 
 [params]
 

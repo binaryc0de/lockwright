@@ -17,6 +17,14 @@ static func is_touch() -> bool:
 	return _touch == 1
 
 
+## True when the GPU takes phone texture formats (ETC2) but not the desktop
+## ones (S3TC): phones and tablets. Such clients download the "-mobile" room
+## packs (ADR-0038); anything else keeps the desktop packs, which Godot can
+## still unpack if it must.
+static func wants_mobile_textures() -> bool:
+	return OS.has_feature("etc2") and not OS.has_feature("s3tc")
+
+
 ## For tests: pretend to be (or not be) a touch device.
 static func force_touch(on: bool) -> void:
 	_touch = 1 if on else 0

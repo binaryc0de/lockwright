@@ -13,6 +13,8 @@ const LEVELS := ["low", "medium", "high"]
 ## Ambient energy added when SDFGI is turned off, so rooms keep roughly the
 ## brightness the missing bounce light gave them.
 const NO_GI_AMBIENT := 0.18
+## Touch devices: the 3D view's height in rendered pixels at most.
+const MOBILE_3D_HEIGHT := 720.0
 const SWITCHED := ["sdfgi_enabled", "ssil_enabled", "ssao_enabled", "volumetric_fog_enabled", "ambient_light_energy"]
 
 
@@ -41,6 +43,13 @@ static func apply(root: Node, level: String) -> void:
 	if vp:
 		vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR if level == "low" else Viewport.SCALING_3D_MODE_BILINEAR
 		vp.scaling_3d_scale = 0.77 if level == "low" else 1.0
+		if Device.is_touch():
+			# Phones draw at 2-3x pixel density; render the 3D view at no more
+			# than MOBILE_3D_HEIGHT pixels tall and let it scale up (ADR-0038).
+			var h := float(DisplayServer.window_get_size().y)
+			if h > 0.0:
+				vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+				vp.scaling_3d_scale = minf(vp.scaling_3d_scale, clampf(MOBILE_3D_HEIGHT / h, 0.4, 1.0))
 
 
 static func _global(level: String) -> void:

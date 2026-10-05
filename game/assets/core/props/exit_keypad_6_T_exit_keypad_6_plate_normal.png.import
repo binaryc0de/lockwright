@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bry6uu08kyjm8"
 path.s3tc="res://.godot/imported/exit_keypad_6_T_exit_keypad_6_plate_normal.png-c8cebe29ddeea07d18d7e972092f4f23.s3tc.ctex"
+path.etc2="res://.godot/imported/exit_keypad_6_T_exit_keypad_6_plate_normal.png-c8cebe29ddeea07d18d7e972092f4f23.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/exit_keypad_6_T_exit_keypad_6_plate_normal.png"
-dest_files=["res://.godot/imported/exit_keypad_6_T_exit_keypad_6_plate_normal.png-c8cebe29ddeea07d18d7e972092f4f23.s3tc.ctex"]
+dest_files=["res://.godot/imported/exit_keypad_6_T_exit_keypad_6_plate_normal.png-c8cebe29ddeea07d18d7e972092f4f23.s3tc.ctex", "res://.godot/imported/exit_keypad_6_T_exit_keypad_6_plate_normal.png-c8cebe29ddeea07d18d7e972092f4f23.etc2.ctex"]
 
 [params]
 

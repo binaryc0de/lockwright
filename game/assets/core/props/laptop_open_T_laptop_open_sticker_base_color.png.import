@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b7w0jrylkef4j"
 path.s3tc="res://.godot/imported/laptop_open_T_laptop_open_sticker_base_color.png-13571454adaf950904af89ad6ac79606.s3tc.ctex"
+path.etc2="res://.godot/imported/laptop_open_T_laptop_open_sticker_base_color.png-13571454adaf950904af89ad6ac79606.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/laptop_open_T_laptop_open_sticker_base_color.png"
-dest_files=["res://.godot/imported/laptop_open_T_laptop_open_sticker_base_color.png-13571454adaf950904af89ad6ac79606.s3tc.ctex"]
+dest_files=["res://.godot/imported/laptop_open_T_laptop_open_sticker_base_color.png-13571454adaf950904af89ad6ac79606.s3tc.ctex", "res://.godot/imported/laptop_open_T_laptop_open_sticker_base_color.png-13571454adaf950904af89ad6ac79606.etc2.ctex"]
 
 [params]
 

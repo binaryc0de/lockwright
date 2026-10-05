@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://jm0vgxrf5nti"
 path.s3tc="res://.godot/imported/usb_stick_T_usb_stick_label_normal.png-feb387cc67b01248c5b22239d0b4b9ac.s3tc.ctex"
+path.etc2="res://.godot/imported/usb_stick_T_usb_stick_label_normal.png-feb387cc67b01248c5b22239d0b4b9ac.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/usb_stick_T_usb_stick_label_normal.png"
-dest_files=["res://.godot/imported/usb_stick_T_usb_stick_label_normal.png-feb387cc67b01248c5b22239d0b4b9ac.s3tc.ctex"]
+dest_files=["res://.godot/imported/usb_stick_T_usb_stick_label_normal.png-feb387cc67b01248c5b22239d0b4b9ac.s3tc.ctex", "res://.godot/imported/usb_stick_T_usb_stick_label_normal.png-feb387cc67b01248c5b22239d0b4b9ac.etc2.ctex"]
 
 [params]
 

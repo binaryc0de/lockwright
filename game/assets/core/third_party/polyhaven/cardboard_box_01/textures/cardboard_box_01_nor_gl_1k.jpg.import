@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dnc6s0bcudfjw"
 path.s3tc="res://.godot/imported/cardboard_box_01_nor_gl_1k.jpg-8d7a4a301b82cd3f7a691a9486d44533.s3tc.ctex"
+path.etc2="res://.godot/imported/cardboard_box_01_nor_gl_1k.jpg-8d7a4a301b82cd3f7a691a9486d44533.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/core/third_party/polyhaven/cardboard_box_01/textures/cardboard_box_01_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/cardboard_box_01_nor_gl_1k.jpg-8d7a4a301b82cd3f7a691a9486d44533.s3tc.ctex"]
+dest_files=["res://.godot/imported/cardboard_box_01_nor_gl_1k.jpg-8d7a4a301b82cd3f7a691a9486d44533.s3tc.ctex", "res://.godot/imported/cardboard_box_01_nor_gl_1k.jpg-8d7a4a301b82cd3f7a691a9486d44533.etc2.ctex"]
 
 [params]
 

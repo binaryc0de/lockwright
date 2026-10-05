@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bxuf5uu4ddmi4"
 path.s3tc="res://.godot/imported/intercom_panel_T_intercom_panel_button_orm.png-17e90067b16e8fb87d8b57426a9aa377.s3tc.ctex"
+path.etc2="res://.godot/imported/intercom_panel_T_intercom_panel_button_orm.png-17e90067b16e8fb87d8b57426a9aa377.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/intercom_panel_T_intercom_panel_button_orm.png"
-dest_files=["res://.godot/imported/intercom_panel_T_intercom_panel_button_orm.png-17e90067b16e8fb87d8b57426a9aa377.s3tc.ctex"]
+dest_files=["res://.godot/imported/intercom_panel_T_intercom_panel_button_orm.png-17e90067b16e8fb87d8b57426a9aa377.s3tc.ctex", "res://.godot/imported/intercom_panel_T_intercom_panel_button_orm.png-17e90067b16e8fb87d8b57426a9aa377.etc2.ctex"]
 
 [params]
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ct6lusmibdsk7"
 path.s3tc="res://.godot/imported/server_rack_42u_T_server_rack_42u_metal_normal.png-c55798c52a2258317611afb663db7f48.s3tc.ctex"
+path.etc2="res://.godot/imported/server_rack_42u_T_server_rack_42u_metal_normal.png-c55798c52a2258317611afb663db7f48.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/core/props/server_rack_42u_T_server_rack_42u_metal_normal.png"
-dest_files=["res://.godot/imported/server_rack_42u_T_server_rack_42u_metal_normal.png-c55798c52a2258317611afb663db7f48.s3tc.ctex"]
+dest_files=["res://.godot/imported/server_rack_42u_T_server_rack_42u_metal_normal.png-c55798c52a2258317611afb663db7f48.s3tc.ctex", "res://.godot/imported/server_rack_42u_T_server_rack_42u_metal_normal.png-c55798c52a2258317611afb663db7f48.etc2.ctex"]
 
 [params]
 
