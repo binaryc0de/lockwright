@@ -44,6 +44,7 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(620, 0)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var box := VBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE  # taps go through to the room
 	add_child(box)
 	_counter = Label.new()
 	_counter.modulate.a = 0.7

@@ -3,7 +3,9 @@ extends PanelContainer
 ## Base for focused UI panels (locks, documents, terminal, boards). While one
 ## is open the HUD frees the mouse and the player stops moving. Esc closes.
 ## Panels fit the screen (ADR-0038): content taller than the screen scrolls,
-## and a panel wider than the screen is scaled down.
+## and a panel wider than the screen is scaled down. A scrolling panel also
+## gets a Close button in a bar above the scroll area, which never scrolls
+## out of reach (a long letter on a phone held sideways).
 
 signal closed
 
@@ -11,6 +13,7 @@ const SCREEN_MARGIN := 16.0
 
 var _vbox: VBoxContainer
 var _scroll: ScrollContainer
+var _bar: HBoxContainer
 
 
 func _init() -> void:
@@ -26,9 +29,22 @@ func _init() -> void:
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 18)
 	add_child(margin)
+	var frame := VBoxContainer.new()
+	margin.add_child(frame)
+	_bar = HBoxContainer.new()
+	_bar.alignment = BoxContainer.ALIGNMENT_END
+	_bar.visible = false
+	var top_close := Button.new()
+	top_close.name = "TopClose"
+	top_close.text = "Close"
+	top_close.custom_minimum_size = Vector2(120, 48)
+	top_close.focus_mode = Control.FOCUS_NONE
+	top_close.pressed.connect(close)
+	_bar.add_child(top_close)
+	frame.add_child(_bar)
 	_scroll = ScrollContainer.new()
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	margin.add_child(_scroll)
+	frame.add_child(_scroll)
 	_vbox = VBoxContainer.new()
 	_vbox.add_theme_constant_override("separation", 10)
 	_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -52,6 +68,10 @@ func _fit() -> void:
 	var s := minf(1.0, (screen.x - 2.0 * SCREEN_MARGIN) / maxf(content.x + chrome.x, 1.0))
 	scale = Vector2(s, s)
 	var max_h := (screen.y - 2.0 * SCREEN_MARGIN) / s - chrome.y
+	var scrolls := content.y > max_h
+	if scrolls and not _bar.visible:
+		max_h -= _bar.get_combined_minimum_size().y + 4.0
+	_bar.visible = scrolls
 	_scroll.custom_minimum_size = Vector2(content.x, maxf(minf(content.y, max_h), 60.0))
 	_place.call_deferred()
 

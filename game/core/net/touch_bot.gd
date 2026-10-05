@@ -58,6 +58,9 @@ func _run() -> void:
 				Game.request(n, intent["verb"], intent["payload"])
 				await _wait(0.2)
 			continue
+		if Game.world() and Game.world().won:
+			print("TOUCHBOT: won before step %d; the rest of the solution is not needed" % i)
+			break
 		await _step(i, steps[i])
 		await _settle()
 	await _wait(1.0)
@@ -240,8 +243,8 @@ func _bounds(node: Node3D) -> AABB:
 
 func _over_ui(s: Vector2) -> bool:
 	for c: Control in _hud().find_children("*", "Control", true, false):
-		if c.is_visible_in_tree() and c.mouse_filter == Control.MOUSE_FILTER_STOP \
-				and (c is Button or c is PanelContainer) and c.get_global_rect().has_point(s):
+		if c.is_visible_in_tree() and c.mouse_filter != Control.MOUSE_FILTER_IGNORE \
+				and c.get_global_rect().has_point(s):
 			return true
 	return false
 
@@ -380,14 +383,31 @@ func _press_button(panel: Node, text: String) -> bool:
 ## Closes any open panel with its own Close/Resume button.
 func _close_panels_by_touch() -> void:
 	var panel: Node = _hud()._modal
-	if panel == null:
-		return
+	if panel == null or panel is EndScreen:
+		return  # the end screen is meant to stay
+	var screen := Rect2(Vector2.ZERO, _player().get_viewport().get_visible_rect().size)
 	for b: Button in panel.find_children("*", "Button", true, false):
-		if b.text.begins_with("Close") or b.text.begins_with("Start") or b.text.begins_with("Resume"):
+		if (b.text.begins_with("Close") or b.text.begins_with("Start") or b.text.begins_with("Resume")) \
+				and b.is_visible_in_tree() and screen.has_point(_centre(b)) and _visible_in_scroll(b):
 			await _touch_control(b)
 			await _frames(3)
-			return
+			if _hud()._modal == null:
+				return
+	problems.append("a %s panel had no Close button a finger could reach" % panel.get_class())
+	print("TOUCHBOT: TOUCH-FAIL %s" % problems[-1])
 	(panel as ModalPanel).close()
+
+
+## False when `c` is scrolled out of its ScrollContainer's view.
+func _visible_in_scroll(c: Control) -> bool:
+	var n := c.get_parent()
+	while n != null and not n is ScrollContainer:
+		n = n.get_parent()
+	if n == null:
+		return true
+	var sc := n as ScrollContainer
+	var view := Rect2(sc.get_global_transform_with_canvas().origin, sc.size * sc.get_global_transform_with_canvas().get_scale())
+	return view.has_point(_centre(c))
 
 
 # --- Inventory drag ----------------------------------------------------------
@@ -421,8 +441,9 @@ func _touch_control(c: Control) -> void:
 
 ## A finger tap at a viewport position.
 func _tap(at: Vector2) -> void:
+	# A quick finger: down and up before the next frame, whatever the frame
+	# rate (a slow device would otherwise stretch the tap past the tap window).
 	_touch(at, true)
-	await _frames(2)
 	_touch(at, false)
 	await _frames(3)
 

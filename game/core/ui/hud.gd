@@ -108,6 +108,9 @@ func _ready() -> void:
 	_inventory.inspect_requested.connect(_inspect_selected)
 
 	_banner = PanelContainer.new()
+	# Informational only: taps go through it to the room (on a short phone
+	# screen a wrapped intercom line covers the middle for 10 s).
+	_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_banner.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_banner.position.y += 20
@@ -117,6 +120,7 @@ func _ready() -> void:
 	_banner_text.custom_minimum_size = Vector2(760, 0)
 	_banner_text.add_theme_font_size_override("font_size", 21)
 	var m := MarginContainer.new()
+	m.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
 		m.add_theme_constant_override("margin_" + side, 14)
 	m.add_child(_banner_text)
@@ -129,6 +133,7 @@ func _build_toolbar(root: Control) -> void:
 	_toolbar.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	_toolbar.position = Vector2(16, 16)
 	_toolbar.add_theme_constant_override("separation", 10)
+	_toolbar.mouse_filter = Control.MOUSE_FILTER_IGNORE  # only its buttons take taps
 	_toolbar.visible = false
 	root.add_child(_toolbar)
 	_tool("Menu", _open_pause)
