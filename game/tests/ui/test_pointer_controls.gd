@@ -247,8 +247,12 @@ func test_pause_menu_checkboxes_are_finger_sized() -> void:
 	pm.setup()
 	await _frames(2)
 	for name: String in ["DragGrabs", "InvertY"]:
-		var c := pm.find_child(name, true, false) as CheckBox
+		var c := pm.find_child(name, true, false) as Button
 		assert_object(c).is_not_null()
+		var was := c.button_pressed
+		c.button_pressed = not was
+		assert_str(c.text).is_equal("Off" if was else "On")
+		c.button_pressed = was
 		assert_float(c.size.y).is_greater_equal(52.0)
 		assert_float(c.size.x).is_greater_equal(160.0)
 	pm.close()

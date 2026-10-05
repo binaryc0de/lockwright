@@ -9,11 +9,24 @@ extends Node
 var _menu: MainMenu
 var _touchbot := false
 var _touchbot_from := 0
-## Godot's web build reads mouse motion from `pointermove`, which browsers
-## also fire for fingers, on top of the touch events Godot turns into mouse
-## motion: every finger drag would count twice (ADR-0038). Stop finger
-## pointermoves before they reach Godot; real mice and pens still pass.
-const WEB_TOUCH_FIX := "window.addEventListener('pointermove', function (e) { if (e.pointerType === 'touch') e.stopImmediatePropagation(); }, true);"
+## Phone browsers double up touches for Godot (ADR-0038):
+## - Godot's web build reads mouse motion from `pointermove`, which browsers
+##   also fire for fingers, on top of the touch events Godot turns into mouse
+##   motion: every finger drag would count twice.
+## - After a tap, a browser may also send its own "compatibility" mouse
+##   click, which would press a button a second time (a toggle flips back).
+## Both are dropped before Godot sees them; real mice and pens still pass.
+const WEB_TOUCH_FIX := """(function () {
+	var lastTouch = 0;
+	window.addEventListener('pointermove', function (e) { if (e.pointerType === 'touch') e.stopImmediatePropagation(); }, true);
+	['touchstart', 'touchend'].forEach(function (t) { window.addEventListener(t, function () { lastTouch = Date.now(); }, true); });
+	['mousedown', 'mouseup', 'click'].forEach(function (t) { window.addEventListener(t, function (e) {
+		if ((e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) || Date.now() - lastTouch < 800) {
+			e.stopImmediatePropagation();
+			e.preventDefault();
+		}
+	}, true); });
+})();"""
 
 
 func _ready() -> void:

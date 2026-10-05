@@ -114,14 +114,18 @@ func _slider(grid: GridContainer, label: String, lo: float, hi: float, step: flo
 	grid.add_child(s)
 
 
-## A checkbox big enough for a finger: the whole cell toggles it, not just
-## the small box.
-static func check_box(n: String) -> CheckBox:
-	var c := CheckBox.new()
-	c.name = n
-	c.custom_minimum_size = Vector2(160, 52)
-	c.focus_mode = Control.FOCUS_NONE
-	return c
+## An On/Off toggle big enough for a finger. Not a CheckBox: the default
+## theme's empty box is all but invisible on the dark panel, so players could
+## not see the option was there or whether it had changed.
+static func check_box(n: String) -> Button:
+	var b := Button.new()
+	b.name = n
+	b.toggle_mode = true
+	b.custom_minimum_size = Vector2(160, 52)
+	b.focus_mode = Control.FOCUS_NONE
+	b.text = "Off"
+	b.toggled.connect(func(on: bool) -> void: b.text = "On" if on else "Off")
+	return b
 
 
 ## What to share: in the browser, the game page's link on this site; on the
