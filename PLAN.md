@@ -464,6 +464,7 @@ The owner's direction: the game is played in the browser; only hacker rooms' CTF
 - Asset size diet so the first load is reasonable (target <= 100 MB, cached), which also helps desktop.
 - Delivery: the platform serves the web client and room packs (`/download`); the browser fetches the room pack and mounts it; game connections over WebSocket (WSS behind HTTPS), platform API over HTTPS with CORS where needed.
 - Browser checks: pointer-lock mouse look, audio unlock, clipboard and "Save" for item files, single-threaded loading, frame rate on a mid-range laptop.
+- Phones and tablets (ADR-0038, added 2026-10-04): point-and-tap controls, an inventory with thumbnails and drag-to-use, finger-sized UI, phone texture packs. Hacker rooms' CTF parts still need a computer.
 - Acceptance: the friends test (owner + friends over Tailscale) plays Night Shift to the win in browsers, including the CTF; then the M4 blind play-tests run in the browser.
 
 ### M6: Deployment and prototype sign-off (3-5 days; was M5)
