@@ -369,5 +369,6 @@ Found by the browser smoke: the web build must leave decompression to the browse
 - `OpticalNetwork`: authored places and edges, conditional on station positions, lane masks from screens, gated places; acceptance on the current path and the exact lit lanes. No ray tracing or free angles: every outcome is enumerable (the tests enumerate the room's 6,912 states).
 - `LoadPlate` + `LoadPan`: fixed item weights, per-pan targets, multipliers (lever arms), a total, required items; items come back off after it opens.
 - `PosePresenter`: presentation-only stable poses, snapped on join and restore.
+- `Narration` (added with the R2 greybox): a story beat told once through the Intercom when a watched node reaches a state.
 - Small generic changes: `EBNode.gate_owner()` (replaces the Socket special case in the authority's prerequisite check), `Item.pick_up_requires`, and `KeyLock` now refuses while unpowered (no shipped room has an unpowered KeyLock).
 **Consequences.** The play bots set a stepped control by tapping it until it shows the position. The idol cradle's force is 11 with one block per arm (unique without an inequality rule), replacing round 3's "exactly 7 and the long-arm block heavier".

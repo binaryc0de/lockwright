@@ -9,7 +9,8 @@ extends Lock
 ## `goal_lanes` lit. All of it is computed on the server from the current
 ## positions; there is no ray tracing and no free angles, so every result is
 ## one of a finite, checkable set.
-## State: Lock's, plus {path: [places], end: place, lit: [lanes]}.
+## State: Lock's, plus {path: [places], end: place, shut: bool (stopped at a
+## gated place), lit: [lanes]}.
 
 ## Where the beam starts.
 @export var source: String = "Source"
@@ -67,7 +68,7 @@ func _ready() -> void:
 
 func _initial_state() -> Dictionary:
 	var s := super()
-	s.merge({"path": [], "end": "", "lit": []})
+	s.merge({"path": [], "end": "", "shut": false, "lit": []})
 	return s
 
 
@@ -120,10 +121,12 @@ func next_place(place: String) -> String:
 	return ""
 
 
-## Follows the beam: {path, end, lit}.
+## Follows the beam: {path, end, shut, lit}.
 func trace() -> Dictionary:
 	var path: Array[String] = [source]
 	var cur := source
+	if not _gate_open(cur):
+		return {"path": path, "end": cur, "shut": true, "lit": lit_lanes()}
 	for _hop in MAX_HOPS:
 		var nxt := next_place(cur)
 		if nxt.is_empty() or nxt in path:
@@ -131,8 +134,8 @@ func trace() -> Dictionary:
 		path.append(nxt)
 		cur = nxt
 		if not _gate_open(cur):
-			break
-	return {"path": path, "end": cur, "lit": lit_lanes()}
+			return {"path": path, "end": cur, "shut": true, "lit": lit_lanes()}
+	return {"path": path, "end": cur, "shut": false, "lit": lit_lanes()}
 
 
 func lit_lanes() -> Array[int]:
@@ -153,7 +156,7 @@ func lit_lanes() -> Array[int]:
 
 
 func _goal_met(t: Dictionary) -> bool:
-	if goal.is_empty() or t["end"] != goal or not _gate_open(goal):
+	if goal.is_empty() or t["end"] != goal or t["shut"]:
 		return false
 	var lit: Array = t["lit"]
 	if lit.is_empty():
@@ -176,8 +179,8 @@ func _server_recompute() -> void:
 		return
 	var t := trace()
 	var cur := my_state()
-	if cur.get("path") != t["path"] or cur.get("end") != t["end"] or cur.get("lit") != t["lit"]:
-		set_state({"path": t["path"], "end": t["end"], "lit": t["lit"]})
+	if cur.get("path") != t["path"] or cur.get("end") != t["end"] or cur.get("lit") != t["lit"] or cur.get("shut") != t["shut"]:
+		set_state({"path": t["path"], "end": t["end"], "shut": t["shut"], "lit": t["lit"]})
 	if not is_unlocked() and is_powered() and authority.prerequisites_met(self) and _goal_met(t):
 		set_state({"state": "unlocked", "last_ok": true})
 		for p in targets:
@@ -213,7 +216,7 @@ func _apply_state(state: Dictionary) -> void:
 		_dark_mat = StandardMaterial3D.new()
 		_dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		_dark_mat.albedo_color = Color(0.06, 0.05, 0.04)
-	var arrived: bool = str(state.get("end", "")) == goal or goal.is_empty()
+	var arrived: bool = (str(state.get("end", "")) == goal or goal.is_empty()) and not state.get("shut", false)
 	for i in lane_cells.size():
 		var m := get_node_or_null(lane_cells[i]) as GeometryInstance3D
 		if m:
