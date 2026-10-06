@@ -85,6 +85,9 @@ func test_document_inspect_pins_evidence_and_board_lists_it() -> void:
 	note.client_interact()
 	assert_object(hud._modal).is_instanceof(InspectPanel)
 	assert_str((hud._modal as InspectPanel)._text.text).contains("[b]bold[/b]")
+	# Bold text is as large as the rest (it fell back to the smaller theme size).
+	var t := (hud._modal as InspectPanel)._text
+	assert_int(t.get_theme_font_size("bold_font_size")).is_equal(t.get_theme_font_size("normal_font_size"))
 	hud._modal.close()
 	assert_int(Game.world().evidence.size()).is_equal(1)
 	var board := EvidenceBoard.new()

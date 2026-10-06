@@ -445,6 +445,10 @@ func open_briefing() -> void:
 	text.fit_content = true
 	text.custom_minimum_size = Vector2(640, 0)
 	text.add_theme_font_size_override("normal_font_size", 20)
+	text.add_theme_font_size_override("bold_font_size", 20)
+	text.add_theme_font_size_override("italics_font_size", 20)
+	text.add_theme_font_size_override("bold_italics_font_size", 20)
+	text.add_theme_font_size_override("mono_font_size", 20)
 	text.text = EBMarkdown.to_bbcode(Game.manifest.briefing("intro_md")) + "\n\n[i]" + HELP + "[/i]"
 	p.body().add_child(text)
 	p.add_close_button("Start")

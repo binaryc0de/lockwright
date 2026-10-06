@@ -19,7 +19,7 @@ enum Mode { CLIENT, SERVER }
 
 const VALUE_FLAGS: PackedStringArray = [
 	"session", "room", "pack", "port", "platform", "token", "transport",
-	"connect", "name", "snapshot", "bot-steps", "touchbot-from", "join", "code", "bot-flag", "difficulty",
+	"connect", "name", "snapshot", "bot-steps", "touchbot-from", "play-from", "join", "code", "bot-flag", "difficulty",
 ]
 
 var mode: Mode = Mode.CLIENT
@@ -56,6 +56,9 @@ var bot_wait_card: bool = false
 var touchbot: bool = false
 ## With touchbot: do the steps before this one by intent, then touch.
 var touchbot_from: int = 0
+## Dev play from part-way (--play-from N, ?play_from=N): the first N solution
+## steps are done by intent, then the player takes over. Offline play only.
+var play_from: int = -1
 ## Tests only: the same play-through with classic keyboard and mouse.
 var deskbot: bool = false
 var deskbot_drag: bool = false
@@ -155,6 +158,10 @@ func _apply(key: String, value: String) -> void:
 			deskbot_drag = true
 		"touchbot-from":
 			touchbot_from = int(value)
+		"play-from":
+			touchbot = true
+			touchbot_from = int(value)
+			play_from = int(value)
 		"trust-positions":
 			trust_positions = true
 		"stats":
@@ -230,6 +237,8 @@ static func web_query_args(origin: String, query: String) -> PackedStringArray:
 		out.append("--touchbot")  # tests only
 		if q.has("touchbot_from"):
 			out.append_array(["--touchbot-from", str(q["touchbot_from"])])
+	elif q.has("play_from") and q.has("room"):
+		out.append_array(["--play-from", str(q["play_from"])])  # dev play part-way
 	if q.get("bot", "") == "1":
 		out.append_array(["--bot", "--bot-wait-win"])
 		if q.has("flag"):

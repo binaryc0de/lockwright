@@ -76,3 +76,13 @@ func test_platform_urls_keep_explicit_ports() -> void:
 func test_browser_game_url_goes_through_the_platform() -> void:
 	assert_str(SessionClient.proxied_ws_url("https://box.tail1234.ts.net", "/ws/abc")).is_equal("wss://box.tail1234.ts.net/ws/abc")
 	assert_str(SessionClient.proxied_ws_url("http://127.0.0.1:8090/", "/ws/abc")).is_equal("ws://127.0.0.1:8090/ws/abc")
+
+
+func test_play_from_hands_the_room_over_part_way() -> void:
+	var web := AppArgs.web_query_args("http://x", "?room=quiet_sun&play_from=61")
+	assert_array(web).contains_exactly(["--room", "quiet_sun", "--play-from", "61"])
+	var a := AppArgs.parse(web)
+	assert_bool(a.touchbot).is_true()
+	assert_int(a.touchbot_from).is_equal(61)
+	assert_int(a.play_from).is_equal(61)
+	assert_int(AppArgs.parse(PackedStringArray(["--room", "r"])).play_from).is_equal(-1)

@@ -142,3 +142,22 @@ original PNGs/previews rebuilt byte-identically; six pre-existing stale request
 hashes in their metadata were refreshed (no other metadata fields changed).
 Do not edit that
 versioned source or the old templates when adding documents.
+
+Quiet Sun printables run with ordinary Python and the already-installed NumPy,
+without starting Blender or taking its build lock:
+
+```bash
+python3 tools/printables/quiet_sun.py --templates
+python3 tools/printables/quiet_sun.py
+python3 tools/printables/quiet_sun.py --check
+```
+
+The 50 SVGs use exact text from `_build_quiet_sun.gd`, with the four season
+sentences and nine horizon captions read from their builder data. Original
+Clockmaker lettering, the CPU SVG rasterizer, PNG encoder, quarter-size previews
+and protected wear layers are reused. All textures have a 2048 px long edge and
+retain the requested face proportions. Outputs live in Quiet Sun's `assets/docs`,
+previews in `assets/previews/printables/quiet_sun`, and caption/hash metadata in
+`assets/meta/qs_printables.json`. The check verifies source captions, stored SVG
+fingerprints, PNG CRCs, dimensions, opacity and output hashes. The delivery report
+is `assets/reports/qs_printables.md`. No external art, font or download is used.

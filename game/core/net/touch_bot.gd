@@ -27,6 +27,9 @@ var desktop := false
 var desktop_drag := false
 ## Steps before this one are done by intent (to start a touch run part-way).
 var first_step := 0
+## Dev play from part-way: after the steps before first_step, stop and leave
+## the room to the player (no touches of its own).
+var hand_over := false
 var problems: Array[String] = []
 
 var _results: Array = []  # [path, verb, ok]
@@ -72,6 +75,17 @@ func _run() -> void:
 	var steps: Array = Game.manifest.solution
 	print("%s: %d steps in %s" % [TAG, steps.size(), Game.manifest.id])
 	for i in steps.size():
+		if hand_over and i == first_step:
+			# Stand where the next step can be done from, facing it.
+			var next := SolutionPlayer.intent_for(steps[i], Game._nodes, Game.vars())
+			var target := Game.node_at(str(next.get("path", steps[i].get("node", steps[i].get("target", ""))))) as Node3D
+			if target:
+				if target is Interactable:
+					await _reach(target as Interactable)
+				await _look_at(_aim_point(target))
+			await _wait(1.0)
+			print("%s: handed over at step %d" % [TAG, i])
+			return
 		if i < first_step:
 			var intent := SolutionPlayer.intent_for(steps[i], Game._nodes, Game.vars())
 			if intent.has("path"):

@@ -13,6 +13,10 @@ func setup(won: bool) -> void:
 	text.fit_content = true
 	text.custom_minimum_size = Vector2(620, 0)
 	text.add_theme_font_size_override("normal_font_size", 19)
+	text.add_theme_font_size_override("bold_font_size", 19)
+	text.add_theme_font_size_override("italics_font_size", 19)
+	text.add_theme_font_size_override("bold_italics_font_size", 19)
+	text.add_theme_font_size_override("mono_font_size", 19)
 	var md := Game.manifest.briefing("win_md" if won else "timeout_md")
 	var bb := EBMarkdown.to_bbcode(md) + "\n\n" if not md.is_empty() else ""
 	var end_t := w.finished_at if won else minf(Game.server_now(), w.started_at + w.duration_s)

@@ -33,3 +33,10 @@ by `create_undercroft_templates.py`, `undercroft.py` and
 `overlays/undercroft_surface.py`. `glyphs.py` transcribes the locally authored
 `tomb_chest.py` and `gate_ring_lock.py` contours so clues match the props. No
 third-party art or font was added. The lowercase q is an original new pen stroke.
+
+Quiet Sun's 50 templates, generic object drawings, invented emblems, base-six
+ring/stroke numerals, and sandstone/field-paper wear are original project artwork.
+`quiet_sun.py` reuses the Clockmaker stroke alphabet and CPU SVG rasterizer;
+`overlays/quiet_sun_surface.py` extends the existing protected wear layer. English
+text is transcribed directly from the room builder's constants and literal data.
+No real-culture glyphs, external fonts, third-party art or downloads were added.

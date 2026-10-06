@@ -22,6 +22,10 @@ func setup() -> void:
 	_detail.bbcode_enabled = true
 	_detail.custom_minimum_size = Vector2(560, 420)
 	_detail.add_theme_font_size_override("normal_font_size", 19)
+	_detail.add_theme_font_size_override("bold_font_size", 19)
+	_detail.add_theme_font_size_override("italics_font_size", 19)
+	_detail.add_theme_font_size_override("bold_italics_font_size", 19)
+	_detail.add_theme_font_size_override("mono_font_size", 19)
 	split.add_child(_detail)
 	body().add_child(split)
 	var row := HBoxContainer.new()

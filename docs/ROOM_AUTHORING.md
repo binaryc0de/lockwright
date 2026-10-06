@@ -178,6 +178,7 @@ Rules: **flags are templates, never literals** (`roomcheck` fails on anything th
 9. Barrier to entry (ADR-0023): the game is played in a web browser. A standard room (no `ctf.challenges`) needs nothing else: no installs, no VPN, no command line. A hacker room (has `ctf.challenges`) may ask players to set up their own tools or connection for its CTF components only; the rest of the room must still play in the browser, and the room's description says what setup its CTF parts need.
 10. Web challenges run behind a path prefix (ADR-0029): players reach them at `https://<site>/ctf/<game>/<challenge>/`, and the platform sends `X-Forwarded-Prefix: /ctf/<game>/<challenge>`. Build every link, form action, redirect and cookie path from that prefix (validate it, as Night Shift's intranet does), or use only relative links.
 11. Phones and tablets (ADR-0038): players there drag to look, tap the floor to walk and tap things to use them, and drag inventory items onto things. Give every interactable a collider big enough for a fingertip, and keep walkable floors as static colliders (the client bakes its walk mesh from them). Don't write controls into printed props ("press E"); the game teaches the controls. Keep colliders off things players must read or tap (a big box around a rack hid its stencil from every device), and run the touch bot before shipping. `packroom` derives the room's `-mobile` export preset itself.
+12. Airlocks (ADR-0020) seal the start area behind the team: nothing the solution needs may stay there except the controls card (The Quiet Sun's first greybox left the striker on its ledge; only a hands-on play found it, because bots pick things up before walking in).
 
 ## 6. Assets
 
@@ -205,6 +206,8 @@ go run ./tools/packroom -verify <room_id>                   # export build/packs
                                                             # then replay your tests against the pack alone
 godot --headless --path game -- --room <room_id> --touchbot  # play the solution by finger touches only (ADR-0038);
                                                             # every TOUCH-FAIL is something a phone player cannot do
+godot --path game -- --room <room_id> --play-from N         # dev play from part-way: steps before N are done for you,
+                                                            # then you take over (browser: ?room=<id>&play_from=N)
 tools/browser_bots.sh <room_id>                             # the room in a browser by keyboard and mouse, by
                                                             # drag and drop, and on a phone (needs tools/export.sh)
 ```

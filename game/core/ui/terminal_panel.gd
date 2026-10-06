@@ -17,6 +17,10 @@ func setup(t: Terminal) -> void:
 	_log.scroll_following = true
 	_log.custom_minimum_size = Vector2(700, 300)
 	_log.add_theme_font_size_override("normal_font_size", 18)
+	_log.add_theme_font_size_override("bold_font_size", 18)
+	_log.add_theme_font_size_override("italics_font_size", 18)
+	_log.add_theme_font_size_override("bold_italics_font_size", 18)
+	_log.add_theme_font_size_override("mono_font_size", 18)
 	body().add_child(_log)
 	if not term.banner.is_empty():
 		_log.append_text(EBMarkdown.to_bbcode(EBTemplate.render(term.banner, Game.vars())) + "\n\n")

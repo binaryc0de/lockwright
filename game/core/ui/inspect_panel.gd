@@ -144,6 +144,10 @@ func _rich() -> RichTextLabel:
 	r.scroll_active = false
 	r.custom_minimum_size = Vector2(640, 0)
 	r.add_theme_font_size_override("normal_font_size", 20)
+	r.add_theme_font_size_override("bold_font_size", 20)
+	r.add_theme_font_size_override("italics_font_size", 20)
+	r.add_theme_font_size_override("bold_italics_font_size", 20)
+	r.add_theme_font_size_override("mono_font_size", 20)
 	return r
 
 
