@@ -46,6 +46,8 @@ var _mouse_inside := false
 var _route := PackedVector3Array()
 var _route_i := 0
 var _pending: Interactable = null
+## Re-plans after getting stuck on the current walk.
+var _unsticks := 0
 var _pending_item := ""
 var _pending_point := Vector3.ZERO
 var _last_pos := Vector3.ZERO
@@ -226,6 +228,7 @@ func walk_to(point: Vector3) -> void:
 
 
 func _start_route(point: Vector3) -> void:
+	_unsticks = 0
 	_goal = point
 	_route_gen = walk.generation if walk else 0
 	_route = walk.route(player.global_position, point) if walk else PackedVector3Array([point])
@@ -271,6 +274,16 @@ func steer(delta: float) -> Vector3:
 	_stuck += delta
 	if _stuck >= STUCK_TIME:
 		if pos.distance_to(_last_pos) < 0.12:
+			# Caught on a corner the route hugged (it is planned for a thinner
+			# agent than the capsule): plan again through the middle of the
+			# walkable areas before giving up.
+			if walk and _unsticks < 2:
+				_unsticks += 1
+				_route = walk.route(pos, _goal, false)
+				_route_i = 0
+				_stuck = 0.0
+				_last_pos = pos
+				return Vector3.ZERO
 			_arrive()
 			return Vector3.ZERO
 		_stuck = 0.0

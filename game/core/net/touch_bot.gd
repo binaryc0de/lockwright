@@ -74,6 +74,11 @@ func _run() -> void:
 	Game.start_clock()
 	var steps: Array = Game.manifest.solution
 	print("%s: %d steps in %s" % [TAG, steps.size(), Game.manifest.id])
+	if first_step > 0 and Game.room is RoomRoot and (Game.room as RoomRoot).airlock() != null:
+		# Steps done by intent start inside: routes from the ledge stop at a
+		# sealed airlock door.
+		_player().place_at((Game.room as RoomRoot).airlock().late_spawn_transform())
+		await _frames(2)
 	for i in steps.size():
 		if hand_over and i == first_step:
 			# Stand where the next step can be done from, facing it.
