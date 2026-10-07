@@ -42,6 +42,9 @@ extends Lock
 @export var points: Array[NodePath] = []
 ## Presentation: one mesh per lane, glowing while that lane is lit.
 @export var lane_cells: Array[NodePath] = []
+## Hide a cell while no light reaches it (the art behind shows the dark
+## aperture) instead of painting it near-black.
+@export var hide_dark_cells: bool = false
 @export var beam_width: float = 0.05
 @export var beam_color: Color = Color(1.0, 0.86, 0.5)
 
@@ -220,7 +223,10 @@ func _apply_state(state: Dictionary) -> void:
 	for i in lane_cells.size():
 		var m := get_node_or_null(lane_cells[i]) as GeometryInstance3D
 		if m:
-			m.material_override = _lit_mat if (arrived and i in lit) else _dark_mat
+			var on: bool = arrived and i in lit
+			m.material_override = _lit_mat if on else _dark_mat
+			if hide_dark_cells:
+				m.visible = on
 
 
 func _point(place: String) -> Node3D:

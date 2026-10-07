@@ -1,6 +1,6 @@
 extends SceneTree
 ## Supplemental import review only. Lives outside the game and ships nowhere.
-## -- --glb res://... --out ABS [--part NAME] [--canyon]
+## -- --glb res://... --out ABS [--part NAME] [--canyon | --room-canyon | --doors]
 
 func _initialize() -> void:
 	call_deferred("render_views")
@@ -12,6 +12,9 @@ func render_views() -> void:
 	var out := ""
 	var part := ""
 	var canyon := args.has("--canyon")
+	var room_canyon := args.has("--room-canyon")
+	canyon = canyon or room_canyon
+	var doors := args.has("--doors")
 	for i in args.size():
 		match args[i]:
 			"--glb": path = args[i + 1]
@@ -34,7 +37,7 @@ func render_views() -> void:
 	key.light_color = Color(1.0, 0.92, 0.8)
 	key.light_energy = 1.2
 	key.shadow_enabled = true
-	key.rotation_degrees = Vector3(-40, 35, 0)
+	key.rotation_degrees = Vector3(-40, 215 if doors else 35, 0)
 	stage.add_child(key)
 	var camera := Camera3D.new()
 	camera.fov = 65 if canyon else 40
@@ -47,6 +50,18 @@ func render_views() -> void:
 		return
 	var asset := scene.instantiate() as Node3D
 	stage.add_child(asset)
+	if room_canyon:
+		# Review the new GLB in the current gallery without regenerating room
+		# meshes or modifying game files. Strip gameplay scripts before _ready.
+		var gallery_room := (load("res://rooms/quiet_sun/room.tscn") as PackedScene).instantiate()
+		for node in [gallery_room] + gallery_room.find_children("*", "", true, false):
+			node.set_script(null)
+		stage.add_child(gallery_room)
+		var old_gorge := gallery_room.get_node("Gallery/Gorge")
+		old_gorge.get_parent().remove_child(old_gorge)
+		old_gorge.free()
+		env.queue_free()
+		key.queue_free()
 	for mi in asset.find_children("*", "MeshInstance3D", true, false):
 		for si in mi.mesh.get_surface_count():
 			var mat = mi.mesh.surface_get_material(si)
@@ -55,12 +70,52 @@ func render_views() -> void:
 	if not part.is_empty():
 		for child in asset.get_children():
 			if child is Node3D: child.visible = str(child.name) == part
+	if doors:
+		for child in asset.get_children():
+			if child is Node3D: child.visible = str(child.name) == "stone_leaf"
+		var leaf := asset.get_node("stone_leaf") as Node3D
+		leaf.position = Vector3(-1,2.1,0)
+		var right := leaf.duplicate() as Node3D
+		right.name = "stone_leaf_right"
+		asset.add_child(right)
+		right.position = Vector3(1,2.1,0)
+		# Mirror geometry with corrected winding/tangent handedness for this
+		# review. Negative node scale makes Godot flip one side's lighting.
+		for mi in [right] + right.find_children("*", "MeshInstance3D", true, false):
+			if not mi is MeshInstance3D: continue
+			var mirrored := ArrayMesh.new()
+			for si in mi.mesh.get_surface_count():
+				var arrays: Array = mi.mesh.surface_get_arrays(si).duplicate(true)
+				var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+				var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+				var tangents: PackedFloat32Array = arrays[Mesh.ARRAY_TANGENT]
+				var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+				for j in vertices.size():
+					vertices[j].x *= -1
+					normals[j].x *= -1
+				for j in range(0, tangents.size(), 4):
+					tangents[j] *= -1
+					tangents[j+3] *= -1
+				for j in range(0, indices.size(), 3):
+					var swap := indices[j+1]
+					indices[j+1] = indices[j+2]
+					indices[j+2] = swap
+				arrays[Mesh.ARRAY_VERTEX] = vertices
+				arrays[Mesh.ARRAY_NORMAL] = normals
+				arrays[Mesh.ARRAY_TANGENT] = tangents
+				arrays[Mesh.ARRAY_INDEX] = indices
+				mirrored.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+				mirrored.surface_set_material(si, mi.mesh.surface_get_material(si))
+			mi.mesh = mirrored
 	var views: Array = []
-	if canyon:
+	if doors:
+		views = [["stone_leaf__pair",Vector3(0,2.3,-7.2),Vector3(0,2.1,0)],
+			["stone_leaf__oblique",Vector3(-3,2.5,-6.8),Vector3(0,2.1,0)]]
+	elif canyon:
 		views = [
-			["gallery_left", Vector3(-7,6.1,-19), Vector3(0,-7,-48)],
-			["gallery_centre", Vector3(0,6.1,-19), Vector3(0,-7,-48)],
-			["gallery_right", Vector3(7,6.1,-19), Vector3(0,-7,-48)],
+			["gallery_left", Vector3(-7,6.1,-19), Vector3(0,5,-52)],
+			["gallery_centre", Vector3(0,6.1,-19), Vector3(0,5,-52)],
+			["gallery_right", Vector3(7,6.1,-19), Vector3(0,5,-52)],
 			["span", Vector3(7,6.1,-30), Vector3(8,5,-43.7)],
 			["valley", Vector3(0,6.1,-19), Vector3(0,-20,-54)]
 		]
@@ -76,6 +131,12 @@ func render_views() -> void:
 		var dist := maxf(bounds.size.length()*0.5,0.05)/tan(deg_to_rad(camera.fov*0.5))*1.15
 		views = [[part+"__right",centre+Vector3(1,0.10,-0.10).normalized()*dist,centre],
 			[part+"__reverse",centre+Vector3(0,0.15,1).normalized()*dist,centre]]
+	if room_canyon:
+		for view in views:
+			if str(view[0]).begins_with("gallery_"):
+				view[1].y = 4.6
+				view[1].z = -17.5
+				view[1].x *= 5.5 / 7.0
 	for view in views:
 		camera.global_position = view[1]
 		camera.look_at(view[2], Vector3.UP)
