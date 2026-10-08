@@ -13,11 +13,23 @@ extends Node
 ## clicks on panels and Esc to close them. Classic play needs a captured
 ## mouse, so it runs in a browser: when the game wants a click to capture the
 ## pointer it prints "DESKBOT: CLICK" and the test harness clicks the page.
+## With `tour` (--bot-tour, &tour=1) it plays at a watching pace, to record a
+## play-through: smooth turns, the briefing and every clue held open long
+## enough to read, a pause after each step, and "step N begin" lines to time
+## captions by (tools/playthrough.sh).
 
 const STEP_PAUSE_S := 0.4
 const WALK_TIMEOUT_S := 25.0
 ## Finger travel per drag gesture, as a share of the screen width.
 const MAX_DRAG := 0.5
+## Tour pace: the most the view turns per physics frame (about 140 degrees a
+## second), and how long the briefing, a clue, a look and a step's result
+## stay on screen.
+const TOUR_TURN := 0.04
+const TOUR_INTRO_S := 8.0
+const TOUR_READ_S := 7.0
+const TOUR_LOOK_S := 3.0
+const TOUR_STEP_S := 1.5
 
 var session: PlaySession
 ## Classic keyboard and mouse controls instead of touch.
@@ -25,6 +37,8 @@ var desktop := false
 ## Desktop: use items by freeing the cursor (I) and dragging them out of the
 ## inventory, instead of number keys and E.
 var desktop_drag := false
+## Play at a watching pace (see the class notes).
+var tour := false
 ## Steps before this one are done by intent (to start a touch run part-way).
 var first_step := 0
 ## Dev play from part-way: after the steps before first_step, stop and leave
@@ -70,6 +84,8 @@ func _run() -> void:
 		add_child(_planner)
 		_planner.setup(Game.room)
 	await _frames(10)
+	if tour:
+		await _wait(TOUR_INTRO_S)
 	await _close_panels()
 	Game.start_clock()
 	var steps: Array = Game.manifest.solution
@@ -103,11 +119,17 @@ func _run() -> void:
 		if Game.world() and Game.world().won:
 			print("%s: won before step %d; the rest of the solution is not needed" % [TAG, i])
 			break
+		if tour:
+			print("%s: step %d begin" % [TAG, i])
 		await _step(i, steps[i])
 		await _settle()
+		if tour:
+			await _wait(TOUR_STEP_S)
 	await _wait(1.0)
 	var won := Game.world() != null and Game.world().won
 	print("%s: won=%s" % [TAG, won])
+	if tour:
+		await _wait(8.0)  # the end screen
 	if not won:
 		problems.append("the room was not won")
 	print("%s: done, %d problems" % [TAG, problems.size()])
@@ -131,6 +153,8 @@ func _step(i: int, step: Dictionary) -> void:
 		# Observation only (looking at a mark on a wall): turn to it if it exists.
 		if node:
 			await _look_at(_aim_point(node))
+			if tour:
+				await _wait(TOUR_LOOK_S)
 		print("%s: step %d %s %s (looked)" % [TAG, i, act, target_path])
 		return
 	_results.clear()
@@ -143,7 +167,7 @@ func _step(i: int, step: Dictionary) -> void:
 		"pick_up", "interact", "examine", "use":
 			why = await _tap_thing(node, str(intent["verb"]))
 			if why.is_empty() and _hud().is_modal_open():
-				await _wait(0.3)
+				await _wait(TOUR_READ_S if tour else 0.3)
 				await _close_panels()
 		"input_code":
 			why = await _enter_code(node, str(intent["payload"]["value"]))
@@ -216,6 +240,8 @@ func _tap_thing(node: Interactable, verb: String) -> String:
 				return why
 			await get_tree().physics_frame
 			if _player().target == node:
+				if tour:
+					await _wait(0.5)  # reads the prompt
 				await _key(KEY_E)
 				await _wait(0.3)
 				return ""
@@ -533,6 +559,8 @@ func _press_control(c: Control) -> void:
 		await _click(_centre(c))
 	else:
 		await _tap(_centre(c))
+	if tour:
+		await _wait(0.35)
 
 
 ## A finger tap at a viewport position.
@@ -617,6 +645,8 @@ func _mouse_look_at(point: Vector3) -> void:
 		# Classic look: yaw -= x * sens, pitch -= y * sens (not inverted).
 		var rel := Vector2(-yaw / sens, -pitch / sens * (-1.0 if Settings.invert_y else 1.0))
 		var steps := maxi(1, int(ceil(rel.length() / 120.0)))
+		if tour:
+			steps = maxi(steps, int(ceil(Vector2(yaw, pitch).length() / TOUR_TURN)))
 		for k in steps:
 			var ev := InputEventMouseMotion.new()
 			ev.relative = rel / steps
@@ -677,6 +707,16 @@ func _walk_keys_to(spot: Vector3) -> void:
 	var route := _walk().route(_player().global_position, spot)
 	_hold(KEY_W, true)
 	for wp in route:
+		if tour:
+			# Turn on the spot to face the next leg, then walk it: steering
+			# at tour pace with W held would circle the waypoint.
+			var to := Vector3(wp.x, _player().eye().y, wp.z)
+			var flat_to := Vector2(wp.x - _player().global_position.x, wp.z - _player().global_position.z)
+			var off := wrapf(atan2(-flat_to.x, -flat_to.y) - _player().rotation.y, -PI, PI)
+			if flat_to.length() > 0.25 and absf(off) > 0.3:
+				_hold(KEY_W, false)
+				await _mouse_look_at(to)
+				_hold(KEY_W, true)
 		var t := 0.0
 		var last := _player().global_position
 		var stuck := 0.0
@@ -709,6 +749,8 @@ func _use_item_keys(item_path: String, target: Interactable) -> String:
 		return "item %d has no number key (only 1-9)" % (i + 1)
 	if Game.selected_item != item_path:
 		await _key(KEY_1 + i)
+		if tour:
+			await _wait(0.6)
 	if Game.selected_item != item_path:
 		return "key %d did not select it" % (i + 1)
 	var why := await _aim(target)

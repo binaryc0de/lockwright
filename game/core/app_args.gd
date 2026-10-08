@@ -62,6 +62,8 @@ var play_from: int = -1
 ## Tests only: the same play-through with classic keyboard and mouse.
 var deskbot: bool = false
 var deskbot_drag: bool = false
+## Tests only: the play bot at a watching pace, to record a play-through.
+var bot_tour: bool = false
 ## Print frames per second every few seconds (performance checks).
 var stats: bool = false
 ## Server, tests only: accept teleporting positions (bots).
@@ -156,6 +158,8 @@ func _apply(key: String, value: String) -> void:
 			touchbot = true
 			deskbot = true
 			deskbot_drag = true
+		"bot-tour":
+			bot_tour = true
 		"touchbot-from":
 			touchbot_from = int(value)
 		"play-from":
@@ -233,6 +237,8 @@ static func web_query_args(origin: String, query: String) -> PackedStringArray:
 		out.append("--stats")
 	if q.get("deskbot", "") == "1" and q.has("room"):
 		out.append("--deskbot-drag" if q.get("deskdrag", "") == "1" else "--deskbot")  # tests only
+		if q.get("tour", "") == "1":
+			out.append("--bot-tour")  # recording a play-through
 	elif q.get("touchbot", "") == "1" and q.has("room"):
 		out.append("--touchbot")  # tests only
 		if q.has("touchbot_from"):

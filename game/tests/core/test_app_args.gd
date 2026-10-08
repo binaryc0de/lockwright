@@ -86,3 +86,14 @@ func test_play_from_hands_the_room_over_part_way() -> void:
 	assert_int(a.touchbot_from).is_equal(61)
 	assert_int(a.play_from).is_equal(61)
 	assert_int(AppArgs.parse(PackedStringArray(["--room", "r"])).play_from).is_equal(-1)
+
+
+func test_tour_slows_the_desktop_bot_for_a_recording() -> void:
+	var web := AppArgs.web_query_args("http://x", "?room=quiet_sun&deskbot=1&tour=1")
+	assert_array(web).contains_exactly(["--room", "quiet_sun", "--deskbot", "--bot-tour"])
+	var a := AppArgs.parse(web)
+	assert_bool(a.deskbot).is_true()
+	assert_bool(a.bot_tour).is_true()
+	assert_bool(AppArgs.parse(AppArgs.web_query_args("http://x", "?room=quiet_sun&deskbot=1")).bot_tour).is_false()
+	# Without a bot, tour does nothing.
+	assert_array(AppArgs.web_query_args("http://x", "?room=quiet_sun&tour=1")).contains_exactly(["--room", "quiet_sun"])
