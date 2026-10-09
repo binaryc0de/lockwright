@@ -17,8 +17,18 @@ extends Interactable
 @export var gauge_needle: NodePath
 @export var needle_step: Vector3 = Vector3(0, 0, -15)
 @export var gauge_label: NodePath
+## Optional: a part that sinks by sink_per_unit per unit of load (a pan on a
+## plunger), and a part turned by on_mark_rotation while the load is exactly
+## `target` (a catch that flips when the pan sits on its mark).
+@export var sink_part: NodePath
+@export var sink_per_unit: Vector3 = Vector3(0, -0.02, 0)
+@export var on_mark_part: NodePath
+@export var on_mark_rotation: Vector3 = Vector3.ZERO
 
 var _needle_base: Variant = null
+var _sink_base: Variant = null
+var _mark_base: Variant = null
+var _moves: Tween
 
 
 func _init() -> void:
@@ -113,6 +123,24 @@ func _apply_state(state: Dictionary) -> void:
 	var label := get_node_or_null(gauge_label) as Label3D
 	if label:
 		label.text = str(amount)
+	var sink := get_node_or_null(sink_part) as Node3D
+	var mark := get_node_or_null(on_mark_part) as Node3D
+	if _moves:
+		_moves.kill()
+	var glide := is_inside_tree() and _sink_base != null and DisplayServer.get_name() != "headless"
+	if sink:
+		if _sink_base == null:
+			_sink_base = sink.position
+		var to: Vector3 = (_sink_base as Vector3) + sink_per_unit * amount
+		if glide:
+			_moves = create_tween()
+			_moves.tween_property(sink, "position", to, 0.5).set_trans(Tween.TRANS_SINE)
+		else:
+			sink.position = to
+	if mark:
+		if _mark_base == null:
+			_mark_base = mark.rotation_degrees
+		mark.rotation_degrees = (_mark_base as Vector3) + (on_mark_rotation if target >= 0 and amount == target else Vector3.ZERO)
 
 
 func _state_sound(old: Dictionary, new: Dictionary) -> Variant:

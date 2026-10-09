@@ -142,14 +142,20 @@ func _apply_state(state: Dictionary) -> void:
 		var off: Vector3 = part_offset_step[k] if k < part_offset_step.size() else Vector3.ZERO
 		var to_rot := (_base[n][0] as Vector3) + rot * i
 		var to_pos := (_base[n][1] as Vector3) + off * i
+		# A part only takes the channels it steps, so something else may move
+		# it the other way (a plinth that turns here and sinks on a solve).
 		if glide:
 			if _move == null:
 				_move = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-			_move.tween_property(n, "rotation_degrees", to_rot, move_time)
-			_move.tween_property(n, "position", to_pos, move_time)
+			if rot != Vector3.ZERO:
+				_move.tween_property(n, "rotation_degrees", to_rot, move_time)
+			if off != Vector3.ZERO:
+				_move.tween_property(n, "position", to_pos, move_time)
 		else:
-			n.rotation_degrees = to_rot
-			n.position = to_pos
+			if rot != Vector3.ZERO:
+				n.rotation_degrees = to_rot
+			if off != Vector3.ZERO:
+				n.position = to_pos
 	_posed = true
 	for k in show_per_detent.size():
 		var n := get_node_or_null(show_per_detent[k]) as Node3D

@@ -22,6 +22,9 @@ extends Interactable
 @export var pick_up_requires: NodePath
 @export var pick_up_requires_state: String = "unlocked"
 @export var pick_up_refused_message: String = "It won't come free."
+## With a LoadPlate guard: its loads must be right at the moment of lifting
+## (a balance must be level now), not merely have been right once.
+@export var pick_up_requires_balance: bool = false
 
 
 func _init() -> void:
@@ -47,6 +50,8 @@ func _server_intent(player_id: String, verb: String, _payload: Dictionary) -> Di
 		return {"ok": false, "error": "already_taken", "message": "Someone already took it."}
 	var guard := get_node_or_null(pick_up_requires) as EBNode if not pick_up_requires.is_empty() else null
 	if guard != null and state_of(guard).get("state") != pick_up_requires_state:
+		return {"ok": false, "error": "held", "message": pick_up_refused_message}
+	if guard is LoadPlate and pick_up_requires_balance and not (guard as LoadPlate).loads_right():
 		return {"ok": false, "error": "held", "message": pick_up_refused_message}
 	set_state({"state": "inventory"})
 	authority.give_item(eb_path, item_id, player_id)

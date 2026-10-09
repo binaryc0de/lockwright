@@ -54,6 +54,9 @@ extends Lock
 ## through a hole or end on stone. Masks are taken nearest the source first.
 @export var lane_source: NodePath
 @export var lane_ends: Array[NodePath] = []
+## Parallel lanes (sunlight): per lane, where it starts, instead of one
+## lane_source; a mask's plane is then square to each lane.
+@export var lane_sources: Array[NodePath] = []
 
 const MAX_HOPS := 64
 
@@ -77,7 +80,7 @@ func _ready() -> void:
 		else:
 			push_error("%s: no SDK node at %s" % [name, p])
 	# Which mask stops a shaded lane can change without the lit set changing.
-	if not lane_source.is_empty():
+	if not lane_source.is_empty() or not lane_sources.is_empty():
 		for p in masks:
 			var m := get_node_or_null(p) as EBNode
 			if m:
@@ -288,12 +291,13 @@ func _draw_beam(state: Dictionary) -> void:
 ## The mask nearest the source that shades `lane` in its present position, as
 ## [distance along the lane, mask index], or [] when none does.
 func blocker(lane: int) -> Array:
-	var src := get_node_or_null(lane_source) as Node3D
+	var src := _lane_start(lane)
 	var end := get_node_or_null(lane_ends[lane]) as Node3D if lane < lane_ends.size() else null
 	if src == null or end == null:
 		return []
 	var a := src.global_position
 	var dir := end.global_position - a
+	var parallel := not lane_sources.is_empty()
 	var best: Array = []
 	for k in mini(masks.size(), mask_table.size()):
 		var m := get_node_or_null(masks[k]) as EBNode
@@ -304,7 +308,7 @@ func blocker(lane: int) -> Array:
 		if i >= rows.size() or not (str(lane) in rows[i].split(",", false)):
 			continue
 		var c := (m as Node3D).global_position
-		var n := (c - a).normalized()
+		var n := dir.normalized() if parallel else (c - a).normalized()
 		var denom := dir.dot(n)
 		if absf(denom) < 1e-6:
 			continue
@@ -319,8 +323,7 @@ func _draw_lanes(state: Dictionary) -> void:
 		if is_instance_valid(b):
 			b.queue_free()
 	_lane_beams.clear()
-	var src := get_node_or_null(lane_source) as Node3D
-	if src == null or not is_inside_tree():
+	if (lane_source.is_empty() and lane_sources.is_empty()) or not is_inside_tree():
 		return
 	# No light at all while the source's own gate is shut (an unlit fire).
 	if bool(state.get("shut", false)) and str(state.get("end", source)) == source:
@@ -333,11 +336,12 @@ func _draw_lanes(state: Dictionary) -> void:
 		_lane_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 		_lane_mat.no_depth_test = false
 		_lane_mat.albedo_color = Color(beam_color.r, beam_color.g, beam_color.b, 0.22)
-	var a := src.global_position
 	for l in mini(lanes, lane_ends.size()):
 		var end := get_node_or_null(lane_ends[l]) as Node3D
-		if end == null:
+		var start := _lane_start(l)
+		if end == null or start == null:
 			continue
+		var a := start.global_position
 		var b := end.global_position
 		var stop := blocker(l)
 		if not stop.is_empty():
@@ -363,3 +367,9 @@ func _draw_lanes(state: Dictionary) -> void:
 		var x := y.cross(Vector3.FORWARD if absf(y.z) < 0.99 else Vector3.RIGHT).normalized()
 		mi.global_basis = Basis(x, y, x.cross(y))
 		_lane_beams.append(mi)
+
+
+func _lane_start(lane: int) -> Node3D:
+	if not lane_sources.is_empty():
+		return get_node_or_null(lane_sources[lane]) as Node3D if lane < lane_sources.size() else null
+	return get_node_or_null(lane_source) as Node3D
