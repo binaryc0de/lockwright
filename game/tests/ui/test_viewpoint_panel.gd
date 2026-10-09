@@ -83,3 +83,12 @@ func test_buttons_work_the_controls_and_back_restores_the_view() -> void:
 func test_an_unfitted_sight_does_not_open() -> void:
 	(room.get_node("Fitted") as Viewpoint).client_interact()
 	assert_bool(hud.is_modal_open()).is_false()
+
+
+## A fitted sight is a solved lock, but players must still be able to aim at
+## it and use it (other solved locks drop out of the crosshair).
+func test_a_fitted_sight_can_still_be_aimed_at() -> void:
+	var fitted := room.get_node("Fitted") as Viewpoint
+	Game.authority.set_node_state("Fitted", {"state": "unlocked"})
+	assert_bool(fitted.is_open()).is_true()
+	assert_bool(fitted.is_available()).is_true()

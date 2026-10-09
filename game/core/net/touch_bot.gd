@@ -431,8 +431,10 @@ func _set_mechanism(m: IndexedMechanism, value: String) -> String:
 
 ## An open Viewpoint in the room that lists `m` among its controls.
 func _sight_for(m: IndexedMechanism) -> Viewpoint:
-	for vp: Viewpoint in Game.room.find_children("*", "Viewpoint", true, false):
-		if not vp.is_open():
+	# find_children's type filter knows native classes only, not class_names.
+	for n in Game.room.find_children("*", "", true, false):
+		var vp := n as Viewpoint
+		if vp == null or not vp.is_open():
 			continue
 		for p in vp.controls:
 			if vp.get_node_or_null(p) == m:
@@ -714,17 +716,22 @@ func _aim(node: Interactable) -> String:
 	var toward := _player().eye() - aim
 	toward.y = 0.0
 	var spots: Array[Vector3] = []
+	# First the nearest place the walk reaches (a thing down in a pit or up on
+	# a ledge is seen from its edge, not from under or over it).
+	var reach := _walk().route(_player().global_position, aim)
+	if not reach.is_empty():
+		spots.append(reach[reach.size() - 1])
 	if toward.length() > 0.01:
 		spots.append(aim + toward.normalized() * 1.0 + Vector3.DOWN * 1.1)
 	for r: float in [1.0, 1.6]:
 		for k in 8:
 			var a := TAU * k / 8.0
 			spots.append(aim + Vector3(sin(a) * r, -1.1, cos(a) * r))
-	for spot in spots.slice(0, 9):
+	for spot in spots.slice(0, 10):
 		await _walk_keys_to(spot)
 		if await _crosshair_on(node):
 			return ""
-	return "the crosshair could not be put on it from 9 spots (last at %s, %.1f m away; the crosshair hits %s)" % [
+	return "the crosshair could not be put on it from 10 spots (last at %s, %.1f m away; the crosshair hits %s)" % [
 		_player().global_position.snapped(Vector3.ONE * 0.1), _player().eye().distance_to(aim),
 		Game.room.get_path_to(_player().ray.get_collider()) if _player().ray.is_colliding() else "nothing"]
 

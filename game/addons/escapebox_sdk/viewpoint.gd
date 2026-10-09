@@ -32,6 +32,12 @@ func current_verb() -> String:
 	return "look"
 
 
+## Unlike other locks, a sight stays usable once its part is fitted: that is
+## when it is for looking through.
+func is_available() -> bool:
+	return is_visible_in_tree()
+
+
 func _server_intent(player_id: String, verb: String, payload: Dictionary) -> Dictionary:
 	match verb:
 		"use_item":
