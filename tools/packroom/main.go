@@ -369,6 +369,39 @@ func roomResources(gameDir, id string) ([]string, error) {
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 	sort.Strings(out)
-	return out, err
+	return dropUnusedModels(gameDir, out), nil
+}
+
+// dropUnusedModels leaves out model sources (.glb, .gltf, .obj) that no text
+// scene, resource or script in the list names: a room that saves the meshes it
+// uses as its own resources (The Quiet Sun's assets/kit) only needs the GLBs to
+// build them, and shipping them doubled its pack. A model a scene instances is
+// named in that scene, so it stays.
+func dropUnusedModels(gameDir string, files []string) []string {
+	var text strings.Builder
+	for _, f := range files {
+		switch strings.ToLower(filepath.Ext(f)) {
+		case ".tscn", ".tres", ".gd":
+			b, err := os.ReadFile(filepath.Join(gameDir, strings.TrimPrefix(f, "res://")))
+			if err == nil {
+				text.Write(b)
+			}
+		}
+	}
+	all := text.String()
+	var out []string
+	for _, f := range files {
+		switch strings.ToLower(filepath.Ext(f)) {
+		case ".glb", ".gltf", ".obj":
+			if !strings.Contains(all, f) {
+				continue
+			}
+		}
+		out = append(out, f)
+	}
+	return out
 }
