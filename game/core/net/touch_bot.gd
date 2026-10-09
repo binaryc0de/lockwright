@@ -716,8 +716,15 @@ func _aim(node: Interactable) -> String:
 	var toward := _player().eye() - aim
 	toward.y = 0.0
 	var spots: Array[Vector3] = []
-	# First the nearest place the walk reaches (a thing down in a pit or up on
-	# a ledge is seen from its edge, not from under or over it).
+	# First in front of what it faces (a panel on a wall), then the nearest
+	# place the walk reaches (a thing down in a pit is seen from its edge).
+	var facing := node.global_basis.z.normalized()
+	facing.y = 0.0
+	if facing.length() > 0.5:
+		var front := aim + facing.normalized() * 1.0
+		var to_front := _walk().route(_player().global_position, Vector3(front.x, _player().global_position.y, front.z))
+		if not to_front.is_empty():
+			spots.append(to_front[to_front.size() - 1])
 	var reach := _walk().route(_player().global_position, aim)
 	if not reach.is_empty():
 		spots.append(reach[reach.size() - 1])
@@ -727,11 +734,11 @@ func _aim(node: Interactable) -> String:
 		for k in 8:
 			var a := TAU * k / 8.0
 			spots.append(aim + Vector3(sin(a) * r, -1.1, cos(a) * r))
-	for spot in spots.slice(0, 10):
+	for spot in spots.slice(0, 11):
 		await _walk_keys_to(spot)
 		if await _crosshair_on(node):
 			return ""
-	return "the crosshair could not be put on it from 10 spots (last at %s, %.1f m away; the crosshair hits %s)" % [
+	return "the crosshair could not be put on it from 11 spots (last at %s, %.1f m away; the crosshair hits %s)" % [
 		_player().global_position.snapped(Vector3.ONE * 0.1), _player().eye().distance_to(aim),
 		Game.room.get_path_to(_player().ray.get_collider()) if _player().ray.is_colliding() else "nothing"]
 
@@ -857,6 +864,15 @@ func _use_item_cursor_drag(item_path: String, i: int, target: Interactable) -> S
 	var why := await _aim(target)
 	if not why.is_empty():
 		return why
+	# A drop is only taken within reach of the body, not just of the crosshair:
+	# step in close first, as a player would.
+	if _player().eye().distance_to(_aim_point(target)) > FirstPersonPlayer.REACH * 0.8:
+		var near := _walk().route(_player().global_position, _aim_point(target))
+		if not near.is_empty():
+			await _walk_keys_to(near[near.size() - 1])
+		why = await _aim(target)
+		if not why.is_empty():
+			return why
 	await _key(KEY_I)
 	await _frames(3)
 	if not _hud().cursor_mode:
