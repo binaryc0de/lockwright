@@ -409,6 +409,12 @@ func _set_mechanism(m: IndexedMechanism, value: String) -> String:
 	var want := m.index_of(value)
 	if want < 0:
 		return "it has no position %s" % value
+	# On a tour, a control that can be worked through a sight is set the way
+	# its puzzle means: looking through the sight and using its buttons.
+	if tour and desktop:
+		var vp := _sight_for(m)
+		if vp:
+			return await _set_through_sight(vp, m, want)
 	for _t in m.detents.size():
 		if int(m.current_state.get("index", 0)) == want:
 			return ""
@@ -421,6 +427,47 @@ func _set_mechanism(m: IndexedMechanism, value: String) -> String:
 			await _wait(0.1)
 			t += 0.1
 	return "" if int(m.current_state.get("index", 0)) == want else "tapping it did not bring it to %s" % value
+
+
+## An open Viewpoint in the room that lists `m` among its controls.
+func _sight_for(m: IndexedMechanism) -> Viewpoint:
+	for vp: Viewpoint in Game.room.find_children("*", "Viewpoint", true, false):
+		if not vp.is_open():
+			continue
+		for p in vp.controls:
+			if vp.get_node_or_null(p) == m:
+				return vp
+	return null
+
+
+func _set_through_sight(vp: Viewpoint, m: IndexedMechanism, want: int) -> String:
+	var i := -1
+	for k in vp.controls.size():
+		if vp.get_node_or_null(vp.controls[k]) == m:
+			i = k
+	if not _hud()._modal is ViewpointPanel:
+		var why := await _tap_thing(vp, "look")
+		if not why.is_empty():
+			return why
+		await _wait(1.0)
+	var panel := _hud()._modal as ViewpointPanel
+	if panel == null:
+		return "using the sight opened no view"
+	var button := panel.find_child("Control%d" % i, true, false) as Button
+	if button == null:
+		return "the sight has no button for it"
+	for _t in m.detents.size():
+		if int(m.current_state.get("index", 0)) == want:
+			break
+		var before := int(m.current_state.get("index", 0))
+		await _press_control(button)
+		var t := 0.0
+		while t < 3.0 and int(m.current_state.get("index", 0)) == before:
+			await _wait(0.1)
+			t += 0.1
+		await _wait(m.move_time + 0.4)
+	await _wait(1.5)  # a look at the result before stepping back
+	return "" if int(m.current_state.get("index", 0)) == want else "the sight's button did not bring it to %d" % want
 
 
 ## Patch panel: tap each cable's port picker (a dropdown), choose the port,

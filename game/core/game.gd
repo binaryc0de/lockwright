@@ -345,6 +345,11 @@ func ui_open_keypad(lock: KeypadLock) -> void:
 		hud.open_keypad(lock)
 
 
+func ui_open_viewpoint(vp: Viewpoint) -> void:
+	if hud:
+		hud.open_viewpoint(vp)
+
+
 func ui_open_dial_lock(lock: DialLock) -> void:
 	if hud:
 		hud.open_dial_lock(lock)

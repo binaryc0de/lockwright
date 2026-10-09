@@ -33,7 +33,13 @@ signal moved(index: int)
 ## the other way round, a different face of a block).
 @export var show_per_detent: Array[NodePath] = []
 
+## Seconds a part takes to move to its new position (0 = at once). The
+## first state after loading or a restore always snaps.
+@export var move_time: float = 0.0
+
 var _base := {}  # part -> [rotation_degrees, position]
+var _posed := false
+var _move: Tween
 
 
 func _init() -> void:
@@ -124,14 +130,27 @@ func _server_activate() -> void:
 
 func _apply_state(state: Dictionary) -> void:
 	var i := int(state.get("index", 0))
+	var glide := move_time > 0.0 and _posed and is_inside_tree() and DisplayServer.get_name() != "headless"
+	if _move:
+		_move.kill()
+		_move = null
 	for k in parts.size():
 		var n := get_node_or_null(parts[k]) as Node3D
 		if n == null or not _base.has(n):
 			continue
 		var rot: Vector3 = part_rotation_step[k] if k < part_rotation_step.size() else Vector3.ZERO
 		var off: Vector3 = part_offset_step[k] if k < part_offset_step.size() else Vector3.ZERO
-		n.rotation_degrees = (_base[n][0] as Vector3) + rot * i
-		n.position = (_base[n][1] as Vector3) + off * i
+		var to_rot := (_base[n][0] as Vector3) + rot * i
+		var to_pos := (_base[n][1] as Vector3) + off * i
+		if glide:
+			if _move == null:
+				_move = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+			_move.tween_property(n, "rotation_degrees", to_rot, move_time)
+			_move.tween_property(n, "position", to_pos, move_time)
+		else:
+			n.rotation_degrees = to_rot
+			n.position = to_pos
+	_posed = true
 	for k in show_per_detent.size():
 		var n := get_node_or_null(show_per_detent[k]) as Node3D
 		if n:

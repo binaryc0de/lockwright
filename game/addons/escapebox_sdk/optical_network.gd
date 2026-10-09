@@ -47,10 +47,19 @@ extends Lock
 @export var hide_dark_cells: bool = false
 @export var beam_width: float = 0.05
 @export var beam_color: Color = Color(1.0, 0.86, 0.5)
+## Presentation, per lane: with a source point, each lane is drawn as its own
+## beam from `lane_source` towards its `lane_ends` entry, and stops where the
+## first mask that shades it stands (on the plane through the mask's origin,
+## square to the line from the source to it), so a player sees light pass
+## through a hole or end on stone. Masks are taken nearest the source first.
+@export var lane_source: NodePath
+@export var lane_ends: Array[NodePath] = []
 
 const MAX_HOPS := 64
 
 var _beams: Array[MeshInstance3D] = []
+var _lane_beams: Array[MeshInstance3D] = []
+static var _lane_mat: StandardMaterial3D
 static var _lit_mat: StandardMaterial3D
 static var _dark_mat: StandardMaterial3D
 
@@ -67,6 +76,12 @@ func _ready() -> void:
 			n.state_applied.connect(func(_s: Dictionary) -> void: _server_recompute())
 		else:
 			push_error("%s: no SDK node at %s" % [name, p])
+	# Which mask stops a shaded lane can change without the lit set changing.
+	if not lane_source.is_empty():
+		for p in masks:
+			var m := get_node_or_null(p) as EBNode
+			if m:
+				m.state_applied.connect(func(_s: Dictionary) -> void: _draw_lanes(current_state))
 
 
 func _initial_state() -> Dictionary:
@@ -209,6 +224,7 @@ func client_interact(_item_path: String = "") -> void:
 func _apply_state(state: Dictionary) -> void:
 	super(state)
 	_draw_beam(state)
+	_draw_lanes(state)
 	var lit: Array = []
 	for v in state.get("lit", []):
 		lit.append(int(v))
@@ -267,3 +283,83 @@ func _draw_beam(state: Dictionary) -> void:
 				mi.look_at(b, Vector3.UP if absf((b - a).normalized().y) < 0.99 else Vector3.RIGHT)
 				_beams.append(mi)
 		prev = p
+
+
+## The mask nearest the source that shades `lane` in its present position, as
+## [distance along the lane, mask index], or [] when none does.
+func blocker(lane: int) -> Array:
+	var src := get_node_or_null(lane_source) as Node3D
+	var end := get_node_or_null(lane_ends[lane]) as Node3D if lane < lane_ends.size() else null
+	if src == null or end == null:
+		return []
+	var a := src.global_position
+	var dir := end.global_position - a
+	var best: Array = []
+	for k in mini(masks.size(), mask_table.size()):
+		var m := get_node_or_null(masks[k]) as EBNode
+		if m == null:
+			continue
+		var rows := mask_table[k].split("|")
+		var i := int(m.current_state.get("index", 0))
+		if i >= rows.size() or not (str(lane) in rows[i].split(",", false)):
+			continue
+		var c := (m as Node3D).global_position
+		var n := (c - a).normalized()
+		var denom := dir.dot(n)
+		if absf(denom) < 1e-6:
+			continue
+		var t := (c - a).dot(n) / denom
+		if t > 0.0 and t < 1.0 and (best.is_empty() or t < best[0]):
+			best = [t, k]
+	return best
+
+
+func _draw_lanes(state: Dictionary) -> void:
+	for b in _lane_beams:
+		if is_instance_valid(b):
+			b.queue_free()
+	_lane_beams.clear()
+	var src := get_node_or_null(lane_source) as Node3D
+	if src == null or not is_inside_tree():
+		return
+	# No light at all while the source's own gate is shut (an unlit fire).
+	if bool(state.get("shut", false)) and str(state.get("end", source)) == source:
+		return
+	if _lane_mat == null:
+		_lane_mat = StandardMaterial3D.new()
+		_lane_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_lane_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		_lane_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_lane_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		_lane_mat.no_depth_test = false
+		_lane_mat.albedo_color = Color(beam_color.r, beam_color.g, beam_color.b, 0.22)
+	var a := src.global_position
+	for l in mini(lanes, lane_ends.size()):
+		var end := get_node_or_null(lane_ends[l]) as Node3D
+		if end == null:
+			continue
+		var b := end.global_position
+		var stop := blocker(l)
+		if not stop.is_empty():
+			b = a.lerp(b, float(stop[0]))
+		var dist := a.distance_to(b)
+		if dist < 0.02:
+			continue
+		var mi := MeshInstance3D.new()
+		mi.name = "Lane%d" % l
+		var cyl := CylinderMesh.new()
+		cyl.top_radius = beam_width * 0.5
+		cyl.bottom_radius = beam_width * 0.35
+		cyl.height = dist
+		cyl.radial_segments = 6
+		cyl.rings = 1
+		mi.mesh = cyl
+		mi.material_override = _lane_mat
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(mi)
+		mi.global_position = (a + b) * 0.5
+		# A cylinder runs along its Y axis: point it from a to b.
+		var y := (b - a).normalized()
+		var x := y.cross(Vector3.FORWARD if absf(y.z) < 0.99 else Vector3.RIGHT).normalized()
+		mi.global_basis = Basis(x, y, x.cross(y))
+		_lane_beams.append(mi)

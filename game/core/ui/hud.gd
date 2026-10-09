@@ -416,6 +416,24 @@ func open_dial_lock(lock: DialLock) -> void:
 	(_modal as DialLockPanel).setup(lock)
 
 
+## Looks through a sight: the camera goes to its eye with a round view, and a
+## strip of controls along the bottom works what is seen through it.
+func open_viewpoint(vp: Viewpoint) -> void:
+	var eye := vp.get_node_or_null(vp.eye) as Node3D
+	var panel := _open(ViewpointPanel.new()) as ViewpointPanel
+	panel.setup(vp)
+	var ring := ViewpointPanel.vignette()
+	add_child(ring)
+	move_child(ring, panel.get_index())
+	if player and is_instance_valid(player) and eye:
+		player.view_from(eye.global_transform, vp.fov)
+	panel.closed.connect(func() -> void:
+		remove_child(ring)
+		ring.queue_free()
+		if is_instance_valid(player):
+			player.unfocus())
+
+
 func open_patch_panel(panel: PatchPanel) -> void:
 	_focus(panel, (_open(PatchPanelUI.new()) as PatchPanelUI))
 	(_modal as PatchPanelUI).setup(panel)

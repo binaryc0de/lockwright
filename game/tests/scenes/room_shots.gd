@@ -2,7 +2,7 @@ extends Node3D
 ## Renders screenshots of a room from fixed viewpoints, for art review on a
 ## machine with a real GPU (ADR-0003 forbids this on the iGPU dev box).
 ##   godot --path game res://tests/scenes/room_shots.tscn -- \
-##     --room night_shift --out /tmp/shots [--quality low|medium|high] [--difficulty <id>] [--set path={json} ...] [--views name:x,y,z:yaw_deg:pitch_deg ...]
+##     --room night_shift --out /tmp/shots [--fov 80] [--quality low|medium|high] [--difficulty <id>] [--set path={json} ...] [--views name:x,y,z:yaw_deg:pitch_deg ...]
 ## Without --views it uses the room spawn plus any Marker3D named Shot* in the room.
 
 const SETTLE_FRAMES := 45
@@ -47,7 +47,7 @@ func _ready() -> void:
 					rev.set_process(false)
 					(n as Label3D).text = EBTemplate.render(rev.text, Game.vars())
 	_cam = Camera3D.new()
-	_cam.fov = 80.0
+	_cam.fov = float(_arg(args, "--fov", "80"))
 	add_child(_cam)
 	_cam.make_current()
 	var s := room.spawn_transform()
@@ -75,9 +75,15 @@ func _apply_view() -> void:
 	_frames = 0
 
 
+var _settled_ms := -1
+
+
 func _process(_delta: float) -> void:
 	_frames += 1
-	if _frames < SETTLE_FRAMES:
+	# The first shot also waits for --set moves to finish (parts glide).
+	if _settled_ms < 0:
+		_settled_ms = Time.get_ticks_msec() + 2500
+	if _frames < SETTLE_FRAMES or Time.get_ticks_msec() < _settled_ms:
 		return
 	var path := "%s/%02d_%s.png" % [_out, _i, _views[_i]["name"]]
 	get_viewport().get_texture().get_image().save_png(path)

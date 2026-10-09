@@ -186,6 +186,14 @@ func focus_on(point: Vector3) -> void:
 
 func unfocus() -> void:
 	_tween_camera(Transform3D(Basis.from_euler(Vector3(_pitch, 0, 0)), Vector3.UP * EYE_HEIGHT))
+	camera.fov = Settings.fov / zoom
+
+
+## Looking through a sight (Viewpoint): the camera goes to `eye` (looking
+## along its -Z) with a narrow field of view; unfocus() brings it back.
+func view_from(eye_xf: Transform3D, view_fov: float) -> void:
+	_tween_camera(global_transform.affine_inverse() * eye_xf.orthonormalized())
+	camera.fov = view_fov
 
 
 func is_focused() -> bool:
