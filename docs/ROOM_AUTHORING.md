@@ -213,7 +213,26 @@ godot --path game -- --room <room_id> --play-from N         # dev play from part
                                                             # then you take over (browser: ?room=<id>&play_from=N)
 tools/browser_bots.sh <room_id>                             # the room in a browser by keyboard and mouse, by
                                                             # drag and drop, and on a phone (needs tools/export.sh)
+godot --headless --path game res://tests/scenes/room_audit.tscn -- --room <room_id> --out /tmp/audit.txt --checkpoints every:2
+                                                            # physical audit (below)
+godot --path game res://tests/scenes/room_shots.tscn -- --room <room_id> --out /tmp/shots --steps N --wait 6 --views name:x,y,z:yaw:pitch
+                                                            # renders part-way through the solution (N steps played, moving parts settled)
 ```
+
+**Physical audit.** Rooms must work as real objects (owner, 2026-10-08): nothing in thin air, nothing sunk into something it
+should rest against, nothing a player needs hidden behind something. `room_audit` plays the room's solution through intents and,
+at each checkpoint and before every step, checks the visible meshes against each other's actual triangles:
+
+- **FLOAT** a group of meshes that touches nothing anchored (walls, floors, ceilings, terrain): a plate hanging beside a wall, a bar under a carriage;
+- **EMBED** 15% or more of one object inside another, unrelated one: a rock through a crate, a cap plate inside a column;
+- **HIDDEN** a solution step's target that no reachable standing point within 3.2 m sees half of, just before that step;
+- **CLUE** a document or pigmented (clue) face that no reachable standing point within 4.5 m sees enough of.
+
+Each finding prints a `room_shots` view to look at it. Fix it, or, when it is right (a pawl pivoting in its jamb slot, a fern
+growing out of rubble, trims running into the piers they meet), list it in `game/rooms/<id>/audit_accepted.txt` with the
+reason: the finding's key (or a `*` pattern) and a tab. `tools/test.sh` runs the audit for every room that has that file and
+fails on anything not fixed or accepted. The audit cannot judge looks (a sun split at the wrong edge, a white card in a stone
+room): also render the room at several points in the solution and look.
 
 ## 8. Done means
 
