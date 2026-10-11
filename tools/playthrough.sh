@@ -3,6 +3,7 @@
 # pace (?deskbot=1&tour=1) in headless Chrome against a private platform, as a
 # player on a computer would play it (W A S D, mouse look, E, number keys).
 # Captions come from media/rooms/<id>/playthrough_captions.yaml if present.
+# A step longer than CUT_AFTER seconds (default 25) has its middle cut out.
 # Needs google-chrome, python playwright, ffmpeg with libass; run
 # tools/export.sh first. The video carries the solution: it is for checking
 # the design against the build, not for players.
@@ -30,4 +31,4 @@ python3 tools/playthrough.py record "http://127.0.0.1:$PORT/play/?room=$ROOM&des
 [ -s "$WORK/rec/frames.jsonl" ] || { echo "no frames recorded"; exit 1; }
 CAP="media/rooms/$ROOM/playthrough_captions.yaml"
 [ -f "$CAP" ] || CAP=""
-python3 tools/playthrough.py cut "$ROOM" "$WORK/rec" ${CAP:+--captions "$CAP"} --video "$OUT"
+python3 tools/playthrough.py cut "$ROOM" "$WORK/rec" ${CAP:+--captions "$CAP"} --video "$OUT" --cut-after "${CUT_AFTER:-25}"

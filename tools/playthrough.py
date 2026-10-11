@@ -3,7 +3,7 @@
 
     tools/playthrough.py record URL --out DIR [--limit 5400]
     tools/playthrough.py cut ROOM_ID DIR [--captions FILE] [--video OUT.mp4]
-                                [--ff-after 40] [--ff-speed 8]
+                                [--ff-after 40] [--ff-speed 8] [--cut-after S]
 
 `record` opens URL (the web client with ?room=<id>&deskbot=1&tour=1, the play
 bot at a watching pace) in headless Chrome, clicks when the game asks for
@@ -16,7 +16,12 @@ index -> text), in a band under the picture so they cover neither the game's
 own subtitles nor its HUD. A step that takes longer than --ff-after seconds
 (the bot hunting for a spot to reach something from) plays at --ff-speed
 from 10 s in to 8 s before it is done, marked on screen: the long hunt is
-the finding, not something to sit through. Video only; the screencast
+the finding, not something to sit through. With --cut-after S, a step
+longer than S seconds is cut instead: its first 8 s and last 6 s stay and the
+middle is dropped, and so is any hunt the bot marks itself ("hunt begin" to
+"hunt end", over 10 s, keeping 3 s at each end), with a short on-screen note
+of how long was cut (the bot spinning about to find a spot is not worth
+watching). Video only; the screencast
 carries no sound.
 tools/playthrough.sh wraps both with a private platform.
 """
@@ -106,7 +111,8 @@ def ass_text(s: str) -> str:
     return s.replace("\\", "/").replace("{", "(").replace("}", ")").replace("\n", "\\N")
 
 
-def cut(room: str, d: str, captions: str, video: str, ff_after: float = 40.0, ff_speed: float = 8.0) -> int:
+def cut(room: str, d: str, captions: str, video: str, ff_after: float = 40.0, ff_speed: float = 8.0,
+        cut_after: float = 0.0) -> int:
     import yaml
     manifest = yaml.safe_load(open(os.path.join(ROOT, "game", "rooms", room, "room.yaml")))
     steps = manifest["solution"]
@@ -135,15 +141,40 @@ def cut(room: str, d: str, captions: str, video: str, ff_after: float = 40.0, ff
         if "BOT: won=" in e["line"]:
             begins.append((-1, e["t"] - t0))
     # Fast-forward windows (recording time from t0).
+    # With --cut-after the windows are dropped outright instead.
+    trim = cut_after > 0
+    after, head, tail, least = (cut_after, 8.0, 6.0, 4.0) if trim else (ff_after, 10.0, 8.0, 10.0)
     ff = []
     for k, (i, t) in enumerate(begins):
-        if i >= 0 and k + 1 < len(begins) and begins[k + 1][1] - t > ff_after and i in done:
-            a, b = t + 10.0, done[i] - 8.0
-            if b - a > 10.0:
+        if i >= 0 and k + 1 < len(begins) and begins[k + 1][1] - t > after and i in done:
+            a, b = t + head, done[i] - tail
+            if b - a > least:
                 ff.append((a, b))
+    if trim:
+        # The bot's own marked hunts (walking from spot to spot, looking
+        # about) longer than 10 s: keep 3 s of each end.
+        start = None
+        for l in open(os.path.join(d, "timeline.jsonl")):
+            e = json.loads(l)
+            if e["line"].endswith(": hunt begin"):
+                start = e["t"] - t0
+            elif e["line"].endswith(": hunt end") and start is not None:
+                if e["t"] - t0 - start > 10.0:
+                    ff.append((start + 3.0, e["t"] - t0 - 3.0))
+                start = None
+        merged = []
+        for a, b in sorted(ff):
+            if merged and a <= merged[-1][1] + 2.0:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+            else:
+                merged.append((a, b))
+        ff = merged
+    keep = 0.0 if trim else 1.0 / ff_speed
     def vt(t: float) -> float:
         """Recording time to video time."""
-        return t - sum(max(0.0, min(t, b) - a) for a, b in ff) * (1.0 - 1.0 / ff_speed)
+        return t - sum(max(0.0, min(t, b) - a) for a, b in ff) * (1.0 - keep)
+    if trim:
+        frames = [f for f in frames if not any(a < f["t"] - t0 < b for a, b in ff)]
     # The frames, each held until the next arrives (the screencast only sends
     # a frame when the page changes).
     with open(os.path.join(d, "frames.txt"), "w") as f:
@@ -153,8 +184,12 @@ def cut(room: str, d: str, captions: str, video: str, ff_after: float = 40.0, ff
         f.write("file 'frames/%s'\n" % frames[-1]["f"])
     events = []
     for a, b in ff:
-        events.append("Dialogue: 1,%s,%s,FF,,0,0,0,,FAST-FORWARD x%d: the bot is hunting for a spot to reach it from (%.0f s real)"
-                      % (ass_time(vt(a)), ass_time(vt(b)), ff_speed, b - a))
+        if trim:
+            events.append("Dialogue: 1,%s,%s,FF,,0,0,0,,CUT: %.0f s of the bot finding its way"
+                          % (ass_time(vt(b)), ass_time(vt(b) + 2.5), b - a))
+        else:
+            events.append("Dialogue: 1,%s,%s,FF,,0,0,0,,FAST-FORWARD x%d: the bot is hunting for a spot to reach it from (%.0f s real)"
+                          % (ass_time(vt(a)), ass_time(vt(b)), ff_speed, b - a))
     for k, (i, t) in enumerate(begins):
         if i < 0:
             continue
@@ -179,7 +214,7 @@ def cut(room: str, d: str, captions: str, video: str, ff_after: float = 40.0, ff
            os.path.abspath(video)]
     r = subprocess.run(cmd, cwd=d)
     if r.returncode == 0:
-        print("playthrough: %s (%.0f min, %d fast-forwards)" % (video, vt(t1 - t0) / 60, len(ff)))
+        print("playthrough: %s (%.0f min, %d %s)" % (video, vt(t1 - t0) / 60, len(ff), "cuts" if trim else "fast-forwards"))
     return r.returncode
 
 
@@ -191,7 +226,8 @@ if __name__ == "__main__":
     c = sub.add_parser("cut"); c.add_argument("room"); c.add_argument("dir")
     c.add_argument("--captions", default=""); c.add_argument("--video", default="")
     c.add_argument("--ff-after", type=float, default=40.0); c.add_argument("--ff-speed", type=float, default=8.0)
+    c.add_argument("--cut-after", type=float, default=0.0)
     a = ap.parse_args()
     if a.cmd == "record":
         sys.exit(asyncio.run(record(a.url, a.out, a.limit)))
-    sys.exit(cut(a.room, a.dir, a.captions, a.video or os.path.join(a.dir, "playthrough.mp4"), a.ff_after, a.ff_speed))
+    sys.exit(cut(a.room, a.dir, a.captions, a.video or os.path.join(a.dir, "playthrough.mp4"), a.ff_after, a.ff_speed, a.cut_after))

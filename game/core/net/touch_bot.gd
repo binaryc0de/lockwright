@@ -734,10 +734,20 @@ func _aim(node: Interactable) -> String:
 		for k in 8:
 			var a := TAU * k / 8.0
 			spots.append(aim + Vector3(sin(a) * r, -1.1, cos(a) * r))
+	# Past the first spot it is hunting; a tour marks that span so the
+	# recording can cut it (tools/playthrough.py).
+	var hunting := false
 	for spot in spots.slice(0, 11):
+		if tour and spot != spots[0] and not hunting:
+			hunting = true
+			print("%s: hunt begin" % TAG)
 		await _walk_keys_to(spot)
 		if await _crosshair_on(node):
+			if hunting:
+				print("%s: hunt end" % TAG)
 			return ""
+	if hunting:
+		print("%s: hunt end" % TAG)
 	return "the crosshair could not be put on it from 11 spots (last at %s, %.1f m away; the crosshair hits %s)" % [
 		_player().global_position.snapped(Vector3.ONE * 0.1), _player().eye().distance_to(aim),
 		Game.room.get_path_to(_player().ray.get_collider()) if _player().ray.is_colliding() else "nothing"]
