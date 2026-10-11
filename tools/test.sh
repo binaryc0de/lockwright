@@ -58,6 +58,19 @@ for room_yaml in game/rooms/*/room.yaml; do
   [[ $code -eq 0 ]] || { echo "touch play-through of $id found problems (log: $log)"; exit 1; }
 done
 
+step "physical audit (rooms with game/rooms/<id>/audit_accepted.txt: nothing floating, sunk into something else, or hidden from players)"
+for acc in game/rooms/*/audit_accepted.txt; do
+  [[ -f "$acc" ]] || continue
+  id="$(basename "$(dirname "$acc")")"
+  log="$(mktemp "${TMPDIR:-/tmp}/escapebox-audit-XXXXXX")"
+  set +e
+  "$GODOT" --headless --path game res://tests/scenes/room_audit.tscn -- --room "$id" --out "$log.txt" --checkpoints every:2 > "$log" 2>&1
+  code=$?
+  set -e
+  grep -E "^audit: ([0-9]+ open|FLOAT|EMBED|HIDDEN|CLUE|STEP)" "$log" | sed "s/^/  $id: /"
+  [[ $code -eq 0 ]] || { echo "physical audit of $id has open findings (log: $log, findings: $log.txt)"; exit 1; }
+done
+
 step "multiplayer smoke (server + bots + crash/restore + ws, ADR-0015)"
 GODOT="$GODOT" tools/m2_smoke.sh
 

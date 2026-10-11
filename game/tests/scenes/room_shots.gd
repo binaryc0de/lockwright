@@ -2,7 +2,7 @@ extends Node3D
 ## Renders screenshots of a room from fixed viewpoints, for art review on a
 ## machine with a real GPU (ADR-0003 forbids this on the iGPU dev box).
 ##   godot --path game res://tests/scenes/room_shots.tscn -- \
-##     --room night_shift --out /tmp/shots [--fov 80] [--quality low|medium|high] [--difficulty <id>] [--set path={json} ...] [--views name:x,y,z:yaw_deg:pitch_deg ...]
+##     --room night_shift --out /tmp/shots [--fov 80] [--wait 2.5 (seconds for moving parts to settle)] [--quality low|medium|high] [--difficulty <id>] [--steps N (play N solution steps first)] [--set path={json} ...] [--views name:x,y,z:yaw_deg:pitch_deg ...]
 ## Without --views it uses the room spawn plus any Marker3D named Shot* in the room.
 
 const SETTLE_FRAMES := 45
@@ -28,6 +28,22 @@ func _ready() -> void:
 	add_child(room)
 	GraphicsQuality.apply(room, _arg(args, "--quality", "high"))
 	Game.start_local_session(loader.manifest, room, "shots", {}, null, _arg(args, "--difficulty", ""))
+	# --steps N: play the first N steps of the room's solution first (through
+	# intents, as room_audit does), to shoot the room part-way through.
+	var steps := int(_arg(args, "--steps", "0"))
+	if steps > 0:
+		var now := [1000.0]
+		Game.authority.allow_unpositioned = true
+		Game.authority.clock = func() -> float: return now[0]
+		var nodes := {}
+		for n: EBNode in Game.authority.nodes():
+			nodes[n.eb_path] = n
+		for i in mini(steps, loader.manifest.solution.size()):
+			now[0] += 30.0
+			var intent := SolutionPlayer.intent_for(loader.manifest.solution[i], nodes, Game.authority.state.vars)
+			if not intent.is_empty() and not intent.has("error"):
+				Game.authority.handle_intent("p1", intent["path"], intent["verb"], intent["payload"])
+		print("played %d solution steps" % steps)
 	# --set path={json state} (repeatable): put nodes into a state for the shot
 	# (review only; bypasses the puzzle rules).
 	for j in args.size():
@@ -82,7 +98,7 @@ func _process(_delta: float) -> void:
 	_frames += 1
 	# The first shot also waits for --set moves to finish (parts glide).
 	if _settled_ms < 0:
-		_settled_ms = Time.get_ticks_msec() + 2500
+		_settled_ms = Time.get_ticks_msec() + int(float(_arg(OS.get_cmdline_user_args(), "--wait", "2.5")) * 1000.0)
 	if _frames < SETTLE_FRAMES or Time.get_ticks_msec() < _settled_ms:
 		return
 	var path := "%s/%02d_%s.png" % [_out, _i, _views[_i]["name"]]
