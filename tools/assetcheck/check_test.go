@@ -342,3 +342,17 @@ func TestGlobalChecks(t *testing.T) {
 		t.Errorf("unknown id = %+v", rep.Assets[0])
 	}
 }
+
+// A printables-only request has no GLB to find, even in review.
+func TestPrintableRequestNeedsNoGLB(t *testing.T) {
+	f := keypad(t)
+	f.request = strings.Replace(f.request, "**Class:** prop", "**Class:** printable", 1)
+	if !strings.Contains(f.request, "**Class:** printable") {
+		t.Fatal("fixture has no prop class line to replace")
+	}
+	f.noGLB = true
+	rep := runIDs(t, buildRepo(t, f), "keypad_4")
+	if a := rep.Assets[0]; a.Status != "printable" || len(a.Failures) != 0 || !rep.OK {
+		t.Errorf("printable request = %+v (report ok %v)", a, rep.OK)
+	}
+}

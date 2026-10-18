@@ -95,6 +95,8 @@ func printText(w io.Writer, rep *Report) {
 			fmt.Fprintf(w, "PASS %s (%d tris, %d parts)\n", a.AssetID, a.Triangles, a.Parts)
 		case "fail":
 			fail++
+		case "printable":
+			fmt.Fprintf(w, "SKIP %s (printable faces only: checked by tools/printables)\n", a.AssetID)
 		}
 	}
 	fmt.Fprintf(w, "assetcheck: %d asset(s) checked, %d passed, %d failed, %d warning(s)\n", len(rep.Assets), pass, fail, warn)

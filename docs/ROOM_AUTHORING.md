@@ -223,16 +223,21 @@ godot --path game res://tests/scenes/room_shots.tscn -- --room <room_id> --out /
 should rest against, nothing a player needs hidden behind something. `room_audit` plays the room's solution through intents and,
 at each checkpoint and before every step, checks the visible meshes against each other's actual triangles:
 
-- **FLOAT** a group of meshes that touches nothing anchored (walls, floors, ceilings, terrain): a plate hanging beside a wall, a bar under a carriage;
+- **FLOAT** a group of meshes that touches nothing anchored (walls, floors, ceilings, terrain): a plate hanging beside a wall, a bar under a carriage (contact is tested over each mesh's whole underside, so a block resting in a bowl by its outer edge counts);
 - **EMBED** 15% or more of one object inside another, unrelated one: a rock through a crate, a cap plate inside a column;
 - **HIDDEN** a solution step's target that no reachable standing point within 3.2 m sees half of, just before that step;
-- **CLUE** a document or pigmented (clue) face that no reachable standing point within 4.5 m sees enough of.
+- **CLUE** a document or pigmented (clue) face that no reachable standing point within 4.5 m sees enough of (a sight's eye counts as a place to see from: a clue meant to be read only through a sight is fine).
 
 Each finding prints a `room_shots` view to look at it. Fix it, or, when it is right (a pawl pivoting in its jamb slot, a fern
 growing out of rubble, trims running into the piers they meet), list it in `game/rooms/<id>/audit_accepted.txt` with the
 reason: the finding's key (or a `*` pattern) and a tab. `tools/test.sh` runs the audit for every room that has that file and
 fails on anything not fixed or accepted. The audit cannot judge looks (a sun split at the wrong edge, a white card in a stone
 room): also render the room at several points in the solution and look.
+
+Two kinds of fault the audit does not catch, each now with a room test in Quiet Sun worth copying: a **sight with no `eye`**
+(looking through it lays the round frame over the player's own view) and a **control shared between two locks that is not
+frozen once the first opens** (`freeze_when`): a player who turns it later silently undoes the earlier solve and the later
+lock can never open (Quiet Sun's lattice discs left the beacon dark).
 
 ## 8. Done means
 

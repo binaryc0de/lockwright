@@ -73,7 +73,7 @@ func _ready() -> void:
 			var stand := _stand_points()
 			_check_float(i)
 			_check_embed(i)
-			_check_clues(i, stand)
+			_check_clues(i, stand + _sight_eyes())
 		if i == steps.size():
 			break
 		_now += 30.0
@@ -170,6 +170,25 @@ func _samples(mi: MeshInstance3D, count: int) -> PackedVector3Array:
 	return out
 
 
+## A mesh's whole underside, for contact: a flat block resting in a bowl
+## touches only by its outer edge, not at one lowest point.
+func _underside(mi: MeshInstance3D) -> PackedVector3Array:
+	var lo_y := INF
+	var world := PackedVector3Array()
+	for f in mi.mesh.get_faces():
+		var g := mi.global_transform * f
+		world.append(g)
+		lo_y = minf(lo_y, g.y)
+	var low := PackedVector3Array()
+	for g in world:
+		if g.y < lo_y + 0.004:
+			low.append(g)
+	var out := PackedVector3Array()
+	for k in range(0, low.size(), maxi(1, low.size() / 24)):
+		out.append(low[k])
+	return out
+
+
 ## The object a mesh belongs to: the nearest ancestor that is an interactable,
 ## or else the node the builder placed (a part wrapper's parent).
 func _owner_of(mi: Node) -> Node:
@@ -216,7 +235,7 @@ func _check_float(step: int) -> void:
 	for mi in live:
 		q.exclude = [(_mesh_body[mi] as StaticBody3D).get_rid()]
 		ray.exclude = q.exclude
-		for p in _samples(mi, 48):
+		for p in _samples(mi, 48) + _underside(mi):
 			q.transform = Transform3D(Basis(), p)
 			for hit in _space().intersect_shape(q, 8):
 				var other := _bodies.get(hit["collider"]) as MeshInstance3D
@@ -446,6 +465,18 @@ func _stand_points_cached() -> PackedVector3Array:
 		_stand_cache = _stand_points()
 		_stand_gen = gen
 	return _stand_cache
+
+
+## Where a player's eye goes when looking through a sight: a clue meant to be
+## read only through one (the skyline frame in its sealed well) is seen there.
+func _sight_eyes() -> PackedVector3Array:
+	var out := PackedVector3Array()
+	for n in room.find_children("*", "", true, false):
+		var vp := n as Viewpoint
+		var eye := vp.get_node_or_null(vp.eye) as Node3D if vp else null
+		if eye:
+			out.append(eye.global_position)
+	return out
 
 
 func _check_clues(step: int, stand: PackedVector3Array) -> void:

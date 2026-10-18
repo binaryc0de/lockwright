@@ -25,7 +25,7 @@ const (
 // AssetResult is the outcome for one asset id.
 type AssetResult struct {
 	AssetID   string   `json:"asset_id"`
-	Status    string   `json:"result"` // pass | fail | not_built
+	Status    string   `json:"result"` // pass | fail | not_built | printable
 	Request   string   `json:"request_status,omitempty"`
 	GLB       string   `json:"glb,omitempty"`
 	Triangles int      `json:"triangles"`
@@ -160,6 +160,12 @@ func checkAsset(root, id string) *AssetResult {
 	}
 	reviewed := req.Status == "in_review" || req.Status == "accepted"
 	accepted := req.Status == "accepted"
+	if req.Class == "printable" {
+		// Printed or carved faces only: no GLB; their generator has its own
+		// --check (tools/printables/; tools/test.sh runs qs_carvings.py's).
+		res.Status = "printable"
+		return res
+	}
 
 	// 1. Locate the GLB.
 	glbs := findGLBs(root, id)
