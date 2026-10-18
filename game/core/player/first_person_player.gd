@@ -184,15 +184,24 @@ func focus_on(point: Vector3) -> void:
 	_tween_camera(global_transform.affine_inverse() * goal)
 
 
-func unfocus() -> void:
-	_tween_camera(Transform3D(Basis.from_euler(Vector3(_pitch, 0, 0)), Vector3.UP * EYE_HEIGHT))
+func unfocus(cut: bool = false) -> void:
+	var home := Transform3D(Basis.from_euler(Vector3(_pitch, 0, 0)), Vector3.UP * EYE_HEIGHT)
+	if cut:
+		if _focus_tween:
+			_focus_tween.kill()
+		camera.transform = home
+	else:
+		_tween_camera(home)
 	camera.fov = Settings.fov / zoom
 
 
 ## Looking through a sight (Viewpoint): the camera goes to `eye` (looking
-## along its -Z) with a narrow field of view; unfocus() brings it back.
+## along its -Z) with the sight's field of view; unfocus(true) brings it back.
+## A cut, not a glide: the eye can lie beyond a wall (a sight through a bore).
 func view_from(eye_xf: Transform3D, view_fov: float) -> void:
-	_tween_camera(global_transform.affine_inverse() * eye_xf.orthonormalized())
+	if _focus_tween:
+		_focus_tween.kill()
+	camera.transform = global_transform.affine_inverse() * eye_xf.orthonormalized()
 	camera.fov = view_fov
 
 

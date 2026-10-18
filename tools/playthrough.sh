@@ -4,6 +4,7 @@
 # player on a computer would play it (W A S D, mouse look, E, number keys).
 # Captions come from media/rooms/<id>/playthrough_captions.yaml if present.
 # A step longer than CUT_AFTER seconds (default 25) has its middle cut out.
+# LIMIT (seconds, default 5400) stops the recording early: a quick check.
 # Needs google-chrome, python playwright, ffmpeg with libass; run
 # tools/export.sh first. The video carries the solution: it is for checking
 # the design against the build, not for players.
@@ -26,7 +27,7 @@ PP=$!
 trap 'kill $PP 2>/dev/null; wait $PP 2>/dev/null' EXIT
 for _ in $(seq 1 40); do curl -sf "http://127.0.0.1:$PORT/healthz" >/dev/null && break; sleep 0.25; done
 echo "== recording $ROOM (frames in $WORK/rec)"
-python3 tools/playthrough.py record "http://127.0.0.1:$PORT/play/?room=$ROOM&deskbot=1&tour=1" --out "$WORK/rec" \
+python3 tools/playthrough.py record "http://127.0.0.1:$PORT/play/?room=$ROOM&deskbot=1&tour=1" --out "$WORK/rec" --limit "${LIMIT:-5400}" \
 	|| echo "warning: the bot reported problems (see $WORK/rec/timeline.jsonl); cutting anyway"
 [ -s "$WORK/rec/frames.jsonl" ] || { echo "no frames recorded"; exit 1; }
 CAP="media/rooms/$ROOM/playthrough_captions.yaml"

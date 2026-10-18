@@ -64,7 +64,8 @@ func test_looking_moves_the_eye_and_masks_the_view() -> void:
 	assert_bool(hud._modal is ViewpointPanel).is_true()
 	assert_object(hud.get_node_or_null("SightRing")).is_not_null()
 	assert_float(player.camera.fov).is_equal(20.0)
-	await get_tree().create_timer(FirstPersonPlayer.FOCUS_TIME + 0.1).timeout
+	# A cut, not a glide (owner, 2026-10-17): a sight's eye can lie beyond a
+	# wall, and gliding there showed the inside of the wall.
 	assert_vector(player.camera.global_position).is_equal_approx(Vector3(0, 1.5, -2), Vector3.ONE * 0.01)
 
 
@@ -78,6 +79,8 @@ func test_buttons_work_the_controls_and_back_restores_the_view() -> void:
 	assert_bool(hud.is_modal_open()).is_false()
 	assert_object(hud.get_node_or_null("SightRing")).is_null()
 	assert_float(player.camera.fov).is_equal(Settings.fov)
+	# Straight back to the player's own eye, also a cut.
+	assert_vector(player.camera.position).is_equal_approx(Vector3.UP * FirstPersonPlayer.EYE_HEIGHT, Vector3.ONE * 0.01)
 
 
 func test_an_unfitted_sight_does_not_open() -> void:

@@ -431,7 +431,7 @@ func open_viewpoint(vp: Viewpoint) -> void:
 		remove_child(ring)
 		ring.queue_free()
 		if is_instance_valid(player):
-			player.unfocus())
+			player.unfocus(true))
 
 
 func open_patch_panel(panel: PatchPanel) -> void:

@@ -791,6 +791,7 @@ func _walk_keys_to(spot: Vector3) -> void:
 		var t := 0.0
 		var last := _player().global_position
 		var stuck := 0.0
+		var nudges := 0
 		while t < WALK_TIMEOUT_S:
 			var pos := _player().global_position
 			var flat := Vector2(wp.x - pos.x, wp.z - pos.z)
@@ -803,11 +804,29 @@ func _walk_keys_to(spot: Vector3) -> void:
 			stuck += 6.0 / Engine.physics_ticks_per_second
 			if stuck > 0.8:
 				if pos.distance_to(last) < 0.1:
-					break
-				last = pos
+					# Caught on a corner the route cuts (a low crate): step
+					# back and sideways as a player would, then go on; give
+					# up on this leg after trying both sides.
+					if nudges >= 2:
+						break
+					await _sidestep(KEY_D if nudges == 0 else KEY_A)
+					nudges += 1
+				last = _player().global_position
 				stuck = 0.0
 	_hold(KEY_W, false)
 	await get_tree().physics_frame
+
+
+## Backs off a little and steps to one side (D right, A left), W held again after.
+func _sidestep(side: Key) -> void:
+	_hold(KEY_W, false)
+	_hold(KEY_S, true)
+	await _wait(0.25)
+	_hold(KEY_S, false)
+	_hold(side, true)
+	await _wait(0.4)
+	_hold(side, false)
+	_hold(KEY_W, true)
 
 
 func _use_item_keys(item_path: String, target: Interactable) -> String:
