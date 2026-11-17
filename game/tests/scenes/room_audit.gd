@@ -9,7 +9,7 @@ extends Node3D
 ##           can stand within reach, just before that step
 ##   CLUE    a pigmented (clue) face barely visible from where players stand
 ##   godot --headless --path game res://tests/scenes/room_audit.tscn -- \
-##     --room quiet_sun --out /tmp/audit.txt [--checkpoints 0,20,40,end|every:5]
+##     --room night_shift --out /tmp/audit.txt [--checkpoints 0,20,40,end|every:5]
 ## Findings looked at and accepted (a pawl pivoting in its jamb slot, a fern
 ## growing out of rubble) are listed in the room's `audit_accepted.txt`, one
 ## per line: the finding's key (or a * pattern), a tab, and why it is right. Exit code 1 while
@@ -36,12 +36,12 @@ var _accepted := {}
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	var loader := RoomLoader.new()
-	if not loader.load_room(_arg(args, "--room", "quiet_sun"), _arg(args, "--pack", "")):
+	if not loader.load_room(_arg(args, "--room", "night_shift"), _arg(args, "--pack", "")):
 		push_error(loader.error)
 		get_tree().quit(1)
 		return
 	manifest = loader.manifest
-	var acc := "res://rooms/%s/audit_accepted.txt" % _arg(args, "--room", "quiet_sun")
+	var acc := "res://rooms/%s/audit_accepted.txt" % _arg(args, "--room", "night_shift")
 	if FileAccess.file_exists(acc):
 		for line in FileAccess.get_file_as_string(acc).split("\n"):
 			if line.strip_edges().is_empty() or line.begins_with("#"):

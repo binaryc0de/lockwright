@@ -19,24 +19,3 @@ CC0/CC-BY restriction continues to apply to any third-party art assets.
 
 The CPU renderer uses Python's standard library and NumPy already bundled with
 Blender. These are rendering tools and are not shipped as asset inputs.
-
-Clockmaker’s six printable templates, cabinet-card portrait illustration,
-letterpress serif contours, dip-pen lettering and paper/photo overlays are
-original artwork authored in `clockmaker.py`, `create_clockmaker_templates.py`
-and `overlays/clockmaker_surface.py`. Clockmaker uses no third-party art,
-photograph or font input; its letter geometry extends the original authored
-stroke alphabet. No downloads were made.
-
-R5's seven templates, six-knight fresco, limestone carvings, barrel pattern,
-journal lettering and seeded surface wear are also original artwork, generated
-by `create_undercroft_templates.py`, `undercroft.py` and
-`overlays/undercroft_surface.py`. `glyphs.py` transcribes the locally authored
-`tomb_chest.py` and `gate_ring_lock.py` contours so clues match the props. No
-third-party art or font was added. The lowercase q is an original new pen stroke.
-
-Quiet Sun's 50 templates, generic object drawings, invented emblems, base-six
-ring/stroke numerals, and sandstone/field-paper wear are original project artwork.
-`quiet_sun.py` reuses the Clockmaker stroke alphabet and CPU SVG rasterizer;
-`overlays/quiet_sun_surface.py` extends the existing protected wear layer. English
-text is transcribed directly from the room builder's constants and literal data.
-No real-culture glyphs, external fonts, third-party art or downloads were added.

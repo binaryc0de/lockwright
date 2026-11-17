@@ -2,7 +2,7 @@
 # Renders each part of a prop GLB as Godot imports it, with the web build's
 # Compatibility renderer, plus a contact sheet. Use it to accept an asset:
 # Blender previews cannot show import problems (UV sets, alpha, normal maps).
-#   tools/shots/prop_views.sh <glb under game/, e.g. rooms/quiet_sun/assets/props/qs_ruin_kit.glb> <out_dir> [part]
+#   tools/shots/prop_views.sh <glb under game/, e.g. assets/core/props/server_rack_42u.glb> <out_dir> [part]
 set -euo pipefail
 glb="${1:?usage: $0 <glb> <out_dir> [part]}"; out="${2:?usage: $0 <glb> <out_dir> [part]}"
 mkdir -p "$out"; out="$(realpath "$out")"

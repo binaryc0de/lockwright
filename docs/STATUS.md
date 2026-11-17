@@ -4,6 +4,8 @@ Milestone checklist from PLAN.md Section 11. Check an item only when it was actu
 
 **Current milestone: M4 (Night Shift content and polish).** 2026-10-03: `m4-polish`, `m5-browser` and `room-clockmaker` merged into `main` (fast-forward) at the owner's request; M4 (blind play-tests) and M5 (friends test) stay open. M0 closed 2026-10-01. M1 closed 2026-10-02 (owner play-test escaped; Codex branch review clean). Server cage dressed (pulled forward from M4) and merged. M2 closed 2026-10-02.
 
+**Public repository (2026-11-16).** This copy holds the platform and Night Shift only; the other rooms were removed from the whole history (`git filter-repo`) and their references from the code. Run on the Alienware: `tools/test.sh` passed every step through the platform smoke (gofmt, go vet/test, roomcheck PASS night_shift, assetcheck 24/24, the intranet's tests, gdUnit4 158/158, pack replay 30/30, touch play-through won with 0 problems, multiplayer smoke PASS, platform smoke PASS with the live Docker intranet attacked through the proxy and its hardening checked). The browser smoke failed in a shell without a display (`webgl: no webgl2`) and passed when rerun as `DISPLAY=:0 tools/web_smoke.sh`.
+
 ## M0: Repo and specs
 
 - [x] Repo layout (PLAN.md 14), `CLAUDE.md`, `AGENTS.md`, `.gitignore`

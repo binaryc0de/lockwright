@@ -2,8 +2,8 @@
 # Dev play from part-way through a room: a local headless server, a bot that
 # replays room.yaml's solution up to and including the step that solves
 # PUZZLE, then a windowed client for you. No platform, nothing published.
-#   tools/play_from.sh clockmaker strike_true      # start at the hidden stair
-#   NAME=Jason tools/play_from.sh clockmaker open_gate
+#   tools/play_from.sh night_shift open_cabinet     # start with the cabinet open
+#   NAME=Ana tools/play_from.sh night_shift hack_intranet
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

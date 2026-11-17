@@ -2,7 +2,7 @@ extends Node3D
 ## Records a room's intro trailer from a shot list (docs/research/06-intro-videos.md).
 ## Run through tools/trailer/build.sh, or directly:
 ##   godot --path game --write-movie out.avi --fixed-fps 30 \
-##     res://tests/scenes/room_trailer.tscn -- --room clockmaker --shots /abs/media/rooms/clockmaker/trailer.json
+##     res://tests/scenes/room_trailer.tscn -- --room night_shift --shots /abs/media/rooms/night_shift/trailer.json
 ## Shot list: {"quality": "high", "shots": [{"duration": s, "from": [x,y,z,yaw,pitch],
 ## "to": [...], "caption": "...", "title": "...", "set": {"node/path": {state}}}]}.
 ## A shot without "to" holds still; "title" draws a centred title card over it.

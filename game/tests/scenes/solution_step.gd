@@ -1,6 +1,6 @@
 extends Node
 ## Prints the index of the solution step after which a puzzle is solved:
-##   godot --headless --path game res://tests/scenes/solution_step.tscn -- --room clockmaker --puzzle strike_true
+##   godot --headless --path game res://tests/scenes/solution_step.tscn -- --room night_shift --puzzle open_cabinet
 ## Used by tools/play_from.sh. Replays room.yaml's solution through intents,
 ## like the room tests.
 

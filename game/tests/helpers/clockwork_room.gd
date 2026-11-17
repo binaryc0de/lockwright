@@ -1,6 +1,6 @@
 extends RefCounted
 ## An in-code room for the clockwork SDK nodes (ADR-0033), wired the way the
-## Clockmaker's Study uses them:
+## a clockwork room would use them:
 ##
 ##   Rings (DialLock "ABC" x3, code CAB) -> RingSpring (AllOfGate) -> Box
 ##   Box (ContainerProp locked_by Rings)

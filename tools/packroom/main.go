@@ -378,7 +378,7 @@ func roomResources(gameDir, id string) ([]string, error) {
 
 // dropUnusedModels leaves out model sources (.glb, .gltf, .obj) that no text
 // scene, resource or script in the list names: a room that saves the meshes it
-// uses as its own resources (The Quiet Sun's assets/kit) only needs the GLBs to
+// uses as its own resources (an assets/kit folder) only needs the GLBs to
 // build them, and shipping them doubled its pack. A model a scene instances is
 // named in that scene, so it stays.
 func dropUnusedModels(gameDir string, files []string) []string {

@@ -1,6 +1,6 @@
 extends SceneTree
 ## Supplemental import review only. Lives outside the game and ships nowhere.
-## -- --glb res://... --out ABS [--part NAME] [--canyon | --room-canyon | --doors]
+## -- --glb res://... --out ABS [--part NAME] [--canyon | --doors]
 
 func _initialize() -> void:
 	call_deferred("render_views")
@@ -12,8 +12,6 @@ func render_views() -> void:
 	var out := ""
 	var part := ""
 	var canyon := args.has("--canyon")
-	var room_canyon := args.has("--room-canyon")
-	canyon = canyon or room_canyon
 	var doors := args.has("--doors")
 	for i in args.size():
 		match args[i]:
@@ -50,18 +48,6 @@ func render_views() -> void:
 		return
 	var asset := scene.instantiate() as Node3D
 	stage.add_child(asset)
-	if room_canyon:
-		# Review the new GLB in the current gallery without regenerating room
-		# meshes or modifying game files. Strip gameplay scripts before _ready.
-		var gallery_room := (load("res://rooms/quiet_sun/room.tscn") as PackedScene).instantiate()
-		for node in [gallery_room] + gallery_room.find_children("*", "", true, false):
-			node.set_script(null)
-		stage.add_child(gallery_room)
-		var old_gorge := gallery_room.get_node("Gallery/Gorge")
-		old_gorge.get_parent().remove_child(old_gorge)
-		old_gorge.free()
-		env.queue_free()
-		key.queue_free()
 	for mi in asset.find_children("*", "MeshInstance3D", true, false):
 		for si in mi.mesh.get_surface_count():
 			var mat = mi.mesh.surface_get_material(si)
@@ -131,12 +117,6 @@ func render_views() -> void:
 		var dist := maxf(bounds.size.length()*0.5,0.05)/tan(deg_to_rad(camera.fov*0.5))*1.15
 		views = [[part+"__right",centre+Vector3(1,0.10,-0.10).normalized()*dist,centre],
 			[part+"__reverse",centre+Vector3(0,0.15,1).normalized()*dist,centre]]
-	if room_canyon:
-		for view in views:
-			if str(view[0]).begins_with("gallery_"):
-				view[1].y = 4.6
-				view[1].z = -17.5
-				view[1].x *= 5.5 / 7.0
 	for view in views:
 		camera.global_position = view[1]
 		camera.look_at(view[2], Vector3.UP)

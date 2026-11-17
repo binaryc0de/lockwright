@@ -7,7 +7,7 @@ extends Node
 ## TOUCH-FAIL with the reason, then done by intent so the run carries on and
 ## finds every gap. Prints "TOUCHBOT: done, N problems"; headless runs quit
 ## with 0 (none) or 2.
-##   godot --path game -- --room clockmaker --touchbot     (or ?room=..&touchbot=1)
+##   godot --path game -- --room night_shift --touchbot     (or ?room=..&touchbot=1)
 ## With `desktop` (--deskbot, ?deskbot=1) it plays the classic way instead:
 ## W A S D and mouse look, the crosshair and E, number keys for items, mouse
 ## clicks on panels and Esc to close them. Classic play needs a captured

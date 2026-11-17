@@ -7,7 +7,7 @@ extends Node
 
 ## Thinner than the player's 0.3 m capsule: the mesh only plans the route and
 ## the capsule slides along walls, but Recast's erosion and voxel rounding
-## closed 0.7 m passages (beside Clockmaker's swung case, its spiral stair) at
+## closed 0.7 m passages (beside a swung door, on a spiral stair) at
 ## the full radius.
 const AGENT_RADIUS := 0.2
 const AGENT_HEIGHT := 1.75
@@ -78,7 +78,7 @@ func bake() -> void:
 
 ## Concave colliders with backface_collision are solid from both sides for the
 ## player, but the baker only walks on their front faces: a ramp built facing
-## down (Clockmaker's stair) would be left out. Add their faces flipped too.
+## down (a stair seen from below) would be left out. Add their faces flipped too.
 static func _add_flipped_backfaces(src: NavigationMeshSourceGeometryData3D, root: Node) -> void:
 	for cs: CollisionShape3D in root.find_children("*", "CollisionShape3D", true, false):
 		var shape := cs.shape as ConcavePolygonShape3D

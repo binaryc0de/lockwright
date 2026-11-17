@@ -20,9 +20,6 @@ go run ./tools/roomcheck
 step "assetcheck"
 go run ./tools/assetcheck
 
-step "carved faces (tools/printables/qs_carvings.py --check: facts, hashes, normals)"
-python3 tools/printables/qs_carvings.py --check
-
 step "texture budget (browser build, ADR-0024)"
 python3 tools/texture_budget.py --check
 

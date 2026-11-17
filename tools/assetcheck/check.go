@@ -162,7 +162,7 @@ func checkAsset(root, id string) *AssetResult {
 	accepted := req.Status == "accepted"
 	if req.Class == "printable" {
 		// Printed or carved faces only: no GLB; their generator has its own
-		// --check (tools/printables/; tools/test.sh runs qs_carvings.py's).
+		// checks (tools/printables/verify.py).
 		res.Status = "printable"
 		return res
 	}

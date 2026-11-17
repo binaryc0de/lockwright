@@ -79,8 +79,8 @@ func test_browser_game_url_goes_through_the_platform() -> void:
 
 
 func test_play_from_hands_the_room_over_part_way() -> void:
-	var web := AppArgs.web_query_args("http://x", "?room=quiet_sun&play_from=61")
-	assert_array(web).contains_exactly(["--room", "quiet_sun", "--play-from", "61"])
+	var web := AppArgs.web_query_args("http://x", "?room=night_shift&play_from=61")
+	assert_array(web).contains_exactly(["--room", "night_shift", "--play-from", "61"])
 	var a := AppArgs.parse(web)
 	assert_bool(a.touchbot).is_true()
 	assert_int(a.touchbot_from).is_equal(61)
@@ -89,11 +89,11 @@ func test_play_from_hands_the_room_over_part_way() -> void:
 
 
 func test_tour_slows_the_desktop_bot_for_a_recording() -> void:
-	var web := AppArgs.web_query_args("http://x", "?room=quiet_sun&deskbot=1&tour=1")
-	assert_array(web).contains_exactly(["--room", "quiet_sun", "--deskbot", "--bot-tour"])
+	var web := AppArgs.web_query_args("http://x", "?room=night_shift&deskbot=1&tour=1")
+	assert_array(web).contains_exactly(["--room", "night_shift", "--deskbot", "--bot-tour"])
 	var a := AppArgs.parse(web)
 	assert_bool(a.deskbot).is_true()
 	assert_bool(a.bot_tour).is_true()
-	assert_bool(AppArgs.parse(AppArgs.web_query_args("http://x", "?room=quiet_sun&deskbot=1")).bot_tour).is_false()
+	assert_bool(AppArgs.parse(AppArgs.web_query_args("http://x", "?room=night_shift&deskbot=1")).bot_tour).is_false()
 	# Without a bot, tour does nothing.
-	assert_array(AppArgs.web_query_args("http://x", "?room=quiet_sun&tour=1")).contains_exactly(["--room", "quiet_sun"])
+	assert_array(AppArgs.web_query_args("http://x", "?room=night_shift&tour=1")).contains_exactly(["--room", "night_shift"])

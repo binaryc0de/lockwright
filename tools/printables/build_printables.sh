@@ -12,4 +12,4 @@ VERSION_OUTPUT="$(PULSE_SERVER=unix:/nonexistent-blender-asset-audio "$BLENDER_B
 VERSION="$(sed -nE 's/^Blender ([0-9]+\.[0-9]+\.[0-9]+).*$/\1/p' <<< "$VERSION_OUTPUT" | head -n1)"
 [[ "$VERSION" =~ ^5\.2\.[0-9]+$ ]] || { echo "Requires Blender 5.2.x; found $VERSION" >&2; exit 1; }
 cd "$ROOT"
-PULSE_SERVER=unix:/nonexistent-blender-asset-audio "$BLENDER_BIN" -b --factory-startup --threads 4 -noaudio --python-exit-code 1 --python "$ROOT/tools/printables/clockmaker.py" -- "$@"
+PULSE_SERVER=unix:/nonexistent-blender-asset-audio "$BLENDER_BIN" -b --factory-startup --threads 4 -noaudio --python-exit-code 1 --python "$ROOT/tools/printables/render.py" -- "$@"
