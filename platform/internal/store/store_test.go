@@ -143,8 +143,15 @@ func TestReopenKeepsDataAndSchema(t *testing.T) {
 }
 
 func TestInviteCodesAvoidAmbiguousCharacters(t *testing.T) {
-	for i := 0; i < 200; i++ {
-		for _, c := range InviteCode() {
+	for i := 0; i < 500; i++ {
+		code := InviteCode()
+		if len(code) != 6 {
+			t.Fatalf("invite code %q has len %d, want 6", code, len(code))
+		}
+		for _, c := range code {
+			if !strings.ContainsRune(inviteAlphabet, c) {
+				t.Fatalf("invite code %q contains character %q outside alphabet", code, c)
+			}
 			if c == '0' || c == 'O' || c == '1' || c == 'I' || c == 'L' {
 				t.Fatalf("ambiguous character %q", c)
 			}

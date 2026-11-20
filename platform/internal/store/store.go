@@ -491,13 +491,16 @@ func boolInt(b bool) int {
 	return 0
 }
 
-const idAlphabet = "abcdefghijkmnpqrstuvwxyz23456789"
+const (
+	idAlphabet     = "abcdefghijkmnpqrstuvwxyz23456789"
+	inviteAlphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+)
 
 // RandomID returns n random characters from an unambiguous lowercase alphabet.
 func RandomID(n int) string { return randomFrom(idAlphabet, n) }
 
 // InviteCode returns a 6-character code that is easy to read out loud.
-func InviteCode() string { return strings.ToUpper(randomFrom("abcdefghjkmnpqrstuvwxyz23456789", 6)) }
+func InviteCode() string { return randomFrom(inviteAlphabet, 6) }
 
 // RandomHex returns 2n hex characters from n random bytes.
 func RandomHex(n int) string {
@@ -508,15 +511,28 @@ func RandomHex(n int) string {
 	return hex.EncodeToString(b)
 }
 
+// randomFrom samples n characters uniformly from alphabet (len <= 256) using
+// rejection sampling so non-power-of-two alphabets have no modulo bias.
 func randomFrom(alphabet string, n int) string {
-	b := make([]byte, n)
-	if _, err := rand.Read(b); err != nil {
-		panic(err)
+	m := len(alphabet)
+	limit := 256 - (256 % m)
+	out := make([]byte, 0, n)
+	buf := make([]byte, max(n*2, 16))
+	for len(out) < n {
+		if _, err := rand.Read(buf); err != nil {
+			panic(err)
+		}
+		for _, v := range buf {
+			if int(v) >= limit {
+				continue
+			}
+			out = append(out, alphabet[int(v)%m])
+			if len(out) == n {
+				break
+			}
+		}
 	}
-	for i := range b {
-		b[i] = alphabet[int(b[i])%len(alphabet)]
-	}
-	return string(b)
+	return string(out)
 }
 
 // CountActive counts the games that hold resources (the lobby's cap): those
