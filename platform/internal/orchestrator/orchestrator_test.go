@@ -371,3 +371,124 @@ func TestHTTPProbeRefusesRedirectsAndHasTimeout(t *testing.T) {
 		t.Fatal("slow health check unexpectedly succeeded")
 	}
 }
+
+func TestProxyHalfCloseCapAndIdleTimeout(t *testing.T) {
+	// Upstream reads until client half-closes (EOF), then responds and closes.
+	upLn, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer upLn.Close()
+	go func() {
+		for {
+			c, err := upLn.Accept()
+			if err != nil {
+				return
+			}
+			go func(conn net.Conn) {
+				defer conn.Close()
+				req, err := io.ReadAll(conn)
+				if err != nil {
+					return
+				}
+				time.Sleep(20 * time.Millisecond)
+				_, _ = conn.Write(append([]byte("reply:"), req...))
+			}(c)
+		}
+	}()
+
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := &proxy{
+		ln:          ln,
+		target:      upLn.Addr().String(),
+		maxConns:    2,
+		idleTimeout: 150 * time.Millisecond,
+		conns:       map[net.Conn]bool{},
+	}
+	go p.serve()
+	defer p.close()
+
+	// 1. Half-close: client writes request, calls CloseWrite, still receives full reply.
+	c1, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = c1.Write([]byte("ping"))
+	if err := c1.(*net.TCPConn).CloseWrite(); err != nil {
+		t.Fatal(err)
+	}
+	reply, err := io.ReadAll(c1)
+	c1.Close()
+	if err != nil || string(reply) != "reply:ping" {
+		t.Fatalf("half-close reply = %q, err = %v; want reply:ping", reply, err)
+	}
+
+	// 2. Connection cap: hold 2 connections open; a 3rd is immediately closed.
+	hold1, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer hold1.Close()
+	hold2, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer hold2.Close()
+	// Wait until both connections are acquired by the proxy.
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		p.mu.Lock()
+		n := p.active
+		p.mu.Unlock()
+		if n == 2 {
+			break
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	c3, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = c3.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
+	buf := make([]byte, 1)
+	_, err = c3.Read(buf)
+	c3.Close()
+	if !errors.Is(err, io.EOF) {
+		t.Fatalf("3rd connection beyond cap: read err = %v, want EOF", err)
+	}
+
+	// 3. Idle timeout: the two held idle connections are closed after idleTimeout.
+	_ = hold1.SetReadDeadline(time.Now().Add(time.Second))
+	if _, err := hold1.Read(buf); err == nil {
+		t.Fatal("idle connection was not closed after idleTimeout")
+	}
+	_ = hold2.SetReadDeadline(time.Now().Add(time.Second))
+	if _, err := hold2.Read(buf); err == nil {
+		t.Fatal("second idle connection was not closed after idleTimeout")
+	}
+	// Slots are released once idle connections close, so a new connection works again.
+	deadline = time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		p.mu.Lock()
+		n := p.active
+		p.mu.Unlock()
+		if n == 0 {
+			break
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	c4, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = c4.Write([]byte("again"))
+	_ = c4.(*net.TCPConn).CloseWrite()
+	reply, err = io.ReadAll(c4)
+	c4.Close()
+	if err != nil || string(reply) != "reply:again" {
+		t.Fatalf("post-idle connection reply = %q, err = %v", reply, err)
+	}
+}

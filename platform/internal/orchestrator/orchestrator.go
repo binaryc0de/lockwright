@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/binaryc0de/lockwright/platform/internal/docker"
@@ -75,13 +76,21 @@ type Handle struct {
 	Note string `json:"note,omitempty"`
 }
 
+// Defaults for each challenge TCP proxy.
+const (
+	DefaultMaxConns    = 64
+	DefaultIdleTimeout = 2 * time.Minute
+)
+
 // Config tunes the orchestrator.
 type Config struct {
 	AdvertiseHost string // address players' machines use to reach this host
 	BindAddr      string // where proxy ports listen ("0.0.0.0" for the LAN)
 	PortMin       int
 	PortMax       int
-	Secret        []byte // platform secret for per-instance flags
+	MaxConns      int           // concurrent connections per proxy (0 = DefaultMaxConns)
+	IdleTimeout   time.Duration // idle timeout per proxied connection (0 = DefaultIdleTimeout)
+	Secret        []byte        // platform secret for per-instance flags
 	// Owner identifies this platform instance (OwnerFor its data directory).
 	// Everything it creates carries it, and Cleanup removes only what carries
 	// it, so a second platform on the same Docker (a test run beside the
@@ -141,6 +150,12 @@ type running struct {
 func New(cfg Config, eng Engine, st *store.Store) *Orchestrator {
 	if cfg.BindAddr == "" {
 		cfg.BindAddr = "0.0.0.0"
+	}
+	if cfg.MaxConns <= 0 {
+		cfg.MaxConns = DefaultMaxConns
+	}
+	if cfg.IdleTimeout <= 0 {
+		cfg.IdleTimeout = DefaultIdleTimeout
 	}
 	return &Orchestrator{cfg: cfg, eng: eng, store: st, Probe: httpProbe, sessions: map[string]*running{}, ports: map[int]bool{}, locks: map[string]*sync.Mutex{}}
 }
@@ -407,7 +422,13 @@ func (o *Orchestrator) listen() (*proxy, int, error) {
 			continue
 		}
 		o.ports[port] = true
-		return &proxy{ln: ln, port: port, conns: map[net.Conn]bool{}}, port, nil
+		return &proxy{
+			ln:          ln,
+			port:        port,
+			maxConns:    o.cfg.MaxConns,
+			idleTimeout: o.cfg.IdleTimeout,
+			conns:       map[net.Conn]bool{},
+		}, port, nil
 	}
 	return nil, 0, fmt.Errorf("no free port in %d-%d", o.cfg.PortMin, o.cfg.PortMax)
 }
@@ -470,11 +491,14 @@ func uniq(in []string) []string {
 // --- TCP proxy -----------------------------------------------------------------
 
 type proxy struct {
-	ln     net.Listener
-	port   int
-	target string
+	ln          net.Listener
+	port        int
+	target      string
+	maxConns    int
+	idleTimeout time.Duration
 
 	mu     sync.Mutex
+	active int
 	conns  map[net.Conn]bool
 	closed bool
 }
@@ -485,48 +509,117 @@ func (p *proxy) serve() {
 		if err != nil {
 			return
 		}
+		if !p.acquire(c) {
+			c.Close()
+			continue
+		}
 		go p.pipe(c)
 	}
 }
 
 func (p *proxy) pipe(client net.Conn) {
-	upstream, err := net.DialTimeout("tcp", p.target, 3*time.Second)
+	var upstream net.Conn
+	defer func() {
+		client.Close()
+		if upstream != nil {
+			upstream.Close()
+		}
+		p.release(client, upstream)
+	}()
+	u, err := net.DialTimeout("tcp", p.target, 3*time.Second)
 	if err != nil {
-		client.Close()
 		return
 	}
-	if !p.track(client, upstream) {
-		client.Close()
-		upstream.Close()
+	upstream = u
+	if !p.trackUpstream(upstream) {
 		return
 	}
-	done := make(chan struct{}, 2)
-	go func() { io.Copy(upstream, client); done <- struct{}{} }()
-	go func() { io.Copy(client, upstream); done <- struct{}{} }()
-	<-done
-	client.Close()
-	upstream.Close()
-	<-done
-	p.untrack(client, upstream)
+	var lastActivity atomic.Int64
+	lastActivity.Store(time.Now().UnixNano())
+	var wg sync.WaitGroup
+	wg.Add(2)
+	copyDir := func(dst, src net.Conn) {
+		defer wg.Done()
+		if err := copyIdle(dst, src, p.idleTimeout, &lastActivity); err != nil {
+			client.Close()
+			upstream.Close()
+			return
+		}
+		closeWrite(dst)
+	}
+	go copyDir(upstream, client)
+	go copyDir(client, upstream)
+	wg.Wait()
 }
 
-func (p *proxy) track(cs ...net.Conn) bool {
+func copyIdle(dst, src net.Conn, idle time.Duration, lastActivity *atomic.Int64) error {
+	buf := make([]byte, 32*1024)
+	for {
+		if idle > 0 {
+			_ = src.SetReadDeadline(time.Now().Add(idle))
+		}
+		n, rerr := src.Read(buf)
+		if n > 0 {
+			lastActivity.Store(time.Now().UnixNano())
+			if idle > 0 {
+				_ = dst.SetWriteDeadline(time.Now().Add(idle))
+			}
+			if _, werr := dst.Write(buf[:n]); werr != nil {
+				return werr
+			}
+			lastActivity.Store(time.Now().UnixNano())
+		}
+		if rerr != nil {
+			if errors.Is(rerr, io.EOF) {
+				return nil
+			}
+			var ne net.Error
+			if idle > 0 && errors.As(rerr, &ne) && ne.Timeout() {
+				if time.Since(time.Unix(0, lastActivity.Load())) < idle {
+					continue
+				}
+			}
+			return rerr
+		}
+	}
+}
+
+func closeWrite(c net.Conn) {
+	if cw, ok := c.(interface{ CloseWrite() error }); ok {
+		_ = cw.CloseWrite()
+	}
+}
+
+func (p *proxy) acquire(client net.Conn) bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.closed || (p.maxConns > 0 && p.active >= p.maxConns) {
+		return false
+	}
+	p.active++
+	p.conns[client] = true
+	return true
+}
+
+func (p *proxy) trackUpstream(upstream net.Conn) bool {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.closed {
 		return false
 	}
-	for _, c := range cs {
-		p.conns[c] = true
-	}
+	p.conns[upstream] = true
 	return true
 }
 
-func (p *proxy) untrack(cs ...net.Conn) {
+func (p *proxy) release(client, upstream net.Conn) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	for _, c := range cs {
-		delete(p.conns, c)
+	delete(p.conns, client)
+	if upstream != nil {
+		delete(p.conns, upstream)
+	}
+	if p.active > 0 {
+		p.active--
 	}
 }
 
