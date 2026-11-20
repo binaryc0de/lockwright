@@ -220,6 +220,34 @@ func TestFlagsCheckedAndRateLimited(t *testing.T) {
 	if total != 2 || ok != 1 {
 		t.Fatalf("attempts recorded %d/%d", total, ok)
 	}
+	// Concurrent wrong submissions cannot race past the 10-attempt limit.
+	race := e.newSession(t)
+	var wg sync.WaitGroup
+	codes := make(chan int, 25)
+	for i := 0; i < 25; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			c, _ := e.call(t, "POST", "/internal/sessions/"+race.ID+"/flags", race.ServerToken, map[string]string{"challenge_id": "intranet", "value": "wrong", "player_id": "p"})
+			codes <- c
+		}()
+	}
+	wg.Wait()
+	close(codes)
+	ok200, lim429 := 0, 0
+	for c := range codes {
+		switch c {
+		case 200:
+			ok200++
+		case 429:
+			lim429++
+		default:
+			t.Fatalf("unexpected status %d", c)
+		}
+	}
+	if ok200 != 10 || lim429 != 15 {
+		t.Fatalf("concurrent flag submissions: 200=%d 429=%d, want 10 and 15", ok200, lim429)
+	}
 }
 
 func TestSnapshotsEventsChallengesFinish(t *testing.T) {

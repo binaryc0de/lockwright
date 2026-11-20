@@ -63,37 +63,168 @@ func Check(spec Spec, secret []byte, sessionID, challengeID, submitted string) (
 	return false, ErrNoFlag
 }
 
+// DefaultMaxCooldown bounds the doubling cooldown so repeated strikes cannot
+// overflow time.Duration or lock a challenge out forever.
+const DefaultMaxCooldown = 15 * time.Minute
+
 // Limiter enforces "10 wrong per rolling minute, then a doubling cooldown"
 // per key (session + challenge). Safe for concurrent use.
 type Limiter struct {
-	Max    int
-	Window time.Duration
-	Base   time.Duration
-	Now    func() time.Time
+	Max         int
+	Window      time.Duration
+	Base        time.Duration
+	MaxCooldown time.Duration
+	Now         func() time.Time
 
 	mu    sync.Mutex
 	state map[string]*limitState
 }
 
 type limitState struct {
-	fails   []time.Time
-	strikes int
-	until   time.Time
+	fails    []time.Time
+	inFlight int
+	strikes  int
+	until    time.Time
+	lastSeen time.Time
 }
 
 // NewLimiter returns the platform's default limiter (ADR-0018).
 func NewLimiter() *Limiter {
-	return &Limiter{Max: 10, Window: time.Minute, Base: 30 * time.Second, Now: time.Now}
+	return &Limiter{
+		Max:         10,
+		Window:      time.Minute,
+		Base:        30 * time.Second,
+		MaxCooldown: DefaultMaxCooldown,
+		Now:         time.Now,
+	}
+}
+
+func (l *Limiter) nowLocked() time.Time {
+	if l.Now != nil {
+		return l.Now()
+	}
+	return time.Now()
+}
+
+func (l *Limiter) maxCooldownLocked() time.Duration {
+	if l.MaxCooldown > 0 {
+		return l.MaxCooldown
+	}
+	return DefaultMaxCooldown
+}
+
+// cooldownLocked computes min(Base * 2^(strikes-1), MaxCooldown) without
+// shifting or overflowing time.Duration.
+func (l *Limiter) cooldownLocked(strikes int) time.Duration {
+	if l.Base <= 0 {
+		return 0
+	}
+	maxCool := l.maxCooldownLocked()
+	if l.Base >= maxCool {
+		return maxCool
+	}
+	cool := l.Base
+	for i := 1; i < strikes && cool < maxCool; i++ {
+		if cool > maxCool/2 {
+			return maxCool
+		}
+		cool *= 2
+	}
+	return cool
+}
+
+func (l *Limiter) pruneLocked(s *limitState, now time.Time) {
+	kept := s.fails[:0]
+	for _, t := range s.fails {
+		if now.Sub(t) < l.Window {
+			kept = append(kept, t)
+		}
+	}
+	s.fails = kept
+}
+
+func (l *Limiter) recordWrongLocked(s *limitState, now time.Time) time.Duration {
+	l.pruneLocked(s, now)
+	s.fails = append(s.fails, now)
+	if len(s.fails) < l.Max {
+		return 0
+	}
+	s.strikes++
+	cool := l.cooldownLocked(s.strikes)
+	s.until = now.Add(cool)
+	s.fails = nil
+	return cool
+}
+
+func (l *Limiter) sweepStaleLocked(now time.Time) {
+	staleAfter := l.maxCooldownLocked() * 2
+	if w := l.Window * 2; w > staleAfter {
+		staleAfter = w
+	}
+	for k, s := range l.state {
+		if s.inFlight == 0 && !now.Before(s.until) && now.Sub(s.lastSeen) >= staleAfter {
+			delete(l.state, k)
+		}
+	}
+}
+
+// Reserve atomically checks whether key may attempt a flag submission and
+// reserves a slot so concurrent requests cannot race past Max. Call the
+// returned finish(accepted) once the attempt completes; passing accepted=false
+// records a failure and returns any triggered cooldown.
+func (l *Limiter) Reserve(key string) (allowed bool, retryAfter time.Duration, finish func(accepted bool) time.Duration) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	now := l.nowLocked()
+	l.sweepStaleLocked(now)
+	s := l.get(key)
+	s.lastSeen = now
+	if now.Before(s.until) {
+		return false, s.until.Sub(now), nil
+	}
+	l.pruneLocked(s, now)
+	if l.Max > 0 && len(s.fails)+s.inFlight >= l.Max {
+		return false, l.cooldownLocked(s.strikes + 1), nil
+	}
+	s.inFlight++
+	var once sync.Once
+	finish = func(accepted bool) time.Duration {
+		var cool time.Duration
+		once.Do(func() {
+			l.mu.Lock()
+			defer l.mu.Unlock()
+			st, ok := l.state[key]
+			if !ok {
+				return
+			}
+			if st.inFlight > 0 {
+				st.inFlight--
+			}
+			if accepted {
+				return
+			}
+			t := l.nowLocked()
+			st.lastSeen = t
+			cool = l.recordWrongLocked(st, t)
+		})
+		return cool
+	}
+	return true, 0, finish
 }
 
 // Allow reports whether a submission may be checked now; if not, how long to wait.
+// Prefer Reserve for concurrent callers so check-and-count is atomic.
 func (l *Limiter) Allow(key string) (bool, time.Duration) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	s := l.get(key)
-	now := l.Now()
+	now := l.nowLocked()
 	if now.Before(s.until) {
 		return false, s.until.Sub(now)
+	}
+	l.pruneLocked(s, now)
+	if l.Max > 0 && len(s.fails)+s.inFlight >= l.Max {
+		return false, l.cooldownLocked(s.strikes + 1)
 	}
 	return true, 0
 }
@@ -103,22 +234,24 @@ func (l *Limiter) Wrong(key string) time.Duration {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	s := l.get(key)
-	now := l.Now()
-	kept := s.fails[:0]
-	for _, t := range s.fails {
-		if now.Sub(t) < l.Window {
-			kept = append(kept, t)
+	now := l.nowLocked()
+	s.lastSeen = now
+	return l.recordWrongLocked(s, now)
+}
+
+// ForgetSession removes all rate-limit state for a finished session.
+func (l *Limiter) ForgetSession(sessionID string) {
+	if sessionID == "" {
+		return
+	}
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	prefix := sessionID + "/"
+	for k := range l.state {
+		if k == sessionID || strings.HasPrefix(k, prefix) {
+			delete(l.state, k)
 		}
 	}
-	s.fails = append(kept, now)
-	if len(s.fails) < l.Max {
-		return 0
-	}
-	s.strikes++
-	cool := l.Base << (s.strikes - 1)
-	s.until = now.Add(cool)
-	s.fails = nil
-	return cool
 }
 
 func (l *Limiter) get(key string) *limitState {

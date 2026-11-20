@@ -576,10 +576,17 @@ func (a *app) flag(w http.ResponseWriter, r *http.Request, sess store.Session) {
 		return
 	}
 	key := sess.ID + "/" + ch.ID
-	if allowed, wait := a.d.Limiter.Allow(key); !allowed {
+	allowed, wait, finish := a.d.Limiter.Reserve(key)
+	if !allowed {
 		writeJSON(w, http.StatusTooManyRequests, map[string]any{"accepted": false, "retry_after_s": seconds(wait)})
 		return
 	}
+	committed := false
+	defer func() {
+		if !committed {
+			finish(true)
+		}
+	}()
 	accepted, err := flags.Check(ch.Flag, a.d.Secret, sess.ID, ch.ID, in.Value)
 	if err != nil {
 		internalErr(w, err)
@@ -590,12 +597,12 @@ func (a *app) flag(w http.ResponseWriter, r *http.Request, sess store.Session) {
 		internalErr(w, err)
 		return
 	}
+	committed = true
+	cool := finish(accepted)
 	slog.Info("flag attempt", "session", sess.ID, "challenge", ch.ID, "player", in.PlayerID, "accepted", accepted)
 	out := map[string]any{"accepted": accepted}
-	if !accepted {
-		if cool := a.d.Limiter.Wrong(key); cool > 0 {
-			out["retry_after_s"] = seconds(cool)
-		}
+	if !accepted && cool > 0 {
+		out["retry_after_s"] = seconds(cool)
 	}
 	writeJSON(w, http.StatusOK, out)
 }
@@ -652,6 +659,7 @@ func (a *app) finished(w http.ResponseWriter, r *http.Request, sess store.Sessio
 		internalErr(w, err)
 		return
 	}
+	a.d.Limiter.ForgetSession(sess.ID)
 	if a.d.Orchestrator != nil {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
