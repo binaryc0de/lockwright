@@ -1027,6 +1027,10 @@ func (a *app) ctfProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	prefix := "/ctf/" + sid + "/" + cid
+	proto := "http"
+	if r.TLS != nil || (isLoopbackAddr(r.RemoteAddr) && strings.EqualFold(strings.TrimSpace(r.Header.Get("X-Forwarded-Proto")), "https")) {
+		proto = "https"
+	}
 	target := &url.URL{Scheme: "http", Host: net.JoinHostPort("127.0.0.1", strconv.Itoa(port))}
 	p := httputil.NewSingleHostReverseProxy(target)
 	p.Director = func(req *http.Request) {
@@ -1035,12 +1039,19 @@ func (a *app) ctfProxy(w http.ResponseWriter, r *http.Request) {
 		req.URL.RawPath = ""
 		req.Host = target.Host
 		req.Header.Set("X-Forwarded-Prefix", prefix)
+		req.Header.Set("X-Forwarded-Proto", proto)
 		req.Header.Del("Cookie")
 		for _, c := range r.Cookies() {
 			if !strings.HasPrefix(c.Name, "escapebox") {
 				req.AddCookie(c)
 			}
 		}
+	}
+	p.ModifyResponse = func(resp *http.Response) error {
+		// Isolate proxied challenge pages into an opaque origin so challenge XSS
+		// cannot read platform cookies, storage or same-origin API responses.
+		resp.Header.Add("Content-Security-Policy", "sandbox allow-forms allow-scripts allow-popups")
+		return nil
 	}
 	p.ServeHTTP(w, r)
 }

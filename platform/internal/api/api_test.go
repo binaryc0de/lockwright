@@ -719,16 +719,17 @@ func TestCTFProxyAndPublicHardening(t *testing.T) {
 	e := setup(t)
 	ctx := context.Background()
 	sess, _ := e.st.CreateSession(ctx, "night_shift")
-	// A stand-in challenge: echoes the path and prefix it was given.
+	// A stand-in challenge: echoes the path, prefix and proto it was given.
 	ch := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "path=%s prefix=%s", r.URL.Path, r.Header.Get("X-Forwarded-Prefix"))
+		w.Header().Set("Content-Security-Policy", "default-src 'self'")
+		fmt.Fprintf(w, "path=%s prefix=%s proto=%s", r.URL.Path, r.Header.Get("X-Forwarded-Prefix"), r.Header.Get("X-Forwarded-Proto"))
 	}))
 	defer ch.Close()
 	port := ch.Listener.Addr().(*net.TCPAddr).Port
 	if err := e.st.PutInstance(ctx, store.Instance{SessionID: sess.ID, ChallengeID: "intranet", ContainerID: "c", NetworkID: "n", HostPort: port}); err != nil {
 		t.Fatal(err)
 	}
-	get := func(path string, hdr map[string]string) (int, string) {
+	get := func(path string, hdr map[string]string) (int, http.Header, string) {
 		req, _ := http.NewRequest("GET", e.ts.URL+path, nil)
 		for k, v := range hdr {
 			req.Header.Set(k, v)
@@ -739,17 +740,32 @@ func TestCTFProxyAndPublicHardening(t *testing.T) {
 		}
 		defer resp.Body.Close()
 		b, _ := io.ReadAll(resp.Body)
-		return resp.StatusCode, string(b)
+		return resp.StatusCode, resp.Header, string(b)
 	}
-	code, b := get("/ctf/"+sess.ID+"/intranet/tickets/view?id=1040", nil)
-	if code != 200 || !strings.Contains(b, "path=/tickets/view") || !strings.Contains(b, "prefix=/ctf/"+sess.ID+"/intranet") {
+	code, hdr, b := get("/ctf/"+sess.ID+"/intranet/tickets/view?id=1040", nil)
+	if code != 200 || !strings.Contains(b, "path=/tickets/view") || !strings.Contains(b, "prefix=/ctf/"+sess.ID+"/intranet") || !strings.Contains(b, "proto=http") {
 		t.Fatalf("proxy: %d %q", code, b)
 	}
-	if code, _ := get("/ctf/"+sess.ID+"/other/", nil); code != 404 {
+	csps := hdr.Values("Content-Security-Policy")
+	hasSandbox := false
+	for _, v := range csps {
+		if v == "sandbox allow-forms allow-scripts allow-popups" {
+			hasSandbox = true
+		}
+	}
+	if !hasSandbox {
+		t.Fatalf("missing sandbox CSP on /ctf/ response: %v", csps)
+	}
+	// From a local TLS proxy, X-Forwarded-Proto: https is forwarded to the challenge.
+	code, _, b = get("/ctf/"+sess.ID+"/intranet/login", map[string]string{"X-Forwarded-Proto": "https"})
+	if code != 200 || !strings.Contains(b, "proto=https") {
+		t.Fatalf("forwarded proto: %d %q", code, b)
+	}
+	if code, _, _ := get("/ctf/"+sess.ID+"/other/", nil); code != 404 {
 		t.Fatalf("unknown challenge: %d", code)
 	}
 	_ = e.st.Finish(ctx, sess.ID, false, 0, 0)
-	if code, _ := get("/ctf/"+sess.ID+"/intranet/", nil); code != 404 {
+	if code, _, _ := get("/ctf/"+sess.ID+"/intranet/", nil); code != 404 {
 		t.Fatalf("finished game's challenge still served: %d", code)
 	}
 	// Internal endpoints refuse anything that came through a proxy or tunnel,
@@ -757,11 +773,11 @@ func TestCTFProxyAndPublicHardening(t *testing.T) {
 	live, _ := e.st.CreateSession(ctx, "night_shift")
 	for _, h := range []map[string]string{{"X-Forwarded-For": "203.0.113.9"}, {"Tailscale-Funnel-Request": "?1"}} {
 		h["Authorization"] = "Bearer " + live.ServerToken
-		if code, _ := get("/internal/sessions/"+live.ID+"/snapshot", h); code != 403 {
+		if code, _, _ := get("/internal/sessions/"+live.ID+"/snapshot", h); code != 403 {
 			t.Fatalf("internal via proxy %v: %d", h, code)
 		}
 	}
-	if code, _ := get("/internal/sessions/"+live.ID+"/snapshot", map[string]string{"Authorization": "Bearer " + live.ServerToken}); code == 403 {
+	if code, _, _ := get("/internal/sessions/"+live.ID+"/snapshot", map[string]string{"Authorization": "Bearer " + live.ServerToken}); code == 403 {
 		t.Fatal("direct local internal call refused")
 	}
 	// With PublicURL set, challenge handles advertise the /ctf/ URL and omit raw Host/Port.
