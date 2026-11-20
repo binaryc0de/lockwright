@@ -4,7 +4,7 @@ The Go platform service (`platform/`) speaks JSON over HTTP on `:8080` by defaul
 
 Conventions:
 - Request and response bodies are `application/json`. Errors are `{"error": "<code>", "message": "<human text>"}` with a 4xx/5xx status.
-- `/api/*` is called by game clients. `/internal/*` is called only by game servers and authenticates with `Authorization: Bearer <server_token>` (minted per session by the session manager, passed to `escapebox-server --token`). `/internal/*` is never exposed beyond the host in deploy configs.
+- `/api/*` is called by game clients. `/internal/*` is called only by game servers and authenticates with `Authorization: Bearer <server_token>` (minted per session by the session manager and passed to the game server via the `ESCAPEBOX_SERVER_TOKEN` environment variable). `/internal/*` is never exposed beyond the host in deploy configs.
 - Flag values are never logged, echoed in errors, or returned by any endpoint.
 - Ids: `session_id` and `player_id` are random URL-safe strings; `room_id` and `challenge_id` match `[a-z0-9_]+`.
 
@@ -15,18 +15,18 @@ Conventions:
 | GET | `/healthz` | M0 | Liveness: `{"status":"ok"}` |
 | GET | `/api/version` | M0 | `{"platform":"0.1.0"}`; room packs' `requires.platform` is matched against it |
 | GET | `/api/catalog` | M3 | Installed rooms: `[{room_id, title, version, duration_minutes, players: [min, max], challenges, difficulties: [{id, title, description}]}]` plus `pack: {file, sha256, size, url, mobile?: {file, sha256, size, url}}` when the room's pack is built; `mobile` is the same room with phone texture formats (ETC2/ASTC, ADR-0038), taken by clients whose GPU has ETC2 and lacks S3TC. Draft rooms are left out unless the platform runs with `-drafts` (ADR-0030); unknown room ids in `POST /api/sessions` are 404 |
-| POST | `/api/sessions` | M3 | Create a session: `{room_id, difficulty?}` -> `{session_id, invite_code}`. Guardrails: 503 `games_full` when `-max-games` unfinished games exist; 429 `too_many_games` after 6 creations in 10 minutes from one client (first `X-Forwarded-For` hop behind a local proxy); games nobody joins finish after `-expire-unjoined` (30 min). `difficulty` is one of the room's level ids ("" or absent = the default; unknown: 400 `unknown_difficulty`). LAN prototype: anyone on the LAN may create. |
+| POST | `/api/sessions` | M3 | Create a session: `{room_id, difficulty?}` -> `{session_id, invite_code}`. Guardrails: 503 `games_full` when `-max-games` unfinished games exist; 429 `too_many_games` after 6 creations in 10 minutes from one client (rightmost `X-Forwarded-For` entry behind a local proxy); games nobody joins finish after `-expire-unjoined` (30 min). `difficulty` is one of the room's level ids ("" or absent = the default; unknown: 400 `unknown_difficulty`). LAN prototype: anyone on the LAN may create. |
 | GET | `/api/games/{code}` | M5 | Public view of a game by join code, for the lobby's game page: `{code, room_id, title, difficulty, difficulty_title, status, players, players_max, duration_minutes, hacker_room, created_at, won, elapsed_s}`. No tokens or session id. 404 `bad_invite` |
 | GET | `/api/status` | M5 | `{waiting, running, finished, max_games, free}` (`free` -1 = no cap; counts the same games as the cap). Counts only: codes are invitations and are never listed |
 | GET | `/`, `/g/{code}`, `/site/*` | M5 | The lobby site (ADR-0028), embedded in the platform |
-| any | `/ctf/{session}/{challenge}/...` | M5 | A running game's web challenge, proxied with `X-Forwarded-Prefix` (ADR-0029); 404 when not running or the game is finished. Challenge cards use it when the platform has `-public-url` |
+| any | `/ctf/{session}/{challenge}/...` | M5 | A running game's web challenge, proxied with `X-Forwarded-Prefix`, `X-Forwarded-Proto` and `Content-Security-Policy: sandbox allow-forms allow-scripts allow-popups` (ADR-0029); 404 when not running or the game is finished. Challenge cards use it when the platform has `-public-url` |
 | GET | `/play/`, `/download/packs/{file}`, `/ws/{session}` | M5 | Browser client (`-web`), room packs (`-packs`; only the current pack of a catalog room, ADR-0030), game WebSocket proxy (ADR-0025, ADR-0026) |
+| GET | `/media/rooms/{room}/{file}` | M5 | Per-room intro video (`intro.mp4`) and poster (`poster.jpg`) for catalog rooms when `-media` is set (ADR-0036) |
 | GET | `/api/sessions/{id}` | M3 | `{session_id, room_id, status: idle|starting|running|finished, players: [display_name], started_at, duration_minutes}` |
-| POST | `/api/sessions/{id}/join` | M3 | `{display_name, invite_code}` -> `{session_id, room_id, host, port, transport: "enet"|"ws", join_token}`. Starts or restores the game server if it is idle (PLAN.md 7.3, 7.4). `join_token` is single-use, 60 s TTL; clients fetch a new one for every (re)connect. |
+| POST | `/api/sessions/{id}/join` | M3 | `{display_name, invite_code}` -> `{session_id, room_id, host, port, transport: "enet"|"ws", join_token, ws_path}`. Starts or restores the game server if it is idle (PLAN.md 7.3, 7.4). `join_token` is single-use, 60 s TTL; clients fetch a new one for every (re)connect. |
 | POST | `/api/join` | M3 | Same as above with only the join code: `{display_name, invite_code}`. Codes are unique among unfinished sessions; 404 `bad_invite` otherwise. This is what the game client uses. |
-| GET | `/download/version.json` | M5 | `{client_version, files: {linux, windows}}` for the client update check |
-| GET | `/download/{file}` | M5 | Client zips and room packs (`*.pck`), served from the platform data dir |
-| GET | `/api/files/{token}` | later | One-time download of a room-provided file (e.g. Night Shift's `shadow.bak`); token minted by the game server. Not built: the USB stick is decorative in the prototype (PLAN.md 10) |
+
+Note: room item files (such as Night Shift's hard-mode `shadow.bak` on the USB stick) are carried directly on the SDK `Item` (`file_name`/`file_text`) and copied or saved from the in-game inspect view (ADR-0022), so no separate `/api/files` endpoint is needed.
 
 ## Internal (game server -> platform)
 
@@ -38,15 +38,14 @@ Only direct loopback connections reach these (403 `internal_only` for anything w
 | GET | `/internal/sessions/{id}/snapshot` | M3 | Latest snapshot `{version, saved_at, world, puzzles, evidence, timer}` or 404 if none (fresh start) |
 | PUT | `/internal/sessions/{id}/snapshot` | M3 | Store the latest snapshot (PLAN.md 7.3: on every world-state change and every 30 s) |
 | POST | `/internal/sessions/{id}/events` | M3 | Append `[{at, kind, player_id?, data}]` to `session_events` (puzzle solved, hint revealed, item picked up, ...) |
-| POST | `/internal/sessions/{id}/flags` | M3 | `{challenge_id, value, player_id}` -> `{accepted: bool, retry_after_s?: int}`. Constant-time compare against the per-instance HMAC flag or static hash; 10 wrong/min/team then escalating cooldown (429 with `retry_after_s`). Every attempt is logged without the value. |
-| POST | `/internal/sessions/{id}/challenges/start` | M3 | Body ignored: the platform reads the session room's challenges from its own `room.json`. -> `{handles: {challenge_id: {url?, host, port}}}`. Builds images if needed, creates the per-session internal network, starts hardened containers with per-instance flags, waits for health checks, opens proxy ports (ADR-0018). Idempotent per session. 503 `docker_unavailable` if Docker is not reachable. |
+| POST | `/internal/sessions/{id}/flags` | M3 | `{challenge_id, value, player_id}` -> `{accepted: bool, retry_after_s?: int}`. Constant-time compare against the per-instance HMAC flag or static hash; atomic rate limit of 10 wrong/min/team then doubling cooldown capped at 15 min (429 with `retry_after_s`). Every attempt is logged without the value. |
+| POST | `/internal/sessions/{id}/challenges/start` | M3 | Body ignored: the platform reads the session room's challenges from its own `room.json`. -> `{handles: {challenge_id: {url?, host?, port?}}}`. Builds images if needed, creates the per-session internal network, starts hardened containers with per-instance flags, waits for health checks, opens proxy ports (ADR-0018). When `-public-url` is set, `url` points at `/ctf/...` and raw `host`/`port` are omitted. Idempotent per session. 503 `docker_unavailable` if Docker is not reachable. |
 | POST | `/internal/sessions/{id}/challenges/stop` | M3 | Tear down the session's containers and network. Flags stay in the store. |
-| POST | `/internal/sessions/{id}/files` | later | `{room_file}` -> `{download_url}` one-time link for `/api/files/{token}` (with `/api/files`) |
 | POST | `/internal/sessions/{id}/finished` | M3 | `{win: bool, elapsed_s, hints_used}` marks the session finished |
 
 ## Session manager (not HTTP)
 
-The platform spawns one `escapebox-server` per running session (PLAN.md 7.1) with `--session --room --pack --port --platform --token [--transport]`, restarts it on the next join after an idle stop (exit code 0 after 5 minutes with no players), and treats any other exit code as a crash: restart from the last snapshot, at most 3 times in 10 minutes.
+The platform spawns one `escapebox-server` per running session (PLAN.md 7.1) with `--session --room --pack --port --platform [--transport]` and the per-session server token in `ESCAPEBOX_SERVER_TOKEN`, restarts it on the next join after an idle stop (exit code 0 after 5 minutes with no players), and treats any other exit code as a crash: restart from the last snapshot, at most 3 times in 10 minutes.
 
 ## Game server protocol (Godot RPC, ADR-0015)
 
@@ -74,6 +73,6 @@ Snapshots are written to `--snapshot` (default `user://snapshots/<session>.json`
 
 ## Running the platform (M3)
 
-`go run ./platform/cmd/platform -data data -rooms game/rooms -game game -godot godot` from the repo root. Flags: `-addr :8080`, `-advertise <LAN IP>` (default: auto-detected), `-game-ports 7777-7799`, `-challenge-ports 20000-20999`, `-transport enet|ws`, `-platform-url` (how game servers reach the platform, default `http://127.0.0.1:<port>`). `-test-trust-positions` is for `tools/m3_smoke.sh` only. The data directory holds `platform.db` and `secret.key` (0600; per-instance flags derive from it). Docker is optional at start-up: without it, challenge start returns 503 and the room's connection card says so.
+`go run ./platform/cmd/platform -data data -rooms game/rooms -game game -godot godot` from the repo root. Flags: `-addr :8080`, `-advertise <LAN IP>` (default: auto-detected), `-public-url <origin>`, `-challenge-bind <ip>` (default: `127.0.0.1` when `-public-url` is set, else `0.0.0.0`), `-game-ports 7777-7799`, `-challenge-ports 20000-20999`, `-transport enet|ws`, `-platform-url` (how game servers reach the platform, default `http://127.0.0.1:<port>`), `-web`, `-packs`, `-media`. `-test-trust-positions` is for `tools/m3_smoke.sh` only. The data directory holds `platform.db` and `secret.key` (0600; per-instance flags derive from it). Docker is optional at start-up: without it, challenge start returns 503 and the room's connection card says so.
 
 Players join with the game's main menu (platform address + join code) or `godot --path game -- --join <platform address> --code <CODE> --name <name>`. Create a game with `curl -X POST <platform>/api/sessions -d '{"room_id":"night_shift"}'` or the main menu's "Host the selected room on the platform" button.
