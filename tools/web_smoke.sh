@@ -25,7 +25,7 @@ go build -o "$WORK/platform" ./platform/cmd/platform || exit 1
 PP=$!
 trap 'kill $PP 2>/dev/null; wait $PP 2>/dev/null' EXIT
 for _ in $(seq 1 40); do curl -sf "http://127.0.0.1:$PORT/healthz" >/dev/null && break; sleep 0.25; done
-S=$(curl -sf -X POST "http://127.0.0.1:$PORT/api/sessions" -d "{\"room_id\":\"night_shift\",\"difficulty\":\"$DIFF\"}") || { bad "create session"; exit 1; }
+S=$(curl -sf -X POST -H 'Content-Type: application/json' "http://127.0.0.1:$PORT/api/sessions" -d "{\"room_id\":\"night_shift\",\"difficulty\":\"$DIFF\"}") || { bad "create session"; exit 1; }
 SID=$(jq -r .session_id <<<"$S"); CODE=$(jq -r .invite_code <<<"$S")
 FLAG=$(go run ./platform/cmd/flagcalc -secret "$WORK/data/secret.key" -session "$SID" -challenge intranet)
 echo "== $DIFF session $SID: headless Chrome plays from http://127.0.0.1:$PORT/play/?code=$CODE"

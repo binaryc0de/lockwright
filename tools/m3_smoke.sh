@@ -37,7 +37,7 @@ curl -fs "$URL/healthz" >/dev/null || { bad "platform did not start (see $WORK/p
 DOCKER=0; grep -q '"challenges":true\|challenges=true' "$WORK/platform.log" && DOCKER=1
 say "platform up on $URL (docker challenges: $DOCKER)"
 
-S=$(curl -fs -X POST "$URL/api/sessions" -d '{"room_id":"night_shift"}') || { bad "create session"; exit 1; }
+S=$(curl -fs -X POST -H 'Content-Type: application/json' "$URL/api/sessions" -d '{"room_id":"night_shift"}') || { bad "create session"; exit 1; }
 SID=$(jq -r .session_id <<<"$S"); CODE=$(jq -r .invite_code <<<"$S")
 say "session $SID, join code $CODE"
 

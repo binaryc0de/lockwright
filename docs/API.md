@@ -3,7 +3,7 @@
 The Go platform service (`platform/`) speaks JSON over HTTP on `:8080` by default. This file lists every endpoint the prototype will have; the **Since** column says which milestone implements it. Keep this file in step with the code (PLAN.md Section 13, rule 9).
 
 Conventions:
-- Request and response bodies are `application/json`. Errors are `{"error": "<code>", "message": "<human text>"}` with a 4xx/5xx status.
+- Request and response bodies are `application/json`; JSON POST/PUT endpoints reject other media types with `415 unsupported_media_type`. Errors are `{"error": "<code>", "message": "<human text>"}` with a 4xx/5xx status.
 - `/api/*` is called by game clients. `/internal/*` is called only by game servers and authenticates with `Authorization: Bearer <server_token>` (minted per session by the session manager and passed to the game server via the `ESCAPEBOX_SERVER_TOKEN` environment variable). `/internal/*` is never exposed beyond the host in deploy configs.
 - Flag values are never logged, echoed in errors, or returned by any endpoint.
 - Ids: `session_id` and `player_id` are random URL-safe strings; `room_id` and `challenge_id` match `[a-z0-9_]+`.
@@ -75,4 +75,4 @@ Snapshots are written to `--snapshot` (default `user://snapshots/<session>.json`
 
 `go run ./platform/cmd/platform -data data -rooms game/rooms -game game -godot godot` from the repo root. Flags: `-addr :8080`, `-advertise <LAN IP>` (default: auto-detected), `-public-url <origin>`, `-challenge-bind <ip>` (default: `127.0.0.1` when `-public-url` is set, else `0.0.0.0`), `-game-ports 7777-7799`, `-challenge-ports 20000-20999`, `-transport enet|ws`, `-platform-url` (how game servers reach the platform, default `http://127.0.0.1:<port>`), `-web`, `-packs`, `-media`. `-test-trust-positions` is for `tools/m3_smoke.sh` only. The data directory holds `platform.db` and `secret.key` (0600; per-instance flags derive from it). Docker is optional at start-up: without it, challenge start returns 503 and the room's connection card says so.
 
-Players join with the game's main menu (platform address + join code) or `godot --path game -- --join <platform address> --code <CODE> --name <name>`. Create a game with `curl -X POST <platform>/api/sessions -d '{"room_id":"night_shift"}'` or the main menu's "Host the selected room on the platform" button.
+Players join with the game's main menu (platform address + join code) or `godot --path game -- --join <platform address> --code <CODE> --name <name>`. Create a game with `curl -X POST -H 'Content-Type: application/json' <platform>/api/sessions -d '{"room_id":"night_shift"}'` or the main menu's "Host the selected room on the platform" button.

@@ -514,6 +514,9 @@ func (a *app) getSnapshot(w http.ResponseWriter, r *http.Request, sess store.Ses
 }
 
 func (a *app) putSnapshot(w http.ResponseWriter, r *http.Request, sess store.Session) {
+	if !requireJSON(w, r) {
+		return
+	}
 	b, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxSnapshot))
 	if err != nil {
 		writeErr(w, http.StatusRequestEntityTooLarge, "too_large", "Snapshot too large.")
@@ -691,7 +694,19 @@ func (a *app) session(w http.ResponseWriter, r *http.Request) (store.Session, bo
 	return sess, true
 }
 
+func requireJSON(w http.ResponseWriter, r *http.Request) bool {
+	mt, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if err != nil || mt != "application/json" {
+		writeErr(w, http.StatusUnsupportedMediaType, "unsupported_media_type", "Content-Type must be application/json.")
+		return false
+	}
+	return true
+}
+
 func readJSON(w http.ResponseWriter, r *http.Request, v any, limit int64) bool {
+	if !requireJSON(w, r) {
+		return false
+	}
 	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, limit))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(v); err != nil {

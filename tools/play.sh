@@ -65,7 +65,7 @@ trap cleanup EXIT
 for _ in $(seq 1 40); do curl -sf "http://127.0.0.1:$PORT/healthz" >/dev/null && break; sleep 0.25; done
 curl -sf "http://127.0.0.1:$PORT/healthz" >/dev/null || { echo "platform did not start:"; tail -5 "$LOG/platform.log"; exit 1; }
 
-CODE="$(curl -sf -X POST "http://127.0.0.1:$PORT/api/sessions" -d "{\"room_id\":\"$ROOM\",\"difficulty\":\"$DIFFICULTY\"}" | sed -n 's/.*"invite_code":"\([^"]*\)".*/\1/p')"
+CODE="$(curl -sf -X POST -H 'Content-Type: application/json' "http://127.0.0.1:$PORT/api/sessions" -d "{\"room_id\":\"$ROOM\",\"difficulty\":\"$DIFFICULTY\"}" | sed -n 's/.*"invite_code":"\([^"]*\)".*/\1/p')"
 [ -n "$CODE" ] || { echo "could not create a session for $ROOM"; tail -5 "$LOG/platform.log"; exit 1; }
 IP="$(grep -o 'advertise=[0-9.]*' "$LOG/platform.log" | head -1 | cut -d= -f2)"
 echo "== $ROOM (${DIFFICULTY:-default difficulty}) is ready. Join code: $CODE   (friends: ${IP:-this-pc}:$PORT + code $CODE)"
@@ -83,7 +83,7 @@ if [ ${#WEB[@]} -gt 0 ]; then
 fi
 if [ "$SERVE" = 1 ]; then
 	echo "== hosting only; players join with the link or code above. Press Ctrl+C to stop."
-	echo "   (another game: curl -X POST http://127.0.0.1:$PORT/api/sessions -d '{\"room_id\":\"$ROOM\"}')"
+	echo "   (another game: curl -X POST -H 'Content-Type: application/json' http://127.0.0.1:$PORT/api/sessions -d '{\"room_id\":\"$ROOM\"}')"
 	wait "$PLATFORM_PID" || true
 else
 	"$GODOT" --path game -- --join "127.0.0.1:$PORT" --code "$CODE" --name "$NAME" > "$LOG/game.log" 2>&1 || true

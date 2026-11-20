@@ -99,6 +99,9 @@ func (e *env) call(t *testing.T, method, path, token string, body any) (int, map
 		rdr = bytes.NewReader(b)
 	}
 	req, _ := http.NewRequest(method, e.ts.URL+path, rdr)
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	if token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
@@ -592,6 +595,7 @@ func TestGameViewStatusAndGuardrails(t *testing.T) {
 	defer ts.Close()
 	post := func(body string, xff string) (int, map[string]any) {
 		req, _ := http.NewRequest("POST", ts.URL+"/api/sessions", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
 		if xff != "" {
 			req.Header.Set("X-Forwarded-For", xff)
 		}
@@ -898,6 +902,50 @@ func TestRateLimitExpiresAndBoundsKeys(t *testing.T) {
 	}
 	if len(l.seen) != 1 {
 		t.Fatalf("expired keys not swept: %v", l.seen)
+	}
+}
+
+func TestJSONEndpointsRequireApplicationJSON(t *testing.T) {
+	e := setup(t)
+	sess := e.newSession(t)
+	type target struct {
+		method, path, token, body string
+	}
+	targets := []target{
+		{"POST", "/api/sessions", "", `{"room_id":"night_shift"}`},
+		{"POST", "/api/join", "", fmt.Sprintf(`{"display_name":"Alex","invite_code":%q}`, sess.InviteCode)},
+		{"PUT", "/internal/sessions/" + sess.ID + "/snapshot", sess.ServerToken, `{"version":1}`},
+		{"POST", "/internal/sessions/" + sess.ID + "/flags", sess.ServerToken, `{"challenge_id":"intranet","value":"x","player_id":"p"}`},
+	}
+	for _, tgt := range targets {
+		for _, ct := range []string{"", "text/plain", "application/x-www-form-urlencoded", "multipart/form-data"} {
+			req, _ := http.NewRequest(tgt.method, e.ts.URL+tgt.path, strings.NewReader(tgt.body))
+			if ct != "" {
+				req.Header.Set("Content-Type", ct)
+			}
+			if tgt.token != "" {
+				req.Header.Set("Authorization", "Bearer "+tgt.token)
+			}
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			resp.Body.Close()
+			if resp.StatusCode != http.StatusUnsupportedMediaType {
+				t.Fatalf("%s %s with Content-Type %q: got %d, want 415", tgt.method, tgt.path, ct, resp.StatusCode)
+			}
+		}
+	}
+	// application/json with a charset parameter is accepted.
+	req, _ := http.NewRequest("POST", e.ts.URL+"/api/sessions", strings.NewReader(`{"room_id":"night_shift"}`))
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusCreated {
+		t.Fatalf("application/json; charset=utf-8: got %d, want 201", resp.StatusCode)
 	}
 }
 
