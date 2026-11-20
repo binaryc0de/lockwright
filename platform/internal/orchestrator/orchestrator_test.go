@@ -123,6 +123,7 @@ func fakeChallenge(t *testing.T, healthy bool) (Challenge, int) {
 	ch.Healthcheck.TimeoutS = 1
 	ch.Resources.CPU = 0.5
 	ch.Resources.MemoryMB = 128
+	ch.Resources.Pids = 64
 	return ch, port
 }
 
@@ -166,7 +167,7 @@ func TestStartProxiesTheChallengeAndStopTearsDown(t *testing.T) {
 		spec = s
 	}
 	if spec.Env["FLAG"] != flags.PerInstance([]byte("k"), "s1", "web", "FLAG{{{nonce}}}") || spec.Network != "esc_s1" ||
-		spec.CPUs != 0.5 || spec.MemoryMB != 128 || spec.Labels[LabelSession] != "s1" {
+		spec.CPUs != 0.5 || spec.MemoryMB != 128 || spec.PidsMax != 64 || spec.Labels[LabelSession] != "s1" {
 		t.Fatalf("container spec %+v", spec)
 	}
 	if strings.Contains(h.URL+h.Note, "FLAG{") {

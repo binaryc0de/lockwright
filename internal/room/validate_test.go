@@ -374,3 +374,18 @@ func TestDraftFlagValidates(t *testing.T) {
 		t.Fatal("non-boolean draft accepted")
 	}
 }
+
+func TestChallengeResourcesPidsValidates(t *testing.T) {
+	y := strings.Replace(goodYAML,
+		"      healthcheck: { path: /healthz, timeout_s: 30 }",
+		"      healthcheck: { path: /healthz, timeout_s: 30 }\n      resources: { cpu: 0.5, memory_mb: 256, pids: 64 }", 1)
+	if r := validate(t, y); r.Failed() {
+		t.Fatalf("valid resources.pids rejected: %v", r.Issues)
+	}
+	for _, bad := range []string{"0", "99999"} {
+		yb := strings.Replace(y, "pids: 64", "pids: "+bad, 1)
+		if r := validate(t, yb); !hasIssue(r, Error, "schema", "/ctf/challenges/0/resources/pids") {
+			t.Fatalf("pids: %s accepted: %v", bad, r.Issues)
+		}
+	}
+}

@@ -160,7 +160,7 @@ ctf:
       ports: [{ container: 8080, protocol: http }]
       flag: { type: per_instance, format: "FLAG{{{nonce}}}", inject_env: FLAG }
       healthcheck: { path: /healthz, timeout_s: 30 }
-      resources: { cpu: 0.5, memory_mb: 256 }
+      resources: { cpu: 0.5, memory_mb: 256, pids: 128 } # all optional; defaults: 0.5 CPU, 256 MB, 128 pids
       hints: ["...", "...", "..."]
 ```
 

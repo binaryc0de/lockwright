@@ -57,6 +57,7 @@ type Challenge struct {
 	Resources struct {
 		CPU      float64 `json:"cpu"`
 		MemoryMB int     `json:"memory_mb"`
+		Pids     int     `json:"pids"`
 	} `json:"resources"`
 }
 
@@ -226,7 +227,7 @@ func (o *Orchestrator) startOne(ctx context.Context, sessionID, roomID, roomVers
 	}
 	cid, err := o.eng.CreateContainer(ctx, docker.ContainerSpec{
 		Name: fmt.Sprintf("esc_%s_%s", sessionID, ch.ID), Image: tag, Env: env, Labels: labels,
-		Network: netName, CPUs: ch.Resources.CPU, MemoryMB: ch.Resources.MemoryMB,
+		Network: netName, CPUs: ch.Resources.CPU, MemoryMB: ch.Resources.MemoryMB, PidsMax: ch.Resources.Pids,
 	})
 	if err != nil {
 		return Handle{}, err

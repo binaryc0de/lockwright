@@ -229,18 +229,21 @@ func (c *Client) RemoveNetwork(ctx context.Context, id string) error {
 const (
 	DefaultMemoryMB = 256
 	DefaultCPUs     = 0.5
+	DefaultPidsMax  = 128
+	DefaultUser     = "65534:65534"
 )
 
 // ContainerSpec is a hardened challenge container (ADR-0018).
 type ContainerSpec struct {
 	Name     string
 	Image    string
+	User     string // "" = DefaultUser (65534:65534)
 	Env      map[string]string
 	Labels   map[string]string
 	Network  string
 	CPUs     float64 // 0 = DefaultCPUs
 	MemoryMB int     // 0 = DefaultMemoryMB
-	PidsMax  int     // 0 = 128
+	PidsMax  int     // 0 = DefaultPidsMax
 }
 
 // containerBody is the Engine payload; split out so tests can check hardening.
@@ -249,9 +252,13 @@ func containerBody(s ContainerSpec) map[string]any {
 	for k, v := range s.Env {
 		env = append(env, k+"="+v)
 	}
+	user := s.User
+	if user == "" {
+		user = DefaultUser
+	}
 	pids := s.PidsMax
-	if pids == 0 {
-		pids = 128
+	if pids <= 0 {
+		pids = DefaultPidsMax
 	}
 	host := map[string]any{
 		"NetworkMode":    s.Network,
@@ -278,6 +285,7 @@ func containerBody(s ContainerSpec) map[string]any {
 	host["NanoCpus"] = int64(cpus * 1e9)
 	return map[string]any{
 		"Image":           s.Image,
+		"User":            user,
 		"Env":             env,
 		"Labels":          s.Labels,
 		"NetworkDisabled": false,

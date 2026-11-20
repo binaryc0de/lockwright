@@ -100,14 +100,17 @@ func TestContainerIsHardened(t *testing.T) {
 	}
 	var body struct {
 		Image      string
+		User       string
 		Env        []string
 		HostConfig struct {
 			NetworkMode    string
 			CapDrop        []string
 			SecurityOpt    []string
 			ReadonlyRootfs bool
+			Tmpfs          map[string]string
 			PidsLimit      int
 			Memory         int64
+			MemorySwap     int64
 			NanoCpus       int64
 			Privileged     bool
 		}
@@ -116,9 +119,14 @@ func TestContainerIsHardened(t *testing.T) {
 		t.Fatal(err)
 	}
 	h := body.HostConfig
+	if body.User != DefaultUser {
+		t.Fatalf("User = %q, want %q", body.User, DefaultUser)
+	}
 	if h.NetworkMode != "esc_s1" || len(h.CapDrop) != 1 || h.CapDrop[0] != "ALL" ||
 		len(h.SecurityOpt) != 1 || h.SecurityOpt[0] != "no-new-privileges:true" || !h.ReadonlyRootfs ||
-		h.PidsLimit != 128 || h.Memory != 256<<20 || h.NanoCpus != 5e8 || h.Privileged {
+		h.Tmpfs["/tmp"] != "rw,noexec,nosuid,size=16m" ||
+		h.PidsLimit != DefaultPidsMax || h.Memory != 256<<20 || h.MemorySwap != 256<<20 ||
+		h.NanoCpus != 5e8 || h.Privileged {
 		t.Fatalf("not hardened: %+v", h)
 	}
 	if len(body.Env) != 1 || body.Env[0] != "FLAG=secret" {
@@ -254,8 +262,14 @@ func TestPingNegotiatesTheDaemonVersion(t *testing.T) {
 }
 
 func TestMissingResourcesGetDefaultLimits(t *testing.T) {
-	h := containerBody(ContainerSpec{Name: "x", Image: "i", Network: "n"})["HostConfig"].(map[string]any)
-	if h["Memory"] != int64(DefaultMemoryMB)<<20 || h["NanoCpus"] != int64(DefaultCPUs*1e9) || h["PidsLimit"] != 128 {
-		t.Fatalf("defaults not applied: %v", h)
+	body := containerBody(ContainerSpec{Name: "x", Image: "i", Network: "n"})
+	h := body["HostConfig"].(map[string]any)
+	if body["User"] != DefaultUser || h["Memory"] != int64(DefaultMemoryMB)<<20 || h["MemorySwap"] != int64(DefaultMemoryMB)<<20 ||
+		h["NanoCpus"] != int64(DefaultCPUs*1e9) || h["PidsLimit"] != DefaultPidsMax {
+		t.Fatalf("defaults not applied: user=%v host=%v", body["User"], h)
+	}
+	custom := containerBody(ContainerSpec{Name: "x", Image: "i", Network: "n", PidsMax: 64})["HostConfig"].(map[string]any)
+	if custom["PidsLimit"] != 64 {
+		t.Fatalf("custom PidsLimit = %v, want 64", custom["PidsLimit"])
 	}
 }
