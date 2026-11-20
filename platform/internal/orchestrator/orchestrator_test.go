@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/binaryc0de/escapebox/platform/internal/docker"
-	"github.com/binaryc0de/escapebox/platform/internal/flags"
-	"github.com/binaryc0de/escapebox/platform/internal/store"
+	"github.com/binaryc0de/lockwright/platform/internal/docker"
+	"github.com/binaryc0de/lockwright/platform/internal/flags"
+	"github.com/binaryc0de/lockwright/platform/internal/store"
 )
 
 // fakeEngine keeps containers and networks in memory; every container's IP

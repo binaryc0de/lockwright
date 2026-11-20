@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/binaryc0de/escapebox/internal/gltf/gltftest"
+	"github.com/binaryc0de/lockwright/internal/gltf/gltftest"
 )
 
 // fixture describes one asset in a temporary repo tree. Zero value fields

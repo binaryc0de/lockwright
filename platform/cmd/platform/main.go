@@ -20,13 +20,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/binaryc0de/escapebox/platform/internal/api"
-	"github.com/binaryc0de/escapebox/platform/internal/docker"
-	"github.com/binaryc0de/escapebox/platform/internal/flags"
-	"github.com/binaryc0de/escapebox/platform/internal/orchestrator"
-	"github.com/binaryc0de/escapebox/platform/internal/rooms"
-	"github.com/binaryc0de/escapebox/platform/internal/sessions"
-	"github.com/binaryc0de/escapebox/platform/internal/store"
+	"github.com/binaryc0de/lockwright/platform/internal/api"
+	"github.com/binaryc0de/lockwright/platform/internal/docker"
+	"github.com/binaryc0de/lockwright/platform/internal/flags"
+	"github.com/binaryc0de/lockwright/platform/internal/orchestrator"
+	"github.com/binaryc0de/lockwright/platform/internal/rooms"
+	"github.com/binaryc0de/lockwright/platform/internal/sessions"
+	"github.com/binaryc0de/lockwright/platform/internal/store"
 )
 
 func main() {

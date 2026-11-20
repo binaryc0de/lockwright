@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/binaryc0de/escapebox/platform/internal/flags"
+	"github.com/binaryc0de/lockwright/platform/internal/flags"
 )
 
 func main() {

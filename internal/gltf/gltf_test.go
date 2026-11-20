@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/binaryc0de/escapebox/internal/gltf"
-	"github.com/binaryc0de/escapebox/internal/gltf/gltftest"
+	"github.com/binaryc0de/lockwright/internal/gltf"
+	"github.com/binaryc0de/lockwright/internal/gltf/gltftest"
 )
 
 func mustParse(t *testing.T, data []byte) *gltf.Document {

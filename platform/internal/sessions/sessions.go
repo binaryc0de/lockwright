@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/binaryc0de/escapebox/platform/internal/store"
+	"github.com/binaryc0de/lockwright/platform/internal/store"
 )
 
 // Crash restart policy.

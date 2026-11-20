@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/binaryc0de/escapebox/platform/internal/docker"
-	"github.com/binaryc0de/escapebox/platform/internal/flags"
-	"github.com/binaryc0de/escapebox/platform/internal/store"
+	"github.com/binaryc0de/lockwright/platform/internal/docker"
+	"github.com/binaryc0de/lockwright/platform/internal/flags"
+	"github.com/binaryc0de/lockwright/platform/internal/store"
 )
 
 // Engine is the Docker surface the orchestrator needs (docker.Client in production).

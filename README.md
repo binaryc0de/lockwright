@@ -1,14 +1,16 @@
-# escapebox
+# Lockwright
 
 Co-op virtual escape rooms, played in the browser, where some rooms contain a **real CTF challenge**: a laptop in the 3D room is a real, intentionally vulnerable web app running in an isolated container. When the team captures its flag, a door opens in the game world.
 
 This repository holds the platform and its one hacker room, **Night Shift**. It is a working prototype built in October 2026. It ran on a home server and was play-tested with friends over the internet.
 
+A *lockwright* is a master maker of locks, and every room is one of his locks. The project's working codename was `escapebox`, which is why it still appears in code identifiers (the room SDK `escapebox_sdk`, Docker labels, file names) and in the older docs and commits.
+
 ![The Night Shift office](docs/screenshots/m1-office/after/00_wide_north.png)
 
 | Lobby | The server cage |
 |---|---|
-| ![Lobby](docs/screenshots/m5-lobby/lobby-1440x900.png) | ![Server cage](docs/screenshots/m4-cage/after/00_cage_from_office.png) |
+| ![Lobby](docs/screenshots/lobby/lobby-1440x900.png) | ![Server cage](docs/screenshots/m4-cage/after/00_cage_from_office.png) |
 
 ## Night Shift
 

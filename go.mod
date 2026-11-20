@@ -1,4 +1,4 @@
-module github.com/binaryc0de/escapebox
+module github.com/binaryc0de/lockwright
 
 go 1.27.0
 

@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/binaryc0de/escapebox/internal/gltf"
+	"github.com/binaryc0de/lockwright/internal/gltf"
 )
 
 // Tolerances in metres (docs/ASSET_PIPELINE.md section 8).

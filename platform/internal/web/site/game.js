@@ -31,7 +31,7 @@ function render(data) {
   finished = data.status === 'finished';
   document.querySelector('#game-details').hidden = false;
   document.querySelector('#room-title').textContent = data.title;
-  document.title = `${data.title} · ESCAPEBOX`;
+  document.title = `${data.title} · LOCKWRIGHT`;
   const difficulty = document.querySelector('#difficulty-title');
   difficulty.textContent = data.difficulty_title;
   difficulty.hidden = !data.difficulty_title;

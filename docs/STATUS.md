@@ -6,6 +6,8 @@ Milestone checklist from PLAN.md Section 11. Check an item only when it was actu
 
 **Public repository (2026-11-16).** This copy holds the platform and Night Shift only; the other rooms were removed from the whole history (`git filter-repo`) and their references from the code. Run on the Alienware: `tools/test.sh` passed every step through the platform smoke (gofmt, go vet/test, roomcheck PASS night_shift, assetcheck 24/24, the intranet's tests, gdUnit4 158/158, pack replay 30/30, touch play-through won with 0 problems, multiplayer smoke PASS, platform smoke PASS with the live Docker intranet attacked through the proxy and its hardening checked). The browser smoke failed in a shell without a display (`webgl: no webgl2`) and passed when rerun as `DISPLAY=:0 tools/web_smoke.sh`.
 
+**Named Lockwright (2026-11-20, ADR-0048 of the app).** The brand on the README, lobby site, in-game menu and Godot project is Lockwright; the Go module is `github.com/binaryc0de/lockwright`; `escapebox` stays in internal identifiers (SDK, Docker labels, file names). New lobby screenshots in `docs/screenshots/lobby/` (headless Chrome against a local platform). `DISPLAY=:0 tools/test.sh` exit 0 on the Alienware: go vet/test incl. the intranet, roomcheck, assetcheck, gdUnit4 158/158, pack replay 30/30, touch play-through won with 0 problems, multiplayer, platform and browser smokes PASS.
+
 ## M0: Repo and specs
 
 - [x] Repo layout (PLAN.md 14), `CLAUDE.md`, `AGENTS.md`, `.gitignore`

@@ -19,10 +19,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/binaryc0de/escapebox/platform/internal/flags"
-	"github.com/binaryc0de/escapebox/platform/internal/orchestrator"
-	"github.com/binaryc0de/escapebox/platform/internal/rooms"
-	"github.com/binaryc0de/escapebox/platform/internal/store"
+	"github.com/binaryc0de/lockwright/platform/internal/flags"
+	"github.com/binaryc0de/lockwright/platform/internal/orchestrator"
+	"github.com/binaryc0de/lockwright/platform/internal/rooms"
+	"github.com/binaryc0de/lockwright/platform/internal/store"
 )
 
 func TestHealthAndVersion(t *testing.T) {

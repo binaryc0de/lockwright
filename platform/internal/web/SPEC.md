@@ -33,7 +33,7 @@ The platform's front door. Files live in `platform/internal/web/site/` and are e
 
 ## Pages
 **Lobby (`/`)**
-- Header: "ESCAPEBOX" and one line of what it is (cooperative online escape rooms, play in your browser).
+- Header: "LOCKWRIGHT" and one line of what it is (cooperative online escape rooms, play in your browser).
 - Name field, shared with the game page.
 - **Join a game:** a 6-character code input (uppercase, letters and digits) and a Join button that goes to `/g/<CODE>`. Show an inline error if the code is malformed.
 - **Rooms:** one card per catalog room, with:

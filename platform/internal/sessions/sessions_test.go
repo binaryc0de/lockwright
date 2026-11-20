@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/binaryc0de/escapebox/platform/internal/store"
+	"github.com/binaryc0de/lockwright/platform/internal/store"
 )
 
 // fakeProc exits when told to, with a chosen code.

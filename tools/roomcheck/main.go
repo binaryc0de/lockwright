@@ -15,7 +15,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/binaryc0de/escapebox/internal/room"
+	"github.com/binaryc0de/lockwright/internal/room"
 )
 
 func main() {

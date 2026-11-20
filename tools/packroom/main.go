@@ -25,7 +25,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/binaryc0de/escapebox/internal/room"
+	"github.com/binaryc0de/lockwright/internal/room"
 )
 
 // CatalogEntry is what the platform catalog lists for a pack (docs/API.md).

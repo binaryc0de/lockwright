@@ -7,7 +7,7 @@ config_version=5
 
 run/flush_stdout_on_print=true
 
-config/name="escapebox"
+config/name="Lockwright"
 config/description="Virtual escape rooms with pluggable room packs and real CTF challenges."
 run/main_scene="res://core/main.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")

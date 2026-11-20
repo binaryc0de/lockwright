@@ -9,7 +9,7 @@ import (
 	"image/png"
 	"math"
 
-	"github.com/binaryc0de/escapebox/internal/gltf"
+	"github.com/binaryc0de/lockwright/internal/gltf"
 )
 
 // M is a JSON object.

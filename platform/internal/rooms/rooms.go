@@ -12,7 +12,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/binaryc0de/escapebox/platform/internal/orchestrator"
+	"github.com/binaryc0de/lockwright/platform/internal/orchestrator"
 )
 
 // Room is one installed room.

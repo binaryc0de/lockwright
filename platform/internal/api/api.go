@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/binaryc0de/escapebox/platform/internal/web"
+	"github.com/binaryc0de/lockwright/platform/internal/web"
 	"io"
 	"log/slog"
 	"math"
@@ -27,11 +27,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/binaryc0de/escapebox/platform/internal/flags"
-	"github.com/binaryc0de/escapebox/platform/internal/orchestrator"
-	"github.com/binaryc0de/escapebox/platform/internal/rooms"
-	"github.com/binaryc0de/escapebox/platform/internal/sessions"
-	"github.com/binaryc0de/escapebox/platform/internal/store"
+	"github.com/binaryc0de/lockwright/platform/internal/flags"
+	"github.com/binaryc0de/lockwright/platform/internal/orchestrator"
+	"github.com/binaryc0de/lockwright/platform/internal/rooms"
+	"github.com/binaryc0de/lockwright/platform/internal/sessions"
+	"github.com/binaryc0de/lockwright/platform/internal/store"
 )
 
 // Version is the platform API version reported to clients and room packs
