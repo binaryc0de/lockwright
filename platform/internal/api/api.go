@@ -92,13 +92,18 @@ type Deps struct {
 	PublicURL string
 }
 
-// RateLimit allows Max events per Window per key (in memory).
+const defaultMaxRateLimitKeys = 4096
+
+// RateLimit allows Max events per Window per key (in memory). Expired keys are
+// swept periodically and the table is capped at MaxKeys (default 4096).
 type RateLimit struct {
-	Max    int
-	Window time.Duration
-	mu     sync.Mutex
-	seen   map[string][]time.Time
-	now    func() time.Time
+	Max       int
+	Window    time.Duration
+	MaxKeys   int
+	mu        sync.Mutex
+	seen      map[string][]time.Time
+	lastSweep time.Time
+	now       func() time.Time
 }
 
 // Allow records an event for key and reports whether it is within the limit.
@@ -112,6 +117,11 @@ func (l *RateLimit) Allow(key string) bool {
 	if l.now != nil {
 		now = l.now()
 	}
+	if l.lastSweep.IsZero() {
+		l.lastSweep = now
+	} else if l.Window > 0 && now.Sub(l.lastSweep) >= l.Window {
+		l.sweepLocked(now)
+	}
 	keep := l.seen[key][:0]
 	for _, t := range l.seen[key] {
 		if now.Sub(t) < l.Window {
@@ -119,24 +129,91 @@ func (l *RateLimit) Allow(key string) bool {
 		}
 	}
 	if len(keep) >= l.Max {
-		l.seen[key] = keep
+		if len(keep) == 0 {
+			delete(l.seen, key)
+		} else {
+			l.seen[key] = keep
+		}
 		return false
+	}
+	maxKeys := l.MaxKeys
+	if maxKeys <= 0 {
+		maxKeys = defaultMaxRateLimitKeys
+	}
+	if _, exists := l.seen[key]; !exists && len(l.seen) >= maxKeys {
+		l.sweepLocked(now)
+		if len(l.seen) >= maxKeys {
+			l.evictOldestLocked()
+		}
 	}
 	l.seen[key] = append(keep, now)
 	return true
 }
 
-// clientKey identifies who is creating games: the first X-Forwarded-For hop
-// when the request came through a local proxy (tailscale serve, Caddy), else
-// the remote address.
+func (l *RateLimit) sweepLocked(now time.Time) {
+	l.lastSweep = now
+	for k, ts := range l.seen {
+		keep := ts[:0]
+		for _, t := range ts {
+			if now.Sub(t) < l.Window {
+				keep = append(keep, t)
+			}
+		}
+		if len(keep) == 0 {
+			delete(l.seen, k)
+		} else {
+			l.seen[k] = keep
+		}
+	}
+}
+
+func (l *RateLimit) evictOldestLocked() {
+	var oldestKey string
+	var oldestTime time.Time
+	first := true
+	for k, ts := range l.seen {
+		var latest time.Time
+		if len(ts) > 0 {
+			latest = ts[len(ts)-1]
+		}
+		if first || latest.Before(oldestTime) {
+			oldestKey = k
+			oldestTime = latest
+			first = false
+		}
+	}
+	if !first {
+		delete(l.seen, oldestKey)
+	}
+}
+
+func isLoopbackAddr(remoteAddr string) bool {
+	host, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		host = remoteAddr
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}
+
+// clientKey identifies the caller for rate limiting: when the connection came
+// from a local reverse proxy (Tailscale Serve/Funnel, Caddy), use the rightmost
+// X-Forwarded-For entry (the one the trusted local proxy appended) so callers
+// cannot spoof the key by prepending fake addresses; otherwise use RemoteAddr.
 func clientKey(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		host = r.RemoteAddr
 	}
 	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
-		if xff := strings.TrimSpace(strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0]); xff != "" {
-			return xff
+		vals := r.Header.Values("X-Forwarded-For")
+		for i := len(vals) - 1; i >= 0; i-- {
+			parts := strings.Split(vals[i], ",")
+			for j := len(parts) - 1; j >= 0; j-- {
+				if xff := strings.TrimSpace(parts[j]); xff != "" {
+					return xff
+				}
+			}
 		}
 	}
 	return host

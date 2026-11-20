@@ -754,6 +754,79 @@ func TestJoinAttemptsAreLimited(t *testing.T) {
 	}
 }
 
+func TestClientKeyUsesRightmostXFFAndResistsSpoofing(t *testing.T) {
+	req := httptest.NewRequest("GET", "/api/games/AAAAAA", nil)
+	req.RemoteAddr = "127.0.0.1:41234"
+	req.Header.Set("X-Forwarded-For", "198.51.100.1, 203.0.113.9")
+	if got := clientKey(req); got != "203.0.113.9" {
+		t.Fatalf("single header rightmost = %q, want 203.0.113.9", got)
+	}
+	// Multiple X-Forwarded-For headers: proxy appends after the client's header.
+	req2 := httptest.NewRequest("GET", "/api/games/AAAAAA", nil)
+	req2.RemoteAddr = "[::1]:41234"
+	req2.Header.Add("X-Forwarded-For", "198.51.100.2")
+	req2.Header.Add("X-Forwarded-For", "203.0.113.9")
+	if got := clientKey(req2); got != "203.0.113.9" {
+		t.Fatalf("multi-header rightmost = %q, want 203.0.113.9", got)
+	}
+	// Non-loopback callers cannot spoof X-Forwarded-For at all.
+	req3 := httptest.NewRequest("GET", "/api/games/AAAAAA", nil)
+	req3.RemoteAddr = "192.0.2.55:12345"
+	req3.Header.Set("X-Forwarded-For", "203.0.113.9")
+	if got := clientKey(req3); got != "192.0.2.55" {
+		t.Fatalf("non-loopback = %q, want 192.0.2.55", got)
+	}
+	// End-to-end: rotating the spoofed leftmost IP still hits JoinLimit.
+	e := setup(t)
+	cat, _ := rooms.Load("../../../game/rooms")
+	ts := httptest.NewServer(NewHandler(&Deps{Store: e.st, Rooms: cat, Servers: e.servers, JoinLimit: &RateLimit{Max: 2, Window: time.Minute}}))
+	defer ts.Close()
+	for i, spoof := range []string{"198.51.100.1", "198.51.100.2", "198.51.100.3"} {
+		r, _ := http.NewRequest("GET", ts.URL+"/api/games/ZZZZZZ", nil)
+		r.Header.Set("X-Forwarded-For", spoof+", 203.0.113.42")
+		resp, err := http.DefaultClient.Do(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if i < 2 && resp.StatusCode == 429 {
+			t.Fatalf("attempt %d unexpectedly limited", i+1)
+		}
+		if i == 2 && resp.StatusCode != 429 {
+			t.Fatalf("spoofed XFF bypassed rate limit: status %d", resp.StatusCode)
+		}
+	}
+}
+
+func TestRateLimitExpiresAndBoundsKeys(t *testing.T) {
+	now := time.Unix(1000, 0)
+	l := &RateLimit{Max: 2, Window: time.Minute, MaxKeys: 3, now: func() time.Time { return now }}
+	for _, k := range []string{"a", "b", "c"} {
+		if !l.Allow(k) {
+			t.Fatalf("Allow(%s) failed", k)
+		}
+		now = now.Add(time.Second)
+	}
+	// Adding a 4th key while all 3 are active must evict the oldest ("a") to stay bounded.
+	if !l.Allow("d") {
+		t.Fatal("Allow(d) failed")
+	}
+	if len(l.seen) > 3 {
+		t.Fatalf("seen map grew to %d, want <= 3", len(l.seen))
+	}
+	if _, ok := l.seen["a"]; ok {
+		t.Fatal("oldest key was not evicted")
+	}
+	// After the window elapses, expired keys are swept.
+	now = now.Add(2 * time.Minute)
+	if !l.Allow("e") {
+		t.Fatal("Allow(e) failed")
+	}
+	if len(l.seen) != 1 {
+		t.Fatalf("expired keys not swept: %v", l.seen)
+	}
+}
+
 func TestIntroVideosAreListedAndServed(t *testing.T) {
 	e := setup(t)
 	media := t.TempDir()
