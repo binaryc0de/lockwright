@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"net/http"
+	"testing"
+)
 
 func TestChallengeBindAddr(t *testing.T) {
 	cases := []struct {
@@ -17,5 +20,15 @@ func TestChallengeBindAddr(t *testing.T) {
 		if got := challengeBindAddr(c.explicit, c.publicURL); got != c.want {
 			t.Errorf("challengeBindAddr(%q, %q) = %q, want %q", c.explicit, c.publicURL, got, c.want)
 		}
+	}
+}
+
+func TestNewHTTPServerTimeouts(t *testing.T) {
+	srv := newHTTPServer("127.0.0.1:8080", http.NewServeMux())
+	if srv.ReadHeaderTimeout <= 0 || srv.IdleTimeout <= 0 {
+		t.Fatalf("expected ReadHeaderTimeout and IdleTimeout to be set: %+v", srv)
+	}
+	if srv.ReadTimeout != 0 || srv.WriteTimeout != 0 {
+		t.Fatalf("ReadTimeout/WriteTimeout must stay 0 for hijacked /ws/ connections: %+v", srv)
 	}
 }

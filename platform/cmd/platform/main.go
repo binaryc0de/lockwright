@@ -167,7 +167,7 @@ func run() error {
 			}
 		}
 	}()
-	srv := &http.Server{Addr: *addr, Handler: api.NewHandler(deps), ReadHeaderTimeout: 10 * time.Second}
+	srv := newHTTPServer(*addr, api.NewHandler(deps))
 	go func() {
 		<-ctx.Done()
 		shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -183,6 +183,17 @@ func run() error {
 		return err
 	}
 	return nil
+}
+
+func newHTTPServer(addr string, h http.Handler) *http.Server {
+	// Keep ReadTimeout and WriteTimeout unset: /ws/ game connections are
+	// hijacked and long-lived, and first-run image builds can take minutes.
+	return &http.Server{
+		Addr:              addr,
+		Handler:           h,
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 }
 
 func challengeBindAddr(explicit, publicURL string) string {

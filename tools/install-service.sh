@@ -59,7 +59,7 @@ After=network-online.target docker.service
 [Service]
 WorkingDirectory=$REPO
 Environment=PATH=$(dirname "$GODOT_BIN"):/usr/local/bin:/usr/bin:/bin
-ExecStart=$REPO/build/platform -addr :$PORT -data $REPO/data -rooms game/rooms -game game -godot $GODOT_BIN -transport ws -web build/client-web -packs build/packs -media media -max-games ${MAX_GAMES:-4} ${ADV[*]}
+ExecStart=$REPO/build/platform -addr 127.0.0.1:$PORT -data $REPO/data -rooms game/rooms -game game -godot $GODOT_BIN -transport ws -web build/client-web -packs build/packs -media media -max-games ${MAX_GAMES:-4} ${ADV[*]}
 Restart=on-failure
 RestartSec=3
 
