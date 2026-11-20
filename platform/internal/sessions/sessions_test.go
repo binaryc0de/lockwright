@@ -23,14 +23,16 @@ func (f *fakeProc) end(code int)       { f.once.Do(func() { f.exit <- code }) }
 type launches struct {
 	mu    sync.Mutex
 	args  [][]string
+	envs  [][]string
 	procs []*fakeProc
 }
 
-func (l *launches) launcher(_ context.Context, args []string) (Process, error) {
+func (l *launches) launcher(_ context.Context, args, env []string) (Process, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	p := &fakeProc{exit: make(chan int, 1)}
 	l.args = append(l.args, args)
+	l.envs = append(l.envs, env)
 	l.procs = append(l.procs, p)
 	return p, nil
 }
@@ -81,11 +83,17 @@ func TestStartsOnceWithTheRightArguments(t *testing.T) {
 		t.Fatalf("second EnsureRunning started another server")
 	}
 	args := l.args[0]
-	for _, want := range [][]string{{"--session", sess.ID}, {"--room", "night_shift"}, {"--token", sess.ServerToken}, {"--platform", "http://127.0.0.1:8080"}, {"--pack", "/packs/night_shift.pck"}, {"--transport", "enet"}} {
+	for _, want := range [][]string{{"--session", sess.ID}, {"--room", "night_shift"}, {"--platform", "http://127.0.0.1:8080"}, {"--pack", "/packs/night_shift.pck"}, {"--transport", "enet"}} {
 		i := slices.Index(args, want[0])
 		if i < 0 || args[i+1] != want[1] {
 			t.Fatalf("args %v missing %v", args, want)
 		}
+	}
+	if slices.Contains(args, "--token") || slices.Contains(args, sess.ServerToken) {
+		t.Fatalf("server token leaked onto command line: %v", args)
+	}
+	if !slices.Contains(l.envs[0], ServerTokenEnv+"="+sess.ServerToken) {
+		t.Fatalf("env %v missing %s", l.envs[0], ServerTokenEnv)
 	}
 	if args[0] != "godot" || !slices.Contains(args, "--server") {
 		t.Fatalf("command %v", args)

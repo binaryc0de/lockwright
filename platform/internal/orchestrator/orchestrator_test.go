@@ -227,6 +227,26 @@ func TestBuildPathMustStayInsideTheRoom(t *testing.T) {
 			t.Fatalf("build path %q accepted", bad)
 		}
 	}
+	// Symlink directory pointing outside the room must be rejected.
+	dir := roomDir(t)
+	outside := t.TempDir()
+	_ = os.WriteFile(filepath.Join(outside, "Dockerfile"), []byte("FROM scratch\n"), 0o644)
+	if err := os.Symlink(outside, filepath.Join(dir, "ctf", "escape_dir")); err != nil {
+		t.Fatal(err)
+	}
+	ch.Build = "ctf/escape_dir"
+	if _, err := o.Start(ctx, "s3b", "room", "0.1.0", dir, []Challenge{ch}); err == nil {
+		t.Fatal("symlink build directory outside room accepted")
+	}
+	// Symlink Dockerfile pointing outside the room must also be rejected.
+	_ = os.MkdirAll(filepath.Join(dir, "ctf", "escape_df"), 0o755)
+	if err := os.Symlink(filepath.Join(outside, "Dockerfile"), filepath.Join(dir, "ctf", "escape_df", "Dockerfile")); err != nil {
+		t.Fatal(err)
+	}
+	ch.Build = "ctf/escape_df"
+	if _, err := o.Start(ctx, "s3c", "room", "0.1.0", dir, []Challenge{ch}); err == nil {
+		t.Fatal("symlink Dockerfile outside room accepted")
+	}
 }
 
 func TestEditingTheChallengeChangesTheImageTag(t *testing.T) {

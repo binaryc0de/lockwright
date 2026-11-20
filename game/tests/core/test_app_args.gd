@@ -32,6 +32,21 @@ func test_dedicated_server_feature_forces_server_mode() -> void:
 	assert_array(a.errors).is_empty()
 
 
+func test_server_reads_token_from_environment() -> void:
+	var prev := OS.get_environment(AppArgs.SERVER_TOKEN_ENV)
+	OS.set_environment(AppArgs.SERVER_TOKEN_ENV, "env-secret-tok")
+	var srv := AppArgs.parse(PackedStringArray(["--server", "--session", "s1", "--room", "night_shift", "--platform", "http://127.0.0.1:8080"]))
+	var cli := AppArgs.parse(PackedStringArray(["--server", "--session", "s1", "--room", "night_shift", "--token", "cli-tok"]))
+	var client := AppArgs.parse(PackedStringArray(["--connect", "127.0.0.1:7777", "--name", "Alex"]))
+	if prev.is_empty():
+		OS.unset_environment(AppArgs.SERVER_TOKEN_ENV)
+	else:
+		OS.set_environment(AppArgs.SERVER_TOKEN_ENV, prev)
+	assert_str(srv.server_token).is_equal("env-secret-tok")
+	assert_str(cli.server_token).is_equal("cli-tok")
+	assert_str(client.server_token).is_empty()
+
+
 func test_server_mode_requires_session_and_room() -> void:
 	var a := AppArgs.parse(PackedStringArray(["--server"]))
 	assert_array(a.errors).contains(["server mode requires --session", "server mode requires --room"])

@@ -626,12 +626,16 @@ func (a *app) startChallenges(w http.ResponseWriter, r *http.Request, sess store
 		return
 	}
 	if a.d.PublicURL != "" {
+		out := make(map[string]orchestrator.Handle, len(hs))
 		for id, h := range hs {
 			if h.URL != "" {
 				h.URL = strings.TrimSuffix(a.d.PublicURL, "/") + "/ctf/" + sess.ID + "/" + id + "/"
-				hs[id] = h
+				h.Host = ""
+				h.Port = 0
 			}
+			out[id] = h
 		}
+		hs = out
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"handles": hs})
 }

@@ -21,8 +21,9 @@ import (
 
 // Crash restart policy.
 const (
-	MaxCrashes  = 3
-	CrashWindow = 10 * time.Minute
+	MaxCrashes     = 3
+	CrashWindow    = 10 * time.Minute
+	ServerTokenEnv = "ESCAPEBOX_SERVER_TOKEN"
 )
 
 // Config tells the manager how to launch game servers.
@@ -50,8 +51,9 @@ type Process interface {
 	Kill() error
 }
 
-// Launcher starts a game server process.
-type Launcher func(ctx context.Context, args []string) (Process, error)
+// Launcher starts a game server process with the given arguments and extra
+// environment variables (KEY=VALUE).
+type Launcher func(ctx context.Context, args, env []string) (Process, error)
 
 // Manager owns game server processes. Safe for concurrent use.
 type Manager struct {
@@ -118,7 +120,7 @@ func (m *Manager) startLocked(ctx context.Context, sess store.Session) (int, err
 	}
 	args := []string{"--server", "--session", sess.ID, "--room", sess.RoomID,
 		"--port", strconv.Itoa(port), "--transport", m.cfg.Transport,
-		"--platform", m.cfg.PlatformURL, "--token", sess.ServerToken}
+		"--platform", m.cfg.PlatformURL}
 	if m.cfg.PackFor != nil {
 		if pack := m.cfg.PackFor(sess.RoomID); pack != "" {
 			args = append(args, "--pack", pack)
@@ -128,7 +130,8 @@ func (m *Manager) startLocked(ctx context.Context, sess store.Session) (int, err
 		args = append(args, "--difficulty", sess.Difficulty)
 	}
 	args = append(args, m.cfg.ExtraArgs...)
-	p, err := m.launch(context.WithoutCancel(ctx), append(append([]string{}, m.cfg.Command...), args...))
+	env := []string{ServerTokenEnv + "=" + sess.ServerToken}
+	p, err := m.launch(context.WithoutCancel(ctx), append(append([]string{}, m.cfg.Command...), args...), env)
 	if err != nil {
 		return 0, fmt.Errorf("start game server: %w", err)
 	}
@@ -255,8 +258,11 @@ func udpFree(port int) bool {
 }
 
 // ExecLauncher runs the game server as a child process, logging its output.
-func ExecLauncher(ctx context.Context, args []string) (Process, error) {
+func ExecLauncher(ctx context.Context, args, env []string) (Process, error) {
 	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+	if len(env) > 0 {
+		cmd.Env = append(os.Environ(), env...)
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {

@@ -21,6 +21,9 @@ const VALUE_FLAGS: PackedStringArray = [
 	"session", "room", "pack", "port", "platform", "token", "transport",
 	"connect", "name", "snapshot", "bot-steps", "touchbot-from", "play-from", "join", "code", "bot-flag", "difficulty",
 ]
+## Environment variable the platform uses to hand the game server its token
+## without exposing it on the process command line.
+const SERVER_TOKEN_ENV := "ESCAPEBOX_SERVER_TOKEN"
 
 var mode: Mode = Mode.CLIENT
 var session_id: String = ""
@@ -95,6 +98,8 @@ static func parse(args: PackedStringArray, is_dedicated_server: bool = false) ->
 			value = args[i]
 		a._apply(key, value)
 		i += 1
+	if a.mode == Mode.SERVER and a.server_token.is_empty():
+		a.server_token = OS.get_environment(SERVER_TOKEN_ENV)
 	a._validate()
 	return a
 

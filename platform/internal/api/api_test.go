@@ -764,6 +764,36 @@ func TestCTFProxyAndPublicHardening(t *testing.T) {
 	if code, _ := get("/internal/sessions/"+live.ID+"/snapshot", map[string]string{"Authorization": "Bearer " + live.ServerToken}); code == 403 {
 		t.Fatal("direct local internal call refused")
 	}
+	// With PublicURL set, challenge handles advertise the /ctf/ URL and omit raw Host/Port.
+	cat, _ := rooms.Load("../../../game/rooms")
+	pubTS := httptest.NewServer(NewHandler(&Deps{
+		Store: e.st, Rooms: cat, Servers: e.servers, Orchestrator: e.orch,
+		Limiter: flags.NewLimiter(), Secret: e.secret, AdvertiseHost: "10.0.0.5",
+		PublicURL: "https://play.example.com",
+	}))
+	defer pubTS.Close()
+	req, _ := http.NewRequest("POST", pubTS.URL+"/internal/sessions/"+live.ID+"/challenges/start", nil)
+	req.Header.Set("Authorization", "Bearer "+live.ServerToken)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var startOut struct {
+		Handles map[string]map[string]any `json:"handles"`
+	}
+	_ = json.NewDecoder(resp.Body).Decode(&startOut)
+	resp.Body.Close()
+	ih := startOut.Handles["intranet"]
+	wantURL := "https://play.example.com/ctf/" + live.ID + "/intranet/"
+	if resp.StatusCode != 200 || ih["url"] != wantURL {
+		t.Fatalf("public handle: %d %v", resp.StatusCode, ih)
+	}
+	if _, hasHost := ih["host"]; hasHost {
+		t.Fatalf("public handle leaked raw host: %v", ih)
+	}
+	if _, hasPort := ih["port"]; hasPort {
+		t.Fatalf("public handle leaked raw port: %v", ih)
+	}
 }
 
 func TestJoinAttemptsAreLimited(t *testing.T) {

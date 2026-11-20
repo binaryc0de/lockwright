@@ -71,8 +71,8 @@ type Port struct {
 // Handle is what a Terminal prop shows players (the connection card).
 type Handle struct {
 	URL  string `json:"url,omitempty"`
-	Host string `json:"host"`
-	Port int    `json:"port"`
+	Host string `json:"host,omitempty"`
+	Port int    `json:"port,omitempty"`
 	Note string `json:"note,omitempty"`
 }
 
@@ -177,8 +177,9 @@ func (o *Orchestrator) Start(ctx context.Context, sessionID, roomID, roomVersion
 	defer l.Unlock()
 	o.mu.Lock()
 	if r, ok := o.sessions[sessionID]; ok {
+		out := cloneHandles(r.handles)
 		o.mu.Unlock()
-		return r.handles, nil
+		return out, nil
 	}
 	o.mu.Unlock()
 
@@ -210,7 +211,7 @@ func (o *Orchestrator) Start(ctx context.Context, sessionID, roomID, roomVersion
 	o.sessions[sessionID] = r
 	o.mu.Unlock()
 	ok = true
-	return r.handles, nil
+	return cloneHandles(r.handles), nil
 }
 
 func (o *Orchestrator) startOne(ctx context.Context, sessionID, roomID, roomVersion, roomDir, netName, netID string, labels map[string]string, ch Challenge, r *running) (Handle, error) {
@@ -299,14 +300,22 @@ func (o *Orchestrator) Stop(ctx context.Context, sessionID string) error {
 	return o.teardown(ctx, sessionID, r)
 }
 
-// Handles returns a running session's handles (nil if not running).
+// Handles returns a copy of a running session's handles (nil if not running).
 func (o *Orchestrator) Handles(sessionID string) map[string]Handle {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	if r := o.sessions[sessionID]; r != nil {
-		return r.handles
+		return cloneHandles(r.handles)
 	}
 	return nil
+}
+
+func cloneHandles(in map[string]Handle) map[string]Handle {
+	out := make(map[string]Handle, len(in))
+	for k, v := range in {
+		out[k] = v
+	}
+	return out
 }
 
 func (o *Orchestrator) teardown(ctx context.Context, sessionID string, r *running) error {
@@ -433,17 +442,46 @@ func (o *Orchestrator) listen() (*proxy, int, error) {
 	return nil, 0, fmt.Errorf("no free port in %d-%d", o.cfg.PortMin, o.cfg.PortMax)
 }
 
-// confined resolves rel inside root and refuses anything that escapes it.
+// confined resolves rel inside root (including symlinks) and refuses anything
+// that escapes it.
 func confined(root, rel string) (string, error) {
-	p := filepath.Join(root, rel)
-	r, err := filepath.Rel(root, p)
-	if err != nil || r == ".." || strings.HasPrefix(r, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
+	if filepath.IsAbs(rel) {
 		return "", fmt.Errorf("build path %q escapes the room directory", rel)
 	}
-	if st, err := os.Stat(filepath.Join(p, "Dockerfile")); err != nil || st.IsDir() {
-		return "", fmt.Errorf("no Dockerfile in %s", p)
+	p := filepath.Join(root, rel)
+	if !withinDir(root, p) {
+		return "", fmt.Errorf("build path %q escapes the room directory", rel)
 	}
-	return p, nil
+	rootReal, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return "", fmt.Errorf("resolve room directory: %w", err)
+	}
+	pReal, err := filepath.EvalSymlinks(p)
+	if err != nil {
+		return "", fmt.Errorf("no build directory %s: %w", p, err)
+	}
+	if !withinDir(rootReal, pReal) {
+		return "", fmt.Errorf("build path %q escapes the room directory", rel)
+	}
+	dfReal, err := filepath.EvalSymlinks(filepath.Join(pReal, "Dockerfile"))
+	if err != nil {
+		return "", fmt.Errorf("no Dockerfile in %s", pReal)
+	}
+	if !withinDir(rootReal, dfReal) {
+		return "", fmt.Errorf("Dockerfile in %q escapes the room directory", rel)
+	}
+	if st, err := os.Stat(dfReal); err != nil || st.IsDir() {
+		return "", fmt.Errorf("no Dockerfile in %s", pReal)
+	}
+	return pReal, nil
+}
+
+func withinDir(root, target string) bool {
+	r, err := filepath.Rel(root, target)
+	if err != nil {
+		return false
+	}
+	return r != ".." && !strings.HasPrefix(r, ".."+string(filepath.Separator))
 }
 
 // contextHash hashes every regular file under dir (path + contents).
