@@ -334,3 +334,40 @@ func TestProxyHonoursBindAddr(t *testing.T) {
 		t.Fatalf("listener bound to %s, want 127.0.0.1", addr.IP)
 	}
 }
+
+func TestHTTPProbeRefusesRedirectsAndHasTimeout(t *testing.T) {
+	if probeClient.Timeout <= 0 {
+		t.Fatalf("probeClient has no timeout: %v", probeClient.Timeout)
+	}
+	targetHit := false
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		targetHit = true
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer target.Close()
+	ch := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, target.URL+"/secret", http.StatusFound)
+	}))
+	defer ch.Close()
+	err := httpProbe(context.Background(), ch.URL+"/healthz")
+	if err == nil || !strings.Contains(err.Error(), "302") {
+		t.Fatalf("expected 302 error, got %v", err)
+	}
+	if targetHit {
+		t.Fatal("httpProbe followed redirect to target")
+	}
+	// Slow server times out via context / client timeout.
+	release := make(chan struct{})
+	slow := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-release:
+		case <-r.Context().Done():
+		}
+	}))
+	defer func() { close(release); slow.Close() }()
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	if err := httpProbe(ctx, slow.URL+"/healthz"); err == nil {
+		t.Fatal("slow health check unexpectedly succeeded")
+	}
+}

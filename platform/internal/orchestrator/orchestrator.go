@@ -371,13 +371,23 @@ func (o *Orchestrator) waitHealthy(ctx context.Context, url string, timeoutS int
 	return fmt.Errorf("not healthy after %ds: %v", timeoutS, last)
 }
 
+var probeClient = &http.Client{
+	Timeout: 2 * time.Second,
+	CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+}
+
 func httpProbe(ctx context.Context, url string) error {
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	resp, err := http.DefaultClient.Do(req)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
+	resp, err := probeClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("health check returned %d", resp.StatusCode)
 	}
