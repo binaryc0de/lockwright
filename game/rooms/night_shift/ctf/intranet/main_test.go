@@ -278,3 +278,119 @@ func TestRequestBodyLimitAndServerTimeouts(t *testing.T) {
 		t.Fatalf("server timeouts not set: %+v", srv)
 	}
 }
+
+func TestLogoutRevokesSessionServerSideAndSessionsExpire(t *testing.T) {
+	srv := newServer(testFlag)
+	now := time.Unix(1_800_000_000, 0)
+	srv.now = func() time.Time { return now }
+	h := srv.routes()
+
+	// Log in and capture the raw session cookie.
+	form := url.Values{"username": {username}, "password": {password}}.Encode()
+	req := httptest.NewRequest("POST", "/login", strings.NewReader(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	var sessCookie *http.Cookie
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == cookieName {
+			sessCookie = c
+		}
+	}
+	if sessCookie == nil || sessCookie.Value == "" || strings.Contains(sessCookie.Value, username) {
+		t.Fatalf("unexpected session cookie: %+v", sessCookie)
+	}
+	// Cookie grants access to /tickets before logout.
+	req = httptest.NewRequest("GET", "/tickets", nil)
+	req.AddCookie(sessCookie)
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "My tickets") {
+		t.Fatalf("authed /tickets before logout: %d", rec.Code)
+	}
+	// Logout revokes the session server-side.
+	req = httptest.NewRequest("POST", "/logout", nil)
+	req.AddCookie(sessCookie)
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusSeeOther {
+		t.Fatalf("logout status: %d", rec.Code)
+	}
+	// Replaying the captured cookie is now rejected.
+	req = httptest.NewRequest("GET", "/tickets", nil)
+	req.AddCookie(sessCookie)
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != "/login" {
+		t.Fatalf("revoked cookie still worked: %d loc=%q", rec.Code, rec.Header().Get("Location"))
+	}
+	// Sessions expire after sessionTTL.
+	req = httptest.NewRequest("POST", "/login", strings.NewReader(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	var expCookie *http.Cookie
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == cookieName {
+			expCookie = c
+		}
+	}
+	now = now.Add(sessionTTL + time.Second)
+	req = httptest.NewRequest("GET", "/tickets", nil)
+	req.AddCookie(expCookie)
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != "/login" {
+		t.Fatalf("expired cookie still worked: %d loc=%q", rec.Code, rec.Header().Get("Location"))
+	}
+}
+
+func TestSessionCookieSecureOverHTTPS(t *testing.T) {
+	h := newServer(testFlag).routes()
+	form := url.Values{"username": {username}, "password": {password}}.Encode()
+
+	// Plain HTTP: Secure is false.
+	req := httptest.NewRequest("POST", "/login", strings.NewReader(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	var plain *http.Cookie
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == cookieName {
+			plain = c
+		}
+	}
+	if plain == nil || plain.Secure || !plain.HttpOnly || plain.SameSite != http.SameSiteLaxMode {
+		t.Fatalf("plain HTTP cookie = %+v", plain)
+	}
+
+	// Behind HTTPS proxy (X-Forwarded-Proto: https): Secure is true on login and logout.
+	req = httptest.NewRequest("POST", "/login", strings.NewReader(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("X-Forwarded-Proto", "https")
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	var sec *http.Cookie
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == cookieName {
+			sec = c
+		}
+	}
+	if sec == nil || !sec.Secure || !sec.HttpOnly {
+		t.Fatalf("HTTPS login cookie = %+v", sec)
+	}
+	req = httptest.NewRequest("POST", "/logout", nil)
+	req.Header.Set("X-Forwarded-Proto", "https")
+	req.AddCookie(sec)
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	var clr *http.Cookie
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == cookieName {
+			clr = c
+		}
+	}
+	if clr == nil || !clr.Secure || clr.MaxAge != -1 {
+		t.Fatalf("HTTPS logout cookie = %+v", clr)
+	}
+}

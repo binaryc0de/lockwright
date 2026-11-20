@@ -10,9 +10,7 @@
 package main
 
 import (
-	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
 	"crypto/subtle"
 	"embed"
 	"encoding/hex"
@@ -113,30 +111,31 @@ type lockoutEntry struct {
 	lastSeen    time.Time
 }
 
+type sessionEntry struct {
+	user    string
+	expires time.Time
+}
+
 type server struct {
 	flag    string
-	key     []byte
 	tickets map[int]ticket
 	tmpl    *template.Template
 
 	mu             sync.Mutex
 	lockouts       map[string]*lockoutEntry
 	maxLockoutKeys int
+	sessions       map[string]sessionEntry
 	now            func() time.Time
 }
 
 func newServer(flag string) *server {
-	key := make([]byte, 32)
-	if _, err := rand.Read(key); err != nil {
-		log.Fatal(err)
-	}
 	return &server{
 		flag:           flag,
-		key:            key,
 		tickets:        tickets(),
 		tmpl:           template.Must(template.ParseFS(templateFS, "templates/*.html")),
 		lockouts:       map[string]*lockoutEntry{},
 		maxLockoutKeys: maxLockoutKeys,
+		sessions:       map[string]sessionEntry{},
 		now:            time.Now,
 	}
 }
@@ -165,26 +164,67 @@ func securityHeaders(h http.Handler) http.Handler {
 	})
 }
 
-// --- sessions: an HMAC-signed cookie holding the user name -------------------
+// --- sessions: server-side random session ids with expiry and revocation -----
 
-const cookieName = "kl_session"
+const (
+	cookieName  = "kl_session"
+	sessionTTL  = 2 * time.Hour
+	maxSessions = 256
+)
 
-func (s *server) sign(user string) string {
-	m := hmac.New(sha256.New, s.key)
-	m.Write([]byte(user))
-	return user + "." + hex.EncodeToString(m.Sum(nil))
+func isHTTPS(r *http.Request) bool {
+	return r.TLS != nil || strings.EqualFold(strings.TrimSpace(r.Header.Get("X-Forwarded-Proto")), "https")
+}
+
+func (s *server) newSession(user string) (string, error) {
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		return "", err
+	}
+	sid := hex.EncodeToString(raw)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.now()
+	for k, ent := range s.sessions {
+		if !now.Before(ent.expires) {
+			delete(s.sessions, k)
+		}
+	}
+	if len(s.sessions) >= maxSessions {
+		var oldestKey string
+		var oldestExp time.Time
+		first := true
+		for k, ent := range s.sessions {
+			if first || ent.expires.Before(oldestExp) {
+				oldestKey = k
+				oldestExp = ent.expires
+				first = false
+			}
+		}
+		if !first {
+			delete(s.sessions, oldestKey)
+		}
+	}
+	s.sessions[sid] = sessionEntry{user: user, expires: now.Add(sessionTTL)}
+	return sid, nil
 }
 
 func (s *server) user(r *http.Request) string {
 	c, err := r.Cookie(cookieName)
-	if err != nil {
+	if err != nil || c.Value == "" {
 		return ""
 	}
-	user, _, ok := strings.Cut(c.Value, ".")
-	if !ok || subtle.ConstantTimeCompare([]byte(s.sign(user)), []byte(c.Value)) != 1 {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	ent, ok := s.sessions[c.Value]
+	if !ok {
 		return ""
 	}
-	return user
+	if !s.now().Before(ent.expires) {
+		delete(s.sessions, c.Value)
+		return ""
+	}
+	return ent.user
 }
 
 func (s *server) authed(h func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
@@ -262,7 +302,20 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 		s.render(w, r, http.StatusUnauthorized, "login.html", map[string]any{"Error": "Invalid username or password.", "Username": u})
 		return
 	}
-	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: s.sign(username), Path: cookiePath(r), HttpOnly: true, SameSite: http.SameSiteLaxMode})
+	sid, err := s.newSession(username)
+	if err != nil {
+		http.Error(w, "Could not start session.", http.StatusInternalServerError)
+		return
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     cookieName,
+		Value:    sid,
+		Path:     cookiePath(r),
+		MaxAge:   int(sessionTTL.Seconds()),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   isHTTPS(r),
+	})
 	http.Redirect(w, r, base(r)+"/tickets", http.StatusSeeOther)
 }
 
@@ -303,7 +356,20 @@ func (s *server) evictLockoutIfFullLocked(now time.Time) {
 }
 
 func (s *server) logout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: cookiePath(r), MaxAge: -1})
+	if c, err := r.Cookie(cookieName); err == nil && c.Value != "" {
+		s.mu.Lock()
+		delete(s.sessions, c.Value)
+		s.mu.Unlock()
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     cookieName,
+		Value:    "",
+		Path:     cookiePath(r),
+		MaxAge:   -1,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   isHTTPS(r),
+	})
 	http.Redirect(w, r, base(r)+"/login", http.StatusSeeOther)
 }
 
