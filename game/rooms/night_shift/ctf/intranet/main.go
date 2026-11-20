@@ -16,6 +16,7 @@ import (
 	"crypto/subtle"
 	"embed"
 	"encoding/hex"
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
@@ -152,8 +153,11 @@ func (s *server) routes() http.Handler {
 	return securityHeaders(mux)
 }
 
+const maxBodyBytes = 8 << 10
+
 func securityHeaders(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'unsafe-inline'")
 		w.Header().Set("Cache-Control", "no-store")
@@ -209,8 +213,17 @@ func (s *server) loginForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) login(w http.ResponseWriter, r *http.Request) {
-	u := strings.TrimSpace(r.FormValue("username"))
-	p := r.FormValue("password")
+	if err := r.ParseForm(); err != nil {
+		var mbe *http.MaxBytesError
+		if errors.As(err, &mbe) {
+			http.Error(w, "Request body too large.", http.StatusRequestEntityTooLarge)
+			return
+		}
+		http.Error(w, "Bad request.", http.StatusBadRequest)
+		return
+	}
+	u := strings.TrimSpace(r.PostFormValue("username"))
+	p := r.PostFormValue("password")
 	okUser := subtle.ConstantTimeCompare([]byte(u), []byte(username)) == 1
 	okPass := subtle.ConstantTimeCompare([]byte(p), []byte(password)) == 1
 	s.mu.Lock()
@@ -330,6 +343,17 @@ func (s *server) render(w http.ResponseWriter, r *http.Request, status int, name
 	}
 }
 
+func newHTTPServer(addr string, h http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              addr,
+		Handler:           h,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+}
+
 func main() {
 	flag := strings.TrimSpace(os.Getenv("FLAG"))
 	if flag == "" {
@@ -339,7 +363,7 @@ func main() {
 	if addr == "" {
 		addr = ":8080"
 	}
-	srv := &http.Server{Addr: addr, Handler: newServer(flag).routes(), ReadHeaderTimeout: 10 * time.Second}
+	srv := newHTTPServer(addr, newServer(flag).routes())
 	log.Printf("Kestrel intranet listening on %s", addr)
 	log.Fatal(srv.ListenAndServe())
 }

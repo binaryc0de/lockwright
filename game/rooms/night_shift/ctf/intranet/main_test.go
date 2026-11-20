@@ -261,3 +261,20 @@ func TestServedUnderAProxyPrefix(t *testing.T) {
 		t.Fatalf("redirect with a hostile prefix: %q", loc)
 	}
 }
+
+func TestRequestBodyLimitAndServerTimeouts(t *testing.T) {
+	ts, c := setup(t)
+	big := "username=mreyes&password=" + strings.Repeat("a", maxBodyBytes+1024)
+	r, err := c.Post(ts.URL+"/login", "application/x-www-form-urlencoded", strings.NewReader(big))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body(t, r)
+	if r.StatusCode != http.StatusRequestEntityTooLarge {
+		t.Fatalf("oversized login body: %d, want 413", r.StatusCode)
+	}
+	srv := newHTTPServer(":8080", http.NewServeMux())
+	if srv.ReadHeaderTimeout <= 0 || srv.ReadTimeout <= 0 || srv.WriteTimeout <= 0 || srv.IdleTimeout <= 0 {
+		t.Fatalf("server timeouts not set: %+v", srv)
+	}
+}
