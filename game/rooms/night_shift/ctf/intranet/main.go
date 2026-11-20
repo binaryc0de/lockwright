@@ -39,12 +39,13 @@ const (
 )
 
 // Account lockout (the room's IT password policy): after MaxFailures wrong
-// passwords in a row for mreyes, the account is locked for LockFor. This
-// keeps guessing on the login page impractical, so hard mode's way in is
-// cracking the hash on the USB stick offline (ADR-0022).
+// passwords in a row for a username, that username is locked for LockFor.
+// Applying the same lockout to every username keeps guessing impractical
+// without revealing which usernames exist (ADR-0022).
 const (
-	MaxFailures = 5
-	LockFor     = 3 * time.Minute
+	MaxFailures    = 5
+	LockFor        = 3 * time.Minute
+	maxLockoutKeys = 1024
 )
 
 // prefixRe is what a proxy may put in X-Forwarded-Prefix: a plain path
@@ -105,16 +106,22 @@ func tickets() map[int]ticket {
 	return out
 }
 
+type lockoutEntry struct {
+	failures    int
+	lockedUntil time.Time
+	lastSeen    time.Time
+}
+
 type server struct {
 	flag    string
 	key     []byte
 	tickets map[int]ticket
 	tmpl    *template.Template
 
-	mu          sync.Mutex
-	failures    int
-	lockedUntil time.Time
-	now         func() time.Time
+	mu             sync.Mutex
+	lockouts       map[string]*lockoutEntry
+	maxLockoutKeys int
+	now            func() time.Time
 }
 
 func newServer(flag string) *server {
@@ -123,11 +130,13 @@ func newServer(flag string) *server {
 		log.Fatal(err)
 	}
 	return &server{
-		flag:    flag,
-		key:     key,
-		tickets: tickets(),
-		tmpl:    template.Must(template.ParseFS(templateFS, "templates/*.html")),
-		now:     time.Now,
+		flag:           flag,
+		key:            key,
+		tickets:        tickets(),
+		tmpl:           template.Must(template.ParseFS(templateFS, "templates/*.html")),
+		lockouts:       map[string]*lockoutEntry{},
+		maxLockoutKeys: maxLockoutKeys,
+		now:            time.Now,
 	}
 }
 
@@ -204,28 +213,36 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 	p := r.FormValue("password")
 	okUser := subtle.ConstantTimeCompare([]byte(u), []byte(username)) == 1
 	okPass := subtle.ConstantTimeCompare([]byte(p), []byte(password)) == 1
-	if okUser {
-		s.mu.Lock()
-		locked := s.now().Before(s.lockedUntil)
-		switch {
-		case locked:
-		case okPass:
-			s.failures = 0
-		default:
-			s.failures++
-			if s.failures >= MaxFailures {
-				s.failures = 0
-				s.lockedUntil = s.now().Add(LockFor)
-				locked = true
-			}
+	s.mu.Lock()
+	now := s.now()
+	s.sweepLockoutsLocked(now)
+	st := s.lockouts[u]
+	locked := st != nil && now.Before(st.lockedUntil)
+	switch {
+	case locked:
+		st.lastSeen = now
+	case okUser && okPass:
+		delete(s.lockouts, u)
+	default:
+		if st == nil {
+			s.evictLockoutIfFullLocked(now)
+			st = &lockoutEntry{}
+			s.lockouts[u] = st
 		}
-		s.mu.Unlock()
-		if locked {
-			time.Sleep(300 * time.Millisecond)
-			s.render(w, r, http.StatusTooManyRequests, "login.html", map[string]any{
-				"Error": "Account locked after too many failed sign-ins (IT policy). Try again in a few minutes.", "Username": u})
-			return
+		st.lastSeen = now
+		st.failures++
+		if st.failures >= MaxFailures {
+			st.failures = 0
+			st.lockedUntil = now.Add(LockFor)
+			locked = true
 		}
+	}
+	s.mu.Unlock()
+	if locked {
+		time.Sleep(300 * time.Millisecond)
+		s.render(w, r, http.StatusTooManyRequests, "login.html", map[string]any{
+			"Error": "Account locked after too many failed sign-ins (IT policy). Try again in a few minutes.", "Username": u})
+		return
 	}
 	if !okUser || !okPass {
 		time.Sleep(300 * time.Millisecond) // slow down guessing; brute force is not the intended path
@@ -234,6 +251,42 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: s.sign(username), Path: cookiePath(r), HttpOnly: true, SameSite: http.SameSiteLaxMode})
 	http.Redirect(w, r, base(r)+"/tickets", http.StatusSeeOther)
+}
+
+func (s *server) sweepLockoutsLocked(now time.Time) {
+	for k, st := range s.lockouts {
+		if !now.Before(st.lockedUntil) && (st.failures == 0 || now.Sub(st.lastSeen) >= LockFor) {
+			delete(s.lockouts, k)
+		}
+	}
+}
+
+func (s *server) evictLockoutIfFullLocked(now time.Time) {
+	capKeys := s.maxLockoutKeys
+	if capKeys <= 0 {
+		capKeys = maxLockoutKeys
+	}
+	if len(s.lockouts) < capKeys {
+		return
+	}
+	// Prefer evicting an unlocked entry so spraying unknown names cannot clear
+	// an active lockout; fall back to the oldest entry if all are locked.
+	var victim string
+	var victimLocked bool
+	var victimTime time.Time
+	first := true
+	for k, st := range s.lockouts {
+		isLocked := now.Before(st.lockedUntil)
+		if first || (!isLocked && victimLocked) || (isLocked == victimLocked && st.lastSeen.Before(victimTime)) {
+			victim = k
+			victimLocked = isLocked
+			victimTime = st.lastSeen
+			first = false
+		}
+	}
+	if !first {
+		delete(s.lockouts, victim)
+	}
 }
 
 func (s *server) logout(w http.ResponseWriter, r *http.Request) {

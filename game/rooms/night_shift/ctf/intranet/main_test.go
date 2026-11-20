@@ -149,6 +149,42 @@ func TestAccountLocksAfterFiveFailures(t *testing.T) {
 	}
 }
 
+func TestUnknownUsernameLocksIdenticallyAndMapIsBounded(t *testing.T) {
+	srv := newServer(testFlag)
+	srv.maxLockoutKeys = 4
+	now := time.Unix(1_800_000_000, 0)
+	srv.now = func() time.Time { return now }
+	ts := httptest.NewServer(srv.routes())
+	t.Cleanup(ts.Close)
+	c := &http.Client{}
+	// Unknown username gets 401 for 4 failures and 429 on the 5th (no enumeration oracle).
+	for i := 0; i < MaxFailures-1; i++ {
+		if r := login(t, ts, c, "nonexistent", "nope"); r.StatusCode != http.StatusUnauthorized {
+			t.Fatalf("unknown user failure %d: %d, want 401", i+1, r.StatusCode)
+		}
+	}
+	if r := login(t, ts, c, "nonexistent", "nope"); r.StatusCode != http.StatusTooManyRequests {
+		t.Fatalf("unknown user 5th failure: %d, want 429", r.StatusCode)
+	}
+	// Flooding with many distinct usernames keeps the lockout map bounded and
+	// preserves active lockouts over unlocked single-failure entries.
+	for i := 0; i < 6; i++ {
+		now = now.Add(time.Second)
+		r := login(t, ts, c, "spray"+strconv.Itoa(i), "nope")
+		body(t, r)
+	}
+	srv.mu.Lock()
+	n := len(srv.lockouts)
+	_, stillLocked := srv.lockouts["nonexistent"]
+	srv.mu.Unlock()
+	if n > srv.maxLockoutKeys {
+		t.Fatalf("lockout map grew to %d, want <= %d", n, srv.maxLockoutKeys)
+	}
+	if !stillLocked {
+		t.Fatal("spray of single failures evicted an actively locked username")
+	}
+}
+
 func TestSuccessResetsTheFailureCount(t *testing.T) {
 	ts, c := setup(t)
 	for i := 0; i < MaxFailures-1; i++ {
