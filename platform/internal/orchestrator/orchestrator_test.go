@@ -320,3 +320,16 @@ func TestConcurrentStartsAndStopDoNotInterleave(t *testing.T) {
 		t.Fatal("stop after concurrent starts left resources")
 	}
 }
+
+func TestProxyHonoursBindAddr(t *testing.T) {
+	o, _, _ := setup(t) // BindAddr: "127.0.0.1"
+	p, _, err := o.listen()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer p.close()
+	addr := p.ln.Addr().(*net.TCPAddr)
+	if !addr.IP.Equal(net.ParseIP("127.0.0.1")) {
+		t.Fatalf("listener bound to %s, want 127.0.0.1", addr.IP)
+	}
+}

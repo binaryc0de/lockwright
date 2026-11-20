@@ -47,6 +47,7 @@ func run() error {
 	platformURL := flag.String("platform-url", "", "how game servers reach this platform (default http://127.0.0.1:<addr port>)")
 	gamePorts := flag.String("game-ports", "7777-7799", "UDP/TCP port range for game servers")
 	challengePorts := flag.String("challenge-ports", "20000-20999", "TCP port range for challenge proxies")
+	challengeBind := flag.String("challenge-bind", "", "listen address for challenge TCP proxies (default: 127.0.0.1 when -public-url is set, else 0.0.0.0)")
 	transport := flag.String("transport", "enet", "game transport for clients: enet or ws")
 	mediaDir := flag.String("media", "", "serve per-room intro videos from this directory (media/rooms/<id>/intro.mp4, poster.jpg)")
 	packsDir := flag.String("packs", "", "serve room packs built by tools/packroom from this directory (catalog + /download/packs/, ADR-0025)")
@@ -131,7 +132,8 @@ func run() error {
 	defer mgr.Close()
 
 	deps.Servers = mgr
-	if orch, err := startOrchestrator(ctx, host, cmin, cmax, secret, st, orchestrator.OwnerFor(*dataDir)); err != nil {
+	bind := challengeBindAddr(*challengeBind, *publicURL)
+	if orch, err := startOrchestrator(ctx, host, bind, cmin, cmax, secret, st, orchestrator.OwnerFor(*dataDir)); err != nil {
 		slog.Warn("challenge containers disabled: Docker is not reachable", "err", err)
 	} else {
 		deps.Orchestrator = orch
@@ -176,14 +178,24 @@ func run() error {
 	for _, r := range cat.All() {
 		names = append(names, r.ID)
 	}
-	slog.Info("platform listening", "addr", *addr, "version", api.Version, "advertise", host, "rooms", strings.Join(names, ","), "hidden_drafts", strings.Join(cat.Hidden(), ","), "challenges", deps.Orchestrator != nil)
+	slog.Info("platform listening", "addr", *addr, "version", api.Version, "advertise", host, "challenge_bind", bind, "rooms", strings.Join(names, ","), "hidden_drafts", strings.Join(cat.Hidden(), ","), "challenges", deps.Orchestrator != nil)
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil
 }
 
-func startOrchestrator(ctx context.Context, host string, pmin, pmax int, secret []byte, st *store.Store, owner string) (*orchestrator.Orchestrator, error) {
+func challengeBindAddr(explicit, publicURL string) string {
+	if explicit != "" {
+		return explicit
+	}
+	if publicURL != "" {
+		return "127.0.0.1"
+	}
+	return "0.0.0.0"
+}
+
+func startOrchestrator(ctx context.Context, host, bind string, pmin, pmax int, secret []byte, st *store.Store, owner string) (*orchestrator.Orchestrator, error) {
 	dc, err := docker.FromEnv()
 	if err != nil {
 		return nil, err
@@ -193,7 +205,7 @@ func startOrchestrator(ctx context.Context, host string, pmin, pmax int, secret 
 	if err := dc.Ping(pctx); err != nil {
 		return nil, err
 	}
-	o := orchestrator.New(orchestrator.Config{AdvertiseHost: host, BindAddr: "0.0.0.0", PortMin: pmin, PortMax: pmax, Secret: secret, Owner: owner}, dc, st)
+	o := orchestrator.New(orchestrator.Config{AdvertiseHost: host, BindAddr: bind, PortMin: pmin, PortMax: pmax, Secret: secret, Owner: owner}, dc, st)
 	if err := o.Cleanup(ctx); err != nil {
 		slog.Warn("cleanup of old challenge containers", "err", err)
 	}
