@@ -139,14 +139,27 @@ func TestContainerIsHardened(t *testing.T) {
 
 func TestNetworkIsInternal(t *testing.T) {
 	c, f := client(t)
-	id, err := c.CreateNetwork(context.Background(), NetworkSpec{Name: "esc_s1", Internal: true, Labels: map[string]string{"a": "b"}})
+	br := BridgeName("esc_s1")
+	if !strings.HasPrefix(br, BridgePrefix) || len(br) > 15 {
+		t.Fatalf("bad bridge name %q (len=%d)", br, len(br))
+	}
+	id, err := c.CreateNetwork(context.Background(), NetworkSpec{Name: "esc_s1", Internal: true, BridgeName: br, Labels: map[string]string{"a": "b"}})
 	if err != nil || id != "net123" {
 		t.Fatalf("network %q %v", id, err)
 	}
-	var body map[string]any
-	json.Unmarshal(f.bodies["POST /networks/create"], &body)
-	if body["Internal"] != true || body["Name"] != "esc_s1" {
-		t.Fatalf("network body %v", body)
+	var body struct {
+		Name     string
+		Internal bool
+		Options  map[string]string
+	}
+	if err := json.Unmarshal(f.bodies["POST /networks/create"], &body); err != nil {
+		t.Fatal(err)
+	}
+	if !body.Internal || body.Name != "esc_s1" {
+		t.Fatalf("network body %+v", body)
+	}
+	if got := body.Options["com.docker.network.bridge.name"]; got != br {
+		t.Fatalf("bridge name option = %q, want %q", got, br)
 	}
 }
 

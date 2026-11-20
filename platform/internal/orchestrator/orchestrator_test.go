@@ -57,6 +57,9 @@ func (f *fakeEngine) CreateNetwork(_ context.Context, n docker.NetworkSpec) (str
 	if !n.Internal {
 		return "", errors.New("test: network must be internal")
 	}
+	if !strings.HasPrefix(n.BridgeName, docker.BridgePrefix) || len(n.BridgeName) > 15 {
+		return "", errors.New("test: invalid bridge name " + n.BridgeName)
+	}
 	id := f.id("net")
 	f.nets[id] = true
 	return id, nil

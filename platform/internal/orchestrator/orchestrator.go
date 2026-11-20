@@ -195,7 +195,12 @@ func (o *Orchestrator) Start(ctx context.Context, sessionID, roomID, roomVersion
 		labels[LabelOwner] = o.cfg.Owner
 	}
 	netName := "esc_" + sessionID
-	netID, err := o.eng.CreateNetwork(ctx, docker.NetworkSpec{Name: netName, Internal: true, Labels: labels})
+	netID, err := o.eng.CreateNetwork(ctx, docker.NetworkSpec{
+		Name:       netName,
+		Internal:   true,
+		BridgeName: docker.BridgeName(netName),
+		Labels:     labels,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("session network: %w", err)
 	}

@@ -8,6 +8,8 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -194,11 +196,24 @@ func (c *Client) BuildImage(ctx context.Context, dir, tag string, labels map[str
 	return nil
 }
 
+// BridgePrefix is the fixed Linux interface prefix given to every challenge
+// bridge so host firewall rules (e.g. iptables -i ebx+) match only challenge
+// networks and leave other Docker networks untouched.
+const BridgePrefix = "ebx"
+
+// BridgeName derives a deterministic 15-character Linux bridge interface name
+// starting with BridgePrefix from a Docker network name.
+func BridgeName(netName string) string {
+	sum := sha256.Sum256([]byte(netName))
+	return BridgePrefix + hex.EncodeToString(sum[:6])
+}
+
 // NetworkSpec describes a session network.
 type NetworkSpec struct {
-	Name     string
-	Internal bool // no route out of the network (no egress)
-	Labels   map[string]string
+	Name       string
+	Internal   bool // no route out of the network (no egress)
+	BridgeName string
+	Labels     map[string]string
 }
 
 // CreateNetwork creates a bridge network and returns its id.
@@ -206,13 +221,19 @@ func (c *Client) CreateNetwork(ctx context.Context, n NetworkSpec) (string, erro
 	var out struct {
 		ID string `json:"Id"`
 	}
-	err := c.doJSON(ctx, http.MethodPost, "/networks/create", nil, map[string]any{
+	body := map[string]any{
 		"Name":           n.Name,
 		"Driver":         "bridge",
 		"Internal":       n.Internal,
 		"CheckDuplicate": true,
 		"Labels":         n.Labels,
-	}, &out)
+	}
+	if n.BridgeName != "" {
+		body["Options"] = map[string]string{
+			"com.docker.network.bridge.name": n.BridgeName,
+		}
+	}
+	err := c.doJSON(ctx, http.MethodPost, "/networks/create", nil, body, &out)
 	return out.ID, err
 }
 
